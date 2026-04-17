@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aira-bg: #0A0A0F;
+  --color-aira-surface: #12121A;
+  --color-aira-card: #1A1A24;
+  --color-aira-border: #2A2A38;
+  --color-aira-purple: #7C3AED;
+  --color-aira-indigo: #4F46E5;
+  --color-aira-pink: #EC4899;
+  --color-aira-glow: #A78BFA;
+  --color-aira-text: #F8FAFC;
+  --color-aira-muted: #94A3B8;
+  --color-aira-dim: #64748B;
+
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+html, body {
+  background: #0A0A0F;
+  color: #F8FAFC;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(124, 58, 237, 0.4);
+  color: #F8FAFC;
+}
+
+html {
+  scroll-behavior: smooth;
+}
