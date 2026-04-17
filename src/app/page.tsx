@@ -41,6 +41,12 @@ function Github({ size = 16 }: { size?: number }) {
 }
 import PhoneMockup from "@/components/PhoneMockup";
 
+// Web app URL — set NEXT_PUBLIC_APP_URL in Vercel env after deploying the
+// mobile app to Vercel. If unset, "Launch AIRA" buttons render as a disabled
+// "Coming soon" pill so we never ship broken links.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+const HAS_APP = Boolean(APP_URL);
+
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: {
@@ -79,17 +85,23 @@ export default function Home() {
           >
             AIRA
           </a>
-          <motion.a
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            href="#download"
-            className="px-4 py-2 rounded-full text-sm font-semibold text-white"
-            style={{
-              backgroundImage: "linear-gradient(90deg, #7C3AED, #4F46E5)",
-            }}
-          >
-            Download
-          </motion.a>
+          {HAS_APP ? (
+            <motion.a
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              href={APP_URL}
+              className="px-4 py-2 rounded-full text-sm font-semibold text-white"
+              style={{
+                backgroundImage: "linear-gradient(90deg, #7C3AED, #4F46E5)",
+              }}
+            >
+              Launch AIRA
+            </motion.a>
+          ) : (
+            <span className="px-4 py-2 rounded-full text-sm font-semibold bg-aira-card border border-aira-border text-aira-dim cursor-not-allowed">
+              Coming soon
+            </span>
+          )}
         </div>
       </nav>
 
@@ -141,35 +153,36 @@ export default function Home() {
               variants={fadeUp}
               className="mt-6 text-[20px] text-aira-muted max-w-2xl leading-relaxed"
             >
-              AIRA teaches you AI skills, prompt engineering, and critical
-              thinking — through interactive lessons that actually stick. 5
-              minutes a day.
+              Launch AIRA in your browser. Works on any device. No install
+              needed. 5 minutes a day.
             </motion.p>
 
             <motion.div
               variants={fadeUp}
               className="mt-10 flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
             >
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                href="#download"
-                className="px-6 py-3 rounded-full font-semibold text-white text-center"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(90deg, #7C3AED, #4F46E5)",
-                }}
-              >
-                Download for iOS
-              </motion.a>
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                href="#download"
-                className="px-6 py-3 rounded-full font-semibold text-aira-text border border-aira-purple text-center hover:bg-aira-purple/10 transition-colors"
-              >
-                Download for Android
-              </motion.a>
+              {HAS_APP ? (
+                <motion.a
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  href={APP_URL}
+                  className="px-8 py-3 rounded-full font-semibold text-white text-center text-base"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(90deg, #7C3AED, #4F46E5)",
+                    boxShadow: "0 10px 30px rgba(124,58,237,0.35)",
+                  }}
+                >
+                  Launch AIRA
+                </motion.a>
+              ) : (
+                <button
+                  disabled
+                  className="px-8 py-3 rounded-full font-semibold text-aira-dim text-center text-base bg-aira-card border border-aira-border cursor-not-allowed"
+                >
+                  Coming soon
+                </button>
+              )}
             </motion.div>
 
             <motion.p variants={fadeUp} className="mt-6 text-xs text-aira-dim">
@@ -783,34 +796,64 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-10 flex flex-col items-center gap-4"
           >
-            <motion.a
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              href="#"
-              className="px-8 py-4 rounded-full text-lg font-semibold text-white"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, #7C3AED, #4F46E5)",
-                boxShadow: "0 10px 40px rgba(124,58,237,0.4)",
-              }}
-            >
-              Download AIRA
-            </motion.a>
+            {HAS_APP ? (
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                href={APP_URL}
+                className="px-8 py-4 rounded-full text-lg font-semibold text-white"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, #7C3AED, #4F46E5)",
+                  boxShadow: "0 10px 40px rgba(124,58,237,0.4)",
+                }}
+              >
+                Launch AIRA
+              </motion.a>
+            ) : (
+              <button
+                disabled
+                className="px-8 py-4 rounded-full text-lg font-semibold bg-aira-card border border-aira-border text-aira-dim cursor-not-allowed"
+              >
+                Coming soon
+              </button>
+            )}
+          </motion.div>
 
-            <div className="flex flex-col sm:flex-row gap-3 mt-2">
-              <button
-                disabled
-                className="px-6 py-3 rounded-full text-sm font-medium bg-aira-card border border-aira-border text-aira-dim cursor-not-allowed"
-              >
-                App Store
-              </button>
-              <button
-                disabled
-                className="px-6 py-3 rounded-full text-sm font-medium bg-aira-card border border-aira-border text-aira-dim cursor-not-allowed"
-              >
-                Google Play
-              </button>
-            </div>
+          {/* How to install as a PWA */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-20 max-w-2xl mx-auto rounded-2xl bg-aira-card/60 border border-aira-border p-8 text-left"
+          >
+            <h3
+              className="text-xl font-semibold text-aira-text text-center"
+              style={headingFont}
+            >
+              Want AIRA as an app on your phone?
+            </h3>
+            <ol className="mt-6 space-y-4 text-aira-muted text-[15px]">
+              {[
+                "Open AIRA in Safari (iOS) or Chrome (Android).",
+                "Tap Share → Add to Home Screen.",
+                "AIRA lives on your phone like any other app.",
+              ].map((step, i) => (
+                <li key={i} className="flex gap-4 items-start">
+                  <span
+                    className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, #7C3AED, #4F46E5)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span className="leading-relaxed pt-0.5">{step}</span>
+                </li>
+              ))}
+            </ol>
           </motion.div>
         </div>
       </section>
