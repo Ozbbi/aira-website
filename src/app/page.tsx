@@ -40,6 +40,56 @@ const gradientText = {
 
 const gradientBg = "linear-gradient(90deg, #8B5CF6, #EC4899, #F59E0B)";
 
+const Logo = ({ size = 28, withWordmark = true }: { size?: number; withWordmark?: boolean }) => (
+  <span className="inline-flex items-center gap-2 select-none" aria-label="AIRA">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ filter: "drop-shadow(0 0 10px rgba(139,92,246,0.45))" }}
+    >
+      <defs>
+        <linearGradient id="airaLogoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#8B5CF6" />
+          <stop offset="55%" stopColor="#EC4899" />
+          <stop offset="100%" stopColor="#F59E0B" />
+        </linearGradient>
+        <linearGradient id="airaLogoGradSoft" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.18" />
+        </linearGradient>
+      </defs>
+      <rect x="1.5" y="1.5" width="37" height="37" rx="10" fill="url(#airaLogoGradSoft)" stroke="url(#airaLogoGrad)" strokeWidth="1.5" />
+      <path
+        d="M11 30 L20 9 L29 30"
+        stroke="url(#airaLogoGrad)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <path
+        d="M14.8 23 L25.2 23"
+        stroke="url(#airaLogoGrad)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <circle cx="20" cy="9" r="2.1" fill="url(#airaLogoGrad)" />
+    </svg>
+    {withWordmark && (
+      <span
+        className="font-bold tracking-tight text-lg"
+        style={{ ...headingFont, ...gradientText, letterSpacing: "0.04em" }}
+      >
+        AIRA
+      </span>
+    )}
+  </span>
+);
+
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [email, setEmail] = useState("");
@@ -97,8 +147,8 @@ export default function Home() {
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-aira-bg/70 border-b border-aira-border/50">
         <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
-          <a href="#top" className="font-bold tracking-tight text-lg" style={headingFont}>
-            AIRA
+          <a href="#top" className="inline-flex items-center" aria-label="AIRA home">
+            <Logo size={30} />
           </a>
           <div className="hidden md:flex items-center gap-8 text-sm text-aira-muted">
             <a href="#how" className="hover:text-aira-text transition">How it works</a>
@@ -763,8 +813,8 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
-              <p className="font-bold text-lg tracking-tight" style={headingFont}>AIRA</p>
-              <p className="text-sm text-aira-muted mt-1">Think with AI. Not against it.</p>
+              <Logo size={32} />
+              <p className="text-sm text-aira-muted mt-2">Think with AI. Not against it.</p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-aira-muted">
               <a href="#pricing" className="hover:text-aira-text transition">Pricing</a>
