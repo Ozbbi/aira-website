@@ -14,7 +14,18 @@ import {
   Code2,
   PenLine,
   Sparkles,
+  CreditCard,
+  Mail,
+  Smartphone,
+  Menu,
+  X,
 } from "lucide-react";
+
+// Lemon Squeezy checkout URL (replace after creating product in Lemon Squeezy)
+// To update easily later, you may swap this with process.env.NEXT_PUBLIC_CHECKOUT_URL
+const CHECKOUT_URL =
+  process.env.NEXT_PUBLIC_CHECKOUT_URL ||
+  "https://boramir.lemonsqueezy.com/buy/PRO_PLACEHOLDER";
 
 const headingFont = {
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif",
@@ -33,39 +44,51 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const onSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    // Mailto fallback — no third-party integration wired yet.
-    window.location.href = `mailto:hello@airamentor.com?subject=Early%20Access&body=Please%20add%20me%20to%20the%20early%20access%20list:%20${encodeURIComponent(email)}`;
+    window.location.href = `mailto:hello@airamentor.com?subject=iOS%20Launch%20Notify&body=Please%20notify%20me%20when%20iOS%20launches:%20${encodeURIComponent(email)}`;
     setSubmitted(true);
   };
 
   const faqs = [
     {
-      q: "When does AIRA launch?",
-      a: "Soon. We're putting the final polish on the experience. Sign up below to be the first to know — early signups get founder pricing locked in.",
+      q: "Is this really only $9.99? What's the catch?",
+      a: "No catch. We're an indie maker, not a VC-funded startup. We don't need $50/month to satisfy investors. $9.99 covers our costs and lets us keep building. After Google Play launch, the price goes up permanently — but you're locked in for life if you buy now.",
     },
     {
-      q: "Will it be on web or mobile?",
-      a: "Both. Web launches first, mobile follows shortly after. One purchase covers both — your account syncs across all your devices.",
+      q: "How do I get AIRA after paying?",
+      a: "Lemon Squeezy emails you an Android APK download link + license key within minutes of purchase. Tap the APK on your phone to install. First time installing an APK? Android will ask you to allow 'install from unknown sources' — toggle it on, install, toggle it off. Standard one-time step.",
     },
     {
-      q: "Why $9.99 lifetime instead of subscription?",
-      a: "Because AI literacy isn't a recurring problem. You learn it once, you keep it forever. Subscriptions punish loyal users. AIRA doesn't.",
+      q: "Why Android first? Where's iOS and Google Play?",
+      a: "Indie maker reality: $25 Google Play Developer fee + $99 Apple Developer fee + multi-week approval = time we'd rather spend building. Android APK direct download works now, costs nothing extra. iOS and Google Play launch in the coming weeks. Your $9.99 covers all platforms once they're live.",
+    },
+    {
+      q: "Will I get the iOS and web versions too?",
+      a: "Yes. One purchase = lifetime access on all platforms we launch. We'll email you when iOS and web versions go live. No extra cost. Ever.",
+    },
+    {
+      q: "Is this really $9.99 once?",
+      a: "Yes. No catch. We're an indie maker, not a VC-funded startup. We don't need $50/month to satisfy investors. $9.99 once covers our costs and lets us keep building. After Google Play launch, the price goes up permanently — but you're locked in for life if you buy now.",
+    },
+    {
+      q: "What if AIRA doesn't work for me?",
+      a: "14-day refund through Lemon Squeezy. Email us, get your $9.99 back. No questions, no friction.",
+    },
+    {
+      q: "What if I lose my license key?",
+      a: "Email us with the email you used at purchase. We'll resend within 24 hours. Your license is tied to your email forever.",
     },
     {
       q: "Is this another ChatGPT wrapper?",
       a: "No. AIRA teaches you to use ANY AI — ChatGPT, Claude, Gemini, Perplexity, Cursor, whatever comes next. The skills transfer.",
     },
     {
-      q: "Who is this for?",
-      a: "Curious people 16+. Students, professionals, creators. Not technical. Slightly behind on AI, want a guide they can trust.",
-    },
-    {
       q: "Who built AIRA?",
-      a: "An indie maker who got tired of bad AI tutorials. No VC. No ads. Just one builder shipping real work.",
+      a: "An indie maker who got tired of bad AI tutorials. No VC. No ads. Just one builder shipping real work from Turkey.",
     },
   ];
 
@@ -81,21 +104,52 @@ export default function Home() {
             <a href="#how" className="hover:text-aira-text transition">How it works</a>
             <a href="#learn" className="hover:text-aira-text transition">Lessons</a>
             <a href="#pricing" className="hover:text-aira-text transition">Pricing</a>
+            <a href="#download" className="hover:text-aira-text transition">Download</a>
             <a href="#faq" className="hover:text-aira-text transition">FAQ</a>
           </div>
           <a
-            href="#signup"
-            className="text-sm px-4 py-2 rounded-full text-white font-medium shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition"
+            href={CHECKOUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline-flex text-sm px-4 py-2 rounded-full text-white font-medium shadow-[0_0_20px_rgba(139,92,246,0.35)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition"
             style={{ backgroundImage: gradientBg }}
           >
-            Get early access
+            Get AIRA — $9.99
           </a>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-aira-text"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-aira-border/50 bg-aira-bg/95 backdrop-blur-md">
+            <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3 text-sm text-aira-muted">
+              <a href="#how" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">How it works</a>
+              <a href="#learn" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Lessons</a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Pricing</a>
+              <a href="#download" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Download</a>
+              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">FAQ</a>
+              <a
+                href={CHECKOUT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2 inline-flex items-center justify-center px-4 py-2 rounded-full text-white font-medium"
+                style={{ backgroundImage: gradientBg }}
+              >
+                Get AIRA — $9.99
+              </a>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
-      <section id="top" className="relative pt-40 pb-28 px-6 sm:px-8 lg:px-12">
-        {/* Radial glow */}
+      <section id="top" className="relative pt-40 pb-20 px-6 sm:px-8 lg:px-12">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
@@ -105,56 +159,82 @@ export default function Home() {
           }}
         />
         <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-aira-card/60 border border-aira-border text-[11px] tracking-[0.18em] uppercase text-aira-muted">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-aira-card/60 border border-aira-border text-[11px] tracking-[0.18em] uppercase text-aira-muted animate-pulse">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
             </span>
-            AIRA · Launching Soon
+            Available Now · Android First
           </div>
 
           <h1
             className="mt-7 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight"
             style={{ ...headingFont, ...gradientText }}
           >
-            Think with AI.
+            The AI literacy app
             <br />
-            Not against it.
+            that pays for itself in one lesson.
           </h1>
 
           <p className="mt-7 text-lg sm:text-xl md:text-2xl text-aira-text/90 max-w-3xl mx-auto leading-relaxed">
-            The AI literacy app that turns you from someone who uses AI into someone who masters it.
+            AIRA teaches you to think with AI — not against it.
           </p>
 
           <p className="mt-4 text-sm sm:text-base text-aira-muted max-w-2xl mx-auto">
-            62 lessons. Infinite AI-generated content. Research-backed by Anthropic, OpenAI, and DeepLearning.AI.
+            62 research-backed lessons. Infinite AI-generated content.
+            <br />
+            $9.99 one payment. Forever yours.
           </p>
+
+          {/* Stat chips */}
+          <div className="mt-8 flex flex-wrap justify-center gap-2 sm:gap-3">
+            {[
+              "⚡ 62 structured lessons",
+              "♾️ Infinite AI content",
+              "🧠 Research-backed",
+              "🔒 No subscription. Ever.",
+            ].map((chip) => (
+              <span
+                key={chip}
+                className="px-3 py-1.5 rounded-full bg-aira-card/60 border border-aira-border text-xs sm:text-sm text-aira-muted"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
-              href="#signup"
-              className="group relative inline-flex items-center justify-center px-7 py-3.5 rounded-full text-white font-semibold shadow-[0_0_30px_rgba(139,92,246,0.45)] hover:shadow-[0_0_45px_rgba(236,72,153,0.6)] transition"
+              href={CHECKOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative inline-flex items-center justify-center px-7 py-3.5 rounded-full text-white font-semibold shadow-[0_0_30px_rgba(139,92,246,0.45)] hover:shadow-[0_0_45px_rgba(236,72,153,0.6)] transition animate-pulse"
               style={{ backgroundImage: gradientBg }}
             >
               <span className="absolute inset-0 rounded-full opacity-50 blur-xl -z-10" style={{ backgroundImage: gradientBg }} />
-              Get early access
+              Get AIRA — $9.99
             </a>
             <a
               href="#how"
               className="inline-flex items-center justify-center px-7 py-3.5 rounded-full border border-aira-border text-aira-text hover:bg-aira-card/60 transition"
             >
-              How it works
+              How it works <span className="ml-2 animate-bounce">↓</span>
             </a>
           </div>
 
           <p className="mt-6 text-xs sm:text-sm text-aira-dim">
-            Launching soon on web and mobile · $9.99 lifetime · One payment, yours forever
+            Android available now · iOS coming · Web version next month
           </p>
+
+          {/* Persuasion trigger banner */}
+          <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-aira-card/60 border border-aira-border text-xs sm:text-sm text-aira-muted">
+            🔥 Founder pricing — $9.99 locked for life. Price doubles after Google Play launch.
+          </div>
         </div>
       </section>
 
       {/* TRUST BAR */}
-      <section className="px-6 sm:px-8 lg:px-12 pb-16">
+      <section className="px-6 sm:px-8 lg:px-12 pb-12">
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-xs uppercase tracking-[0.25em] text-aira-dim mb-5">Built on research from</p>
           <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4">
@@ -167,11 +247,85 @@ export default function Home() {
               </span>
             ))}
           </div>
+          <p className="mt-8 text-xs uppercase tracking-[0.25em] text-aira-dim mb-4">Available on</p>
+          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4">
+            <span className="px-4 py-2 rounded-full bg-aira-card/60 border border-aira-border text-sm text-aira-text inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Android
+            </span>
+            <span className="px-4 py-2 rounded-full bg-aira-card/60 border border-aira-border text-sm text-aira-dim inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-aira-dim/60 inline-block" /> iOS (coming soon)
+            </span>
+            <span className="px-4 py-2 rounded-full bg-aira-card/60 border border-aira-border text-sm text-aira-dim inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-aira-dim/60 inline-block" /> Web (coming soon)
+            </span>
+          </div>
         </div>
       </section>
 
-      {/* INTRODUCTION */}
-      <section id="how" className="px-6 sm:px-8 lg:px-12 py-24">
+      {/* HOW TO GET AIRA */}
+      <section id="download" className="px-6 sm:px-8 lg:px-12 py-24 border-t border-aira-border/40">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>
+              How to get AIRA
+            </h2>
+            <p className="mt-4 text-lg text-aira-muted">3 steps. 5 minutes. Done.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                Icon: CreditCard,
+                emoji: "💳",
+                num: "01",
+                title: "Pay $9.99 once",
+                body: "One payment via Lemon Squeezy. Secure checkout. No subscription. No hidden fees. We're an indie maker, not a VC startup.",
+              },
+              {
+                Icon: Mail,
+                emoji: "📩",
+                num: "02",
+                title: "Get download link",
+                body: "Instant email with your AIRA Android APK download link + license key. iOS and Google Play coming soon — your lifetime access covers all platforms when they launch.",
+              },
+              {
+                Icon: Smartphone,
+                emoji: "📱",
+                num: "03",
+                title: "Install & learn",
+                body: "Tap the APK on Android. Allow install from unknown sources (one toggle, normal for direct downloads). Open AIRA. Start your first lesson in 30 seconds.",
+              },
+            ].map(({ Icon, emoji, num, title, body }) => (
+              <div
+                key={num}
+                className="rounded-2xl bg-aira-card border border-aira-border p-7 hover:border-aira-glow/40 transition relative"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
+                    style={{ backgroundImage: gradientBg }}
+                  >
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-3xl font-bold opacity-30" style={{ ...headingFont, ...gradientText }}>{num}</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-3" style={headingFont}>
+                  <span className="mr-2">{emoji}</span>{title}
+                </h3>
+                <p className="text-aira-muted leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 text-center text-sm text-aira-dim max-w-3xl mx-auto">
+            Why direct download? We're Android-first while we wait for Google Play approval. Your purchase locks in
+            founder pricing — when AIRA hits the Play Store, you're already in.
+          </p>
+        </div>
+      </section>
+
+      {/* HOW AIRA WORKS */}
+      <section id="how" className="px-6 sm:px-8 lg:px-12 py-24 border-t border-aira-border/40">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>
@@ -395,8 +549,10 @@ export default function Home() {
       {/* PRICING */}
       <section id="pricing" className="px-6 sm:px-8 lg:px-12 py-24 border-t border-aira-border/40">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>Pricing</h2>
-          <p className="mt-4 text-lg text-aira-muted">Simple. Honest. Forever.</p>
+          <h2 className="text-4xl sm:text-6xl font-bold tracking-tight" style={{ ...headingFont, ...gradientText }}>
+            $9.99. ONE TIME. FOREVER.
+          </h2>
+          <p className="mt-4 text-lg text-aira-muted">Read that again. We'll wait.</p>
 
           <div className="mt-12 rounded-3xl bg-aira-card border border-aira-border p-8 sm:p-10 text-left relative overflow-hidden">
             <div
@@ -404,12 +560,41 @@ export default function Home() {
               className="absolute -top-32 -right-32 w-64 h-64 rounded-full opacity-20 blur-3xl"
               style={{ backgroundImage: gradientBg }}
             />
-            <p className="text-xs tracking-[0.25em] uppercase text-aira-dim">AIRA — Lifetime Access</p>
-            <div className="mt-3 flex items-baseline gap-3">
-              <span className="text-5xl sm:text-6xl font-bold" style={{ ...headingFont, ...gradientText }}>$9.99</span>
+            <p className="text-xs tracking-[0.25em] uppercase text-aira-dim animate-pulse">
+              FOUNDER PRICING — LIMITED
+            </p>
+            <div className="mt-3 flex items-baseline gap-3 flex-wrap">
+              <span className="text-6xl sm:text-7xl font-bold" style={{ ...headingFont, ...gradientText }}>$9.99</span>
               <span className="text-aira-dim line-through text-lg">$29.99</span>
             </div>
-            <p className="mt-2 text-aira-muted">One-time payment. Lifetime access. All future content.</p>
+            <p className="mt-2 text-aira-muted">
+              That's it. No /month. No /year. No 'starting at.' One-time payment.
+            </p>
+
+            {/* Comparison */}
+            <div className="mt-8 rounded-2xl bg-aira-bg/60 border border-aira-border p-5">
+              <p className="text-xs tracking-[0.2em] uppercase text-aira-dim mb-4">
+                What others charge for this:
+              </p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex justify-between text-aira-muted">
+                  <span>Brilliant</span>
+                  <span>$149/year ($745 over 5 years)</span>
+                </li>
+                <li className="flex justify-between text-aira-muted">
+                  <span>Skillshare</span>
+                  <span>$168/year ($840 over 5 years)</span>
+                </li>
+                <li className="flex justify-between text-aira-muted">
+                  <span>MasterClass</span>
+                  <span>$180/year ($900 over 5 years)</span>
+                </li>
+                <li className="flex justify-between font-semibold" style={gradientText}>
+                  <span>AIRA</span>
+                  <span>$9.99 ONCE ($9.99 forever)</span>
+                </li>
+              </ul>
+            </div>
 
             <ul className="mt-8 space-y-3">
               {[
@@ -417,6 +602,7 @@ export default function Home() {
                 "Full 90-day Journey",
                 "Infinite AI-generated lessons",
                 "All daily insights, prompt patterns, quick wins",
+                "Android APK now · iOS + Web included when launched",
                 "Future content updates free forever",
                 "No subscriptions. Ever.",
               ].map((line) => (
@@ -433,13 +619,20 @@ export default function Home() {
             </ul>
 
             <a
-              href="#signup"
-              className="mt-9 inline-flex w-full items-center justify-center px-7 py-3.5 rounded-full text-white font-semibold shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:shadow-[0_0_45px_rgba(236,72,153,0.55)] transition"
+              href={CHECKOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-9 inline-flex w-full items-center justify-center px-7 py-3.5 rounded-full text-white font-semibold shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:shadow-[0_0_45px_rgba(236,72,153,0.55)] transition animate-pulse"
               style={{ backgroundImage: gradientBg }}
             >
-              Get early access
+              Get AIRA — $9.99
             </a>
-            <p className="mt-4 text-center text-sm text-aira-dim">Launching soon on web and mobile</p>
+            <p className="mt-4 text-center text-sm text-aira-muted">
+              Founder pricing locks in for life. Price doubles after Google Play launch.
+            </p>
+            <p className="mt-2 text-center text-xs text-aira-dim">
+              Secure checkout via Lemon Squeezy · 14-day refund · No subscription
+            </p>
           </div>
         </div>
       </section>
@@ -475,12 +668,70 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EMAIL SIGNUP */}
+      {/* ROADMAP — WHAT'S COMING NEXT */}
+      <section className="px-6 sm:px-8 lg:px-12 py-24 border-t border-aira-border/40">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>
+              What's coming next
+            </h2>
+            <p className="mt-4 text-lg text-aira-muted">Your $9.99 unlocks all of this. Forever.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              {
+                badge: "✅ NOW",
+                title: "Android APK · Direct download",
+                body: "62 lessons. 5 tabs. Full Pro features. Available today.",
+                active: true,
+              },
+              {
+                badge: "⏳ NEXT (2-4 weeks)",
+                title: "Google Play Store launch",
+                body: "Easy install. Auto-updates. Wider reach.",
+                active: false,
+              },
+              {
+                badge: "⏳ COMING (6-8 weeks)",
+                title: "iOS / App Store launch",
+                body: "Same app on iPhone + iPad. Same purchase covers it.",
+                active: false,
+              },
+              {
+                badge: "⏳ LATER (8-12 weeks)",
+                title: "Web version (browser)",
+                body: "AIRA in your browser. Cross-device sync. Same single purchase.",
+                active: false,
+              },
+            ].map((step) => (
+              <div
+                key={step.title}
+                className={`rounded-2xl bg-aira-card border p-6 ${step.active ? "border-emerald-500/40" : "border-aira-border"}`}
+              >
+                <p className={`text-xs tracking-[0.18em] uppercase mb-3 ${step.active ? "text-emerald-400" : "text-aira-dim"}`}>
+                  {step.badge}
+                </p>
+                <h3 className="text-lg font-semibold mb-2" style={headingFont}>{step.title}</h3>
+                <p className="text-sm text-aira-muted leading-relaxed">{step.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 text-center italic text-aira-muted">
+            One purchase. All platforms. Forever.
+          </p>
+        </div>
+      </section>
+
+      {/* iOS NOTIFY SIGNUP */}
       <section id="signup" className="px-6 sm:px-8 lg:px-12 py-24 border-t border-aira-border/40">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>Get early access</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold tracking-tight" style={headingFont}>
+            Get notified when iOS launches
+          </h2>
           <p className="mt-4 text-lg text-aira-muted">
-            Be the first to know when AIRA launches. Founder pricing locks in for everyone on the early list.
+            Already bought AIRA Android? You're automatically on the iOS launch list. Otherwise, sign up below.
           </p>
 
           <form onSubmit={onSubscribe} className="mt-10 flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
@@ -497,29 +748,39 @@ export default function Home() {
               className="px-6 py-3.5 rounded-full text-white font-semibold shadow-[0_0_25px_rgba(139,92,246,0.4)] hover:shadow-[0_0_40px_rgba(236,72,153,0.55)] transition"
               style={{ backgroundImage: gradientBg }}
             >
-              Notify me
+              Notify me when iOS is ready
             </button>
           </form>
           {submitted && (
             <p className="mt-4 text-sm text-emerald-400">Thanks! Your email client just opened — send the message to confirm.</p>
           )}
-          <p className="mt-5 text-sm text-aira-dim">No spam. One email when we launch. That's it.</p>
+          <p className="mt-5 text-sm text-aira-dim">No spam. One email when iOS launches. That's it.</p>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="px-6 sm:px-8 lg:px-12 py-14 border-t border-aira-border/40">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-center md:text-left">
-            <p className="font-bold text-lg tracking-tight" style={headingFont}>AIRA</p>
-            <p className="text-sm text-aira-muted mt-1">Think with AI. Not against it.</p>
+        <div className="max-w-6xl mx-auto flex flex-col gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <p className="font-bold text-lg tracking-tight" style={headingFont}>AIRA</p>
+              <p className="text-sm text-aira-muted mt-1">Think with AI. Not against it.</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-aira-muted">
+              <a href="#pricing" className="hover:text-aira-text transition">Pricing</a>
+              <a href="#download" className="hover:text-aira-text transition">Download</a>
+              <a href="#faq" className="hover:text-aira-text transition">FAQ</a>
+              <a href="/privacy" className="hover:text-aira-text transition">Privacy</a>
+              <a href="/terms" className="hover:text-aira-text transition">Terms</a>
+              <a href="mailto:ozuysalcaboramir@gmail.com" className="hover:text-aira-text transition">Support</a>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-aira-muted">
-            <a href="/privacy" className="hover:text-aira-text transition">Privacy</a>
-            <a href="/terms" className="hover:text-aira-text transition">Terms</a>
-            <a href="mailto:hello@airamentor.com" className="hover:text-aira-text transition">Contact</a>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-4 border-t border-aira-border/30">
+            <p className="text-xs text-aira-dim text-center md:text-left">
+              Android available now · iOS coming · Web coming · One purchase covers all
+            </p>
+            <p className="text-xs text-aira-dim">© 2026 Boramir Apps. Built with care from Turkey 🇹🇷.</p>
           </div>
-          <p className="text-xs text-aira-dim">© 2026 Boramir Apps. Built with care.</p>
         </div>
       </footer>
     </main>
