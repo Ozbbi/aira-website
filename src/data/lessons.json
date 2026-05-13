@@ -1,0 +1,1756 @@
+[
+  {
+    "id": "prompt_specific",
+    "trackId": "prompt",
+    "title": "Why being specific beats being creative",
+    "character": "Maya",
+    "airaIntro": "Most people think a \"good\" prompt is a clever one. It is not. A good prompt is a clear one. Today you will learn the move that separates beginners from sharp users.",
+    "learnFirst": "AI models are already creative. What they need from you is a target. Specific words give the model a target. Vague words give it a guess.",
+    "realWorldScenario": "Maya is a 10th grader writing an English essay about a book she loved. She types: \"Write me a great essay about The Outsiders.\" It comes back boring and generic. She wonders what she did wrong.",
+    "scenes": [
+      {
+        "heading": "Audience",
+        "vague": "Write an essay about The Outsiders.",
+        "specific": "Write a 400-word essay about The Outsiders for a 10th-grade English teacher who values close reading.",
+        "note": "Naming the reader changes the tone, depth, and vocabulary the AI picks."
+      },
+      {
+        "heading": "Angle",
+        "vague": "Talk about the themes.",
+        "specific": "Argue that loyalty matters more than class in The Outsiders. Use 2 quotes.",
+        "note": "A sharp claim gives the essay a spine. \"Talk about themes\" gives it a shopping list."
+      },
+      {
+        "heading": "Constraints",
+        "vague": "Make it good.",
+        "specific": "No clichés like \"ride or die.\" No filler words. Open with a question, not a definition.",
+        "note": "Telling the AI what NOT to do is often more powerful than telling it what to do."
+      }
+    ],
+    "airaOutro": "See how much changed by just naming the reader and the angle? Specific is not extra effort. It is the actual work of prompting.",
+    "takeaway": "Aim, don't impress.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "critical_three_question_test",
+    "trackId": "critical",
+    "title": "The 3-question test before trusting any AI answer",
+    "character": "Lin",
+    "airaIntro": "AI answers sound confident even when they are wrong. Today you learn three quick questions that catch most mistakes before they cost you.",
+    "learnFirst": "Treat any AI answer like a confident stranger's tip. Useful, maybe. But you check before you act. The three questions: Is it specific? Is it sourced? Is it stable?",
+    "realWorldScenario": "Lin is a researcher writing a literature review. She asks the AI for \"5 papers on memory consolidation.\" It returns five real-looking citations with authors and years. She is about to paste them into her bibliography.",
+    "scenes": [
+      {
+        "heading": "Question 1: Is it specific?",
+        "vague": "AI: \"Several studies have shown sleep improves memory.\"",
+        "specific": "AI: \"Walker (2008) found that an 8-hour sleep group recalled 40% more than a no-sleep group.\"",
+        "note": "Specific claims you can check. Vague claims hide whether the AI knows anything at all."
+      },
+      {
+        "heading": "Question 2: Is it sourced?",
+        "vague": "AI: \"Studies show X.\"",
+        "specific": "AI: \"Walker et al., Nature, 2008, doi:10.1038/...\"",
+        "note": "A real source includes the journal and ideally a DOI. AI sometimes invents both. The fix: click the link."
+      },
+      {
+        "heading": "Question 3: Is it stable?",
+        "vague": "Ask once, take the answer.",
+        "specific": "Ask the same question in a fresh chat. If the answer changes a lot, the AI is guessing.",
+        "note": "Stable answers across fresh sessions = the model probably \"knows\" it. Wobbly answers = guesses."
+      }
+    ],
+    "airaOutro": "You are now sharper than 90% of AI users. Confident voice + no source = treat as guess. Always.",
+    "takeaway": "Three questions, three layers of trust.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_chain_of_thought",
+    "trackId": "power",
+    "title": "Chain of thought: making AI think out loud",
+    "character": "Jordan",
+    "airaIntro": "There is one phrase you can add to almost any prompt that improves the answer measurably. You will know it by the end of this lesson.",
+    "learnFirst": "Asking the AI to \"think step by step\" is not a magic spell. It is a real technique that forces the model to expose its reasoning. Exposed reasoning catches its own mistakes.",
+    "realWorldScenario": "Jordan is a PM at a startup. He asks AI: \"Should we add Feature X next quarter?\" The AI says yes, confidently. Jordan ships it. Two months later, retention drops. He wonders if there was a way to catch the bad call earlier.",
+    "scenes": [
+      {
+        "heading": "Without chain-of-thought",
+        "vague": "Q: Should we add Feature X next quarter?\nA: Yes, it sounds valuable to users.",
+        "specific": "A one-line answer with no reasoning. You cannot tell what the AI considered or skipped.",
+        "note": "A short answer hides the assumptions. You cannot challenge what you cannot see."
+      },
+      {
+        "heading": "With chain-of-thought",
+        "vague": "Q: Should we add Feature X next quarter? Think step by step.",
+        "specific": "A: Step 1, who asked for it? Step 2, what does it cost in eng weeks? Step 3, what does it kill (other roadmap items)? Step 4, retention impact estimate. Step 5, recommendation.",
+        "note": "Now you can see exactly where the AI guessed and where it had data. You can argue with the weak step."
+      },
+      {
+        "heading": "When to use it",
+        "vague": "Use it on every prompt.",
+        "specific": "Use it on anything with logic — decisions, comparisons, maths, multi-stage planning. Skip it for short creative tasks.",
+        "note": "Chain of thought adds tokens. Worth it for hard problems, overkill for \"rewrite this tweet.\""
+      }
+    ],
+    "airaOutro": "You now have a four-word upgrade you can use on every important decision-prompt. Most users never learn it.",
+    "takeaway": "Visible reasoning beats hidden confidence.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "tools_picking_right_ai",
+    "trackId": "tools",
+    "title": "Picking the right AI for the job",
+    "character": "Deniz",
+    "airaIntro": "There is no single best AI. There are different AIs for different jobs. Today you learn the one-question test for picking the right tool.",
+    "learnFirst": "The big three — ChatGPT, Claude, Gemini — each have a personality. ChatGPT is the generalist. Claude is the careful writer. Gemini is the search-anchored researcher. The right pick depends on the job.",
+    "realWorldScenario": "Deniz is a freelance copywriter. She uses one AI for everything. Sometimes the output feels off — too corporate for some clients, too playful for others. She wonders if she's using the wrong tool for half her work.",
+    "scenes": [
+      {
+        "heading": "The job: long-form writing",
+        "vague": "Open the AI you always use.",
+        "specific": "Use Claude. It is famously the strongest at sustained voice and nuanced rewriting.",
+        "note": "For a 1,500-word essay where tone matters, Claude tends to win blind tests with writers."
+      },
+      {
+        "heading": "The job: I need today's news",
+        "vague": "Ask ChatGPT.",
+        "specific": "Use Perplexity or Gemini. Both have search built in. ChatGPT and Claude can be months out of date.",
+        "note": "For \"what happened this week,\" anchor in a search-first tool. Otherwise you risk hallucinated dates."
+      },
+      {
+        "heading": "The job: writing or debugging code",
+        "vague": "Just ask any of them.",
+        "specific": "Use Claude or Cursor (which uses Claude under the hood). Both consistently top code benchmarks.",
+        "note": "Code is one of the few places benchmark differences are large enough to feel in daily use."
+      }
+    ],
+    "airaOutro": "From now on, before you open an AI, ask: voice, freshness, or code? Then pick. You will save time and ship better work.",
+    "takeaway": "Right tool, right job.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "fluency_four_ds",
+    "trackId": "critical",
+    "title": "The 4 Ds: a real framework for using AI",
+    "character": "Sam",
+    "airaIntro": "Most \"AI tips\" lists are random. There is one framework worth memorising. It has four parts. After this lesson you will use it for every AI task.",
+    "learnFirst": "Whenever you reach for AI, run through four moves: Delegate (decide what to hand over), Describe (be specific about what you want), Discern (check what you got), Diligence (verify before you ship). Skip any of the four and your output drops a grade.",
+    "realWorldScenario": "Sam teaches high-school history. He asks AI to \"write a worksheet on the French Revolution.\" It comes back generic, with one wrong date. He almost prints it. The 4 Ds would have caught every problem.",
+    "scenes": [
+      {
+        "heading": "Delegate",
+        "vague": "Hand the whole task to AI: \"Write the worksheet.\"",
+        "specific": "Decide which parts only YOU should do (which questions matter for YOUR class) and let AI handle the boring scaffolding.",
+        "note": "Smart users delegate the typing, not the thinking."
+      },
+      {
+        "heading": "Describe",
+        "vague": "\"Write a worksheet on the French Revolution.\"",
+        "specific": "\"Write 6 short-answer questions for a 10th-grade class. Focus on causes, not dates. Avoid the words bourgeoisie and proletariat — my students don't know them yet.\"",
+        "note": "Tell the AI who, what shape, and what to avoid. Three knobs, huge difference."
+      },
+      {
+        "heading": "Discern",
+        "vague": "Skim it, looks fine, print.",
+        "specific": "Read each question. Spot anything the AI quietly oversimplified. Mark anything that needs a teacher's judgment.",
+        "note": "Your taste is the reason you're here. Use it."
+      },
+      {
+        "heading": "Diligence",
+        "vague": "Trust the dates, names, and quotes.",
+        "specific": "Spot-check 1–2 facts. Wrong dates and invented quotes are AI's most common failure mode.",
+        "note": "30 seconds of fact-checking saves 30 minutes of student emails."
+      }
+    ],
+    "airaOutro": "You now have a framework most professionals do not. Use it on every real task and your output will jump a grade.",
+    "takeaway": "Four Ds. Every task. Every time.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "capabilities_what_ai_cant",
+    "trackId": "critical",
+    "title": "What AI is bad at (and how to spot the signs)",
+    "character": "Maya",
+    "airaIntro": "AI looks like magic. Until you ask it the wrong question and it confidently lies. Today: a 90-second tour of where AI breaks.",
+    "learnFirst": "AI is great at language and patterns. It is bad at exact maths, fresh facts, your private context, and your taste. Knowing the boundary saves hours.",
+    "realWorldScenario": "Maya asks AI: \"What's the closest sushi place to me right now?\" AI gives an address. The address does not exist. She drives there. She is angry. The mistake is not the AI — it is the question.",
+    "scenes": [
+      {
+        "heading": "Exact maths",
+        "vague": "\"What's 17.4% of $2,341.99?\"",
+        "specific": "Use a calculator. Or tell the AI: \"Use Python to compute this.\" Models slip on multi-step arithmetic.",
+        "note": "AI guesses numbers. A calculator does not."
+      },
+      {
+        "heading": "Fresh facts",
+        "vague": "\"What's the score of tonight's game?\"",
+        "specific": "Use a search-anchored tool (Perplexity, Gemini) or just open a sports site. Models ship months out of date.",
+        "note": "If the answer changes daily, do not ask a model trained last year."
+      },
+      {
+        "heading": "Your private files",
+        "vague": "\"Summarise the meeting we had on Tuesday.\"",
+        "specific": "Paste the meeting notes. AI cannot access your calendar, email, or files unless you give them to it.",
+        "note": "The AI lives in a sandbox. Bring the data to it."
+      },
+      {
+        "heading": "Your taste",
+        "vague": "\"Pick the best logo for my brand.\"",
+        "specific": "AI can show you 5 options + trade-offs. The choice is yours.",
+        "note": "AI hands you options. You decide."
+      }
+    ],
+    "airaOutro": "Now you know the four corners of AI's box. Stay inside them and AI feels like magic. Step outside and it lies confidently.",
+    "takeaway": "Know the box. Stay inside it.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_iteration",
+    "trackId": "power",
+    "title": "Iteration: why turn 2 is where it gets good",
+    "character": "Deniz",
+    "airaIntro": "Beginners send one prompt and copy the answer. Experts send five. The gap between them is one habit you will learn now.",
+    "learnFirst": "Treat every AI answer as a draft. The real work is the follow-up: tighten, sharpen, push against. Three smart follow-ups beat ten new prompts.",
+    "realWorldScenario": "Deniz writes a tagline for a client. AI gives \"Where ideas come alive.\" It's fine. Generic. She used to ship it. Now she runs it through three follow-ups and gets something the client actually loves.",
+    "scenes": [
+      {
+        "heading": "The tighten",
+        "vague": "Ship the first answer.",
+        "specific": "\"Cut it to 5 words. Make it less abstract — name a specific outcome.\"",
+        "note": "A constraint forces the AI to drop the corporate filler."
+      },
+      {
+        "heading": "The sharpen",
+        "vague": "Accept the polished version.",
+        "specific": "\"Now write 3 versions in different tones: bold, dry-witty, and quietly confident.\"",
+        "note": "You learn what direction works by seeing them side by side."
+      },
+      {
+        "heading": "The push-back",
+        "vague": "Move on to the next task.",
+        "specific": "\"What's wrong with the version you picked? What's the strongest case AGAINST it?\"",
+        "note": "The case-against often surfaces the weak word you missed."
+      }
+    ],
+    "airaOutro": "You now have the loop most users never learn. Use it once today on something real.",
+    "takeaway": "Send three. Not one.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_system_prompts",
+    "trackId": "power",
+    "title": "Setting the rules: system prompts vs user prompts",
+    "character": "Lin",
+    "airaIntro": "Most users only know one kind of prompt. There are two. Knowing the difference between them is what separates \"user\" from \"operator.\"",
+    "learnFirst": "A user prompt is what you type. A system prompt is the standing order — the rules the AI follows for the whole conversation. Set good rules once and every reply gets better automatically.",
+    "realWorldScenario": "Lin is a researcher. Every day she asks AI to summarise papers. Every day she repeats: \"Be brief. Use bullet points. No speculation.\" She doesn't know about system prompts. She is doing five times the work.",
+    "scenes": [
+      {
+        "heading": "Without a system prompt",
+        "vague": "Every chat: \"Be brief. Bullets. No speculation. ... Now summarise this paper.\"",
+        "specific": "You repeat the rules every time. The AI sometimes forgets them mid-conversation.",
+        "note": "Repetition + drift. Two flavours of pain."
+      },
+      {
+        "heading": "With a system prompt",
+        "vague": "— (no standing rules)",
+        "specific": "Set once: \"You are my research assistant. Always reply in 5-bullet summaries. Never speculate. Always cite the source line.\"",
+        "note": "Now every chat starts from the right baseline. You only type the new question."
+      },
+      {
+        "heading": "Where you set it",
+        "vague": "Just send a regular message.",
+        "specific": "In ChatGPT: \"Custom Instructions\" or a Project. In Claude: \"Custom style\" or a Project. Same idea, different name.",
+        "note": "Look for the words \"system,\" \"instructions,\" \"style,\" or \"project.\" That's the right place."
+      }
+    ],
+    "airaOutro": "You just stepped from \"user\" to \"operator.\" Set one good system prompt today on the AI you use most.",
+    "takeaway": "Rules at the top. Questions at the bottom.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_tool_use",
+    "trackId": "power",
+    "title": "When AI calls something else: tool use, simply",
+    "character": "Jordan",
+    "airaIntro": "You've heard the phrase \"tool use\" or \"function calling.\" Sounds technical. It's actually the most useful thing AI does in 2026. Here's the plain-English version.",
+    "learnFirst": "Tool use means the AI doesn't answer from memory — it calls something (a calculator, a search, your calendar, a database) and answers from the live result. It's how AI stops hallucinating numbers and dates.",
+    "realWorldScenario": "Jordan asks AI: \"How long until our launch on March 14?\" AI without tools guesses (and often gets it wrong). AI WITH tools opens a calendar function, computes the diff, returns the exact day count. Same model, very different reliability.",
+    "scenes": [
+      {
+        "heading": "Without tools",
+        "vague": "AI: \"Around 47 days, I think.\"",
+        "specific": "AI relies on its training and counts in its head. Often off by a few days.",
+        "note": "Memory is fuzzy. Date math is brittle."
+      },
+      {
+        "heading": "With tools",
+        "vague": "(same prompt)",
+        "specific": "AI: \"Calling date_diff(today, 2026-03-14)... 49 days exactly.\"",
+        "note": "No guess. A real function ran. The number is right."
+      },
+      {
+        "heading": "When to ask for it",
+        "vague": "Use it for everything.",
+        "specific": "Anything specific — exact maths, current data, real searches, your files. Skip it for creative writing.",
+        "note": "Tools = trust + speed for facts. Tools ≠ better creativity."
+      }
+    ],
+    "airaOutro": "You now know the magic word that turns \"AI guesses\" into \"AI checks.\" Use it for anything that needs precision.",
+    "takeaway": "Facts? Use a tool. Words? Use the model.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "critical_reading_confidence",
+    "trackId": "critical",
+    "title": "Reading AI's confidence (and when to distrust it)",
+    "character": "Sam",
+    "airaIntro": "AI sounds equally certain whether it knows the answer or just made it up. Today: how to read between the lines.",
+    "learnFirst": "Vague hedging language (\"generally,\" \"typically,\" \"many studies\") = the model is unsure. Sharp specifics = the model thinks it knows. Specifics can still be wrong, but vagueness is almost always a tell.",
+    "realWorldScenario": "Sam asks AI: \"Does my favourite book, [obscure title], have a sequel?\" AI confidently invents a sequel that doesn't exist. Sam catches it because the AI gave too-perfect detail without hedging.",
+    "scenes": [
+      {
+        "heading": "The hedge tells",
+        "vague": "\"Generally, this is the case.\" \"Many experts agree.\"",
+        "specific": "Read these as: \"I am unsure. I am averaging the internet.\"",
+        "note": "Generic hedges = generic confidence = treat as a starting point only."
+      },
+      {
+        "heading": "The over-confident hallucination",
+        "vague": "AI invents a fake citation: \"(Smith, 2018, Journal of X, p.42)\"",
+        "specific": "When AI gives weirdly specific details about something obscure with NO hedge, that's often the hallucination tell.",
+        "note": "Real expertise hedges. Fakes do not."
+      },
+      {
+        "heading": "The \"say it twice\" check",
+        "vague": "Trust on the first reply.",
+        "specific": "Open a fresh chat. Re-ask. If the answer changes meaningfully, the model was guessing.",
+        "note": "Real knowledge is stable. Guesses drift."
+      }
+    ],
+    "airaOutro": "You now read AI like a poker game. Tone is bluff. Specifics are the hand. Always check the cards.",
+    "takeaway": "Hedge ≠ wrong. Confidence ≠ right.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "tools_claude_essentials",
+    "trackId": "tools",
+    "title": "Claude essentials: what makes it different",
+    "character": "Maya",
+    "airaIntro": "Claude is one of the big three AIs. It has a personality. Knowing it well means you can pick the right tool faster.",
+    "learnFirst": "Claude's strengths: long, careful writing; following nuanced instructions; admitting when it's unsure. It has Projects (persistent memory for a topic), Artifacts (it builds documents and code in a side panel), and a notably honest tone.",
+    "realWorldScenario": "Maya is writing a 1,500-word college essay. She tries ChatGPT and Claude with the same prompt. Claude's draft sounds less corporate. It's also the one that admits when a paragraph isn't working.",
+    "scenes": [
+      {
+        "heading": "Long-form writing",
+        "vague": "Pick whatever AI is open.",
+        "specific": "For sustained voice and tone, Claude tends to win blind tests with writers right now.",
+        "note": "Voice is where the gap is biggest. Test it on something you've written."
+      },
+      {
+        "heading": "Projects",
+        "vague": "Start a fresh chat for everything.",
+        "specific": "Use a Project for any ongoing topic — your essay, your business, your studies. Upload reference files; Claude remembers them every chat in that project.",
+        "note": "Stop re-pasting. Start a project once, save hours."
+      },
+      {
+        "heading": "Artifacts",
+        "vague": "Read AI's answer in the chat thread.",
+        "specific": "Long answers (a draft, a piece of code, a table) appear in a side panel you can edit and download.",
+        "note": "It's like having a Google Doc inside the chat. Underrated."
+      }
+    ],
+    "airaOutro": "You now know which lane Claude wins. Pick it for the work that fits.",
+    "takeaway": "Long-form, voice, careful — that's Claude.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "create_voice_clone",
+    "trackId": "critical",
+    "title": "Making AI write LIKE you (without sounding like AI)",
+    "character": "Deniz",
+    "airaIntro": "AI has a default voice. It is corporate-friendly, slightly bland, terrified of being wrong. Today you learn to override it with YOUR voice.",
+    "learnFirst": "AI mirrors examples better than it follows descriptions. Showing 2-3 samples of your writing, with one note about what to keep and what to drop, beats any \"be playful\" prompt.",
+    "realWorldScenario": "Deniz wants AI to draft her newsletter. She tries: \"Write in my style.\" Output is generic. She tries again: pastes 3 of her past intros + \"match this voice. Keep the contractions and the rhetorical questions. Cut the corporate-friendly polish.\" Now it sounds like her.",
+    "scenes": [
+      {
+        "heading": "Describe your style",
+        "vague": "\"Write in my voice — playful and direct.\"",
+        "specific": "AI doesn't know what \"playful\" means to you. Output: generic.",
+        "note": "Adjectives are too soft. AI guesses your style based on a stereotype of those adjectives."
+      },
+      {
+        "heading": "Show your style (few-shot)",
+        "vague": "— (no examples)",
+        "specific": "Paste 3 short samples you wrote. End with: \"Match this voice. Keep [X]. Drop [Y].\"",
+        "note": "Examples > adjectives. Always."
+      },
+      {
+        "heading": "Iterate the difference",
+        "vague": "Accept the first match.",
+        "specific": "Ask: \"Where does the new draft NOT sound like the samples? Rewrite just those sentences.\"",
+        "note": "You're training a tiny model in real time. The closer you point at the difference, the closer it gets."
+      }
+    ],
+    "airaOutro": "You now have the voice-cloning move. Save 3 of your best paragraphs as a snippet. Reuse them every time.",
+    "takeaway": "Show. Don't describe.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "critical_verify_workflow",
+    "trackId": "critical",
+    "title": "Verify in 60 seconds: a workflow you'll use forever",
+    "character": "Lin",
+    "airaIntro": "Most \"verify\" advice is vague. Today you get a 60-second routine you can run on any AI claim. Real, simple, repeatable.",
+    "learnFirst": "Three steps: extract the specific claim, search for it, compare. If the AI's claim is real, you find it within 30 seconds. If you don't find it, treat it as unverified and rewrite.",
+    "realWorldScenario": "Lin wants to use this AI quote in her presentation: \"According to a 2023 MIT study, 73% of remote workers report higher productivity.\" It sounds great. It would be embarrassing if she presented it and the study didn't exist.",
+    "scenes": [
+      {
+        "heading": "Step 1 — Extract",
+        "vague": "Trust the whole sentence.",
+        "specific": "Pull out the SPECIFIC checkable parts: \"MIT study, 2023, 73%, remote workers, productivity.\"",
+        "note": "You're looking for nouns and numbers. Not the framing words."
+      },
+      {
+        "heading": "Step 2 — Search",
+        "vague": "Google \"is this AI claim true?\"",
+        "specific": "Search the specific phrase: \"MIT 2023 remote workers 73% productivity.\" Look for the original source.",
+        "note": "Search the claim, not the question. The claim has the keywords."
+      },
+      {
+        "heading": "Step 3 — Compare",
+        "vague": "If something looks similar, accept.",
+        "specific": "Find the actual source. Does the number match? Is the year right? Is \"MIT\" actually MIT? If anything is off, the AI either rounded creatively or invented it.",
+        "note": "Close-enough is not the same as right."
+      }
+    ],
+    "airaOutro": "You now have a routine sharper than 90% of AI users. 60 seconds. Three steps. No more cringe-worthy citations.",
+    "takeaway": "Extract, search, compare. Every time.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "foundations_1",
+    "trackId": "prompt",
+    "title": "Welcome to AIRA — your first lesson",
+    "character": "Maya",
+    "airaIntro": "Hey. This is your first AIRA lesson. It's short. By the end you'll know the single move that improves every prompt you write.",
+    "learnFirst": "A prompt is a request to an AI. Better prompts = better answers. The simplest move that always helps: name the audience. \"Explain to a 10-year-old\" produces a different answer than \"explain to a doctor.\"",
+    "realWorldScenario": "Maya is making her first AI request. She types: \"Explain quantum physics.\" She gets back something dense and academic. She is confused. She tries again with one small change.",
+    "scenes": [
+      {
+        "heading": "Without an audience",
+        "vague": "\"Explain quantum physics.\"",
+        "specific": "AI defaults to \"average internet expert\" — dense, jargon-heavy, easy for the AI but useless for Maya.",
+        "note": "No audience = AI guesses your level."
+      },
+      {
+        "heading": "With an audience",
+        "vague": "\"Explain quantum physics to a curious 10th grader.\"",
+        "specific": "AI now knows: skip the maths, use analogies, keep paragraphs short. The same model gives a wildly different answer.",
+        "note": "One change. Huge improvement."
+      },
+      {
+        "heading": "Calibrating up",
+        "vague": "\"Explain quantum physics to me.\"",
+        "specific": "\"Explain to a software engineer who knows linear algebra but not physics.\"",
+        "note": "You can dial the level up or down. AI matches."
+      }
+    ],
+    "airaOutro": "That's your first lesson. One move. Use it on every prompt you write today and tell me how it goes.",
+    "takeaway": "Always name the reader.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "critical_1",
+    "trackId": "critical",
+    "title": "AI sounds confident. Don't fall for it.",
+    "character": "Jordan",
+    "airaIntro": "Today's lesson is the one most users skip — and the one that saves you from looking foolish. AI sounds equally sure when it's right and when it's wrong. Here's how to tell the difference.",
+    "learnFirst": "Confidence in AI is a TONE, not a truth signal. The way it sounds — calm, authoritative, complete — has almost nothing to do with whether the answer is correct. Your job is to verify, not to feel.",
+    "realWorldScenario": "Jordan asks AI to recommend a restaurant in his city. AI gives a name, an address, and a glowing description. Jordan drives there. The restaurant does not exist. The address is a parking lot.",
+    "scenes": [
+      {
+        "heading": "The tell — too perfect, no hedge",
+        "vague": "\"Try The Golden Lantern at 412 Elm Street.\"",
+        "specific": "No hedge. No \"I think.\" No \"double-check this.\" That confidence around an obscure local fact is the signal to verify.",
+        "note": "Real expertise hedges. Confident specifics about niche things = often invented."
+      },
+      {
+        "heading": "The 30-second check",
+        "vague": "Trust the recommendation.",
+        "specific": "Search the name. Check the address on a map. 30 seconds. Saves the drive.",
+        "note": "Verification is not paranoia. It's craft."
+      },
+      {
+        "heading": "The right ask",
+        "vague": "\"Recommend a restaurant in [city].\"",
+        "specific": "\"Recommend 3 restaurants in [city] WITH links to their websites so I can verify they exist.\"",
+        "note": "Asking for verifiable sources is a 5-word fix that prevents most hallucinations."
+      }
+    ],
+    "airaOutro": "Now you read AI like a poker player reads a table. Tone is bluff. Specifics are the hand. Always check the cards.",
+    "takeaway": "Confidence is a tone, not a truth.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_1",
+    "trackId": "power",
+    "title": "The follow-up is the most underrated move",
+    "character": "Lin",
+    "airaIntro": "Beginners send one prompt and copy the answer. Experts send five. The difference between them isn't talent. It's one habit you'll learn now.",
+    "learnFirst": "Treat every AI answer as a draft. The real value comes from your follow-up. Three good follow-ups beat ten new prompts every time.",
+    "realWorldScenario": "Lin is a researcher. She asks AI to summarise a 30-page paper. The summary is fine. Generic. She used to copy it into her notes. Now she runs three follow-ups — and gets something an expert would write.",
+    "scenes": [
+      {
+        "heading": "The \"what did you skip\" follow-up",
+        "vague": "Accept the summary.",
+        "specific": "\"What important detail did you skip in that summary?\"",
+        "note": "Forces the AI to surface what it quietly compressed away."
+      },
+      {
+        "heading": "The \"argue the other side\" follow-up",
+        "vague": "Trust the framing.",
+        "specific": "\"Now write the strongest case AGAINST what you just said.\"",
+        "note": "Surfaces the weakness in any conclusion. Free second opinion."
+      },
+      {
+        "heading": "The \"in 3 sentences\" follow-up",
+        "vague": "Read the wall of text.",
+        "specific": "\"Now compress that into 3 sentences a non-expert could remember.\"",
+        "note": "A length cap forces the AI to drop fluff and keep substance."
+      }
+    ],
+    "airaOutro": "You now have the loop most users never learn. Use it once today on something real. Watch the difference.",
+    "takeaway": "Send three. Not one.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "tools_1",
+    "trackId": "tools",
+    "title": "AI tools 101: which one for which job",
+    "character": "Sam",
+    "airaIntro": "There's no single best AI. There are different AIs for different jobs. Here's the one-question test that gets you to the right one in 10 seconds.",
+    "learnFirst": "The big three for general use: ChatGPT (the generalist), Claude (the careful writer + coder), Gemini (the search-anchored researcher). Match the tool to the job's top need: voice, freshness, or code.",
+    "realWorldScenario": "Sam is a teacher. He uses one AI for everything — lesson plans, fact-checking, news clippings, creative writing. The output feels off half the time. He doesn't know he's using the wrong tool for half his work.",
+    "scenes": [
+      {
+        "heading": "Job: long-form writing",
+        "vague": "Open whatever you usually open.",
+        "specific": "Use Claude. Strongest at sustained voice and tone in 2026 blind tests.",
+        "note": "For an essay where voice matters, Claude consistently wins."
+      },
+      {
+        "heading": "Job: today's news",
+        "vague": "Ask any chat AI.",
+        "specific": "Use Perplexity or Gemini — both have search built in. Most chat AIs are months out of date.",
+        "note": "Fresh facts need fresh sources."
+      },
+      {
+        "heading": "Job: code",
+        "vague": "Ask whichever opens fastest.",
+        "specific": "Use Claude or Cursor (which uses Claude). Both consistently top code benchmarks.",
+        "note": "Code is one place benchmark differences are felt daily."
+      }
+    ],
+    "airaOutro": "From now on: voice, freshness, or code? Pick. Save time. Ship better work.",
+    "takeaway": "Right tool, right job.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_format_output",
+    "trackId": "prompt",
+    "title": "Tell the AI what shape the answer should take",
+    "character": "Deniz",
+    "airaIntro": "AI defaults to walls of prose. You almost never want walls of prose. Today: a single sentence you can add to any prompt that gives you exactly the shape you need.",
+    "learnFirst": "End every prompt with the OUTPUT FORMAT — a 5-bullet list, a 2-column table, a 100-word paragraph, a JSON object with these keys. If you don't say the shape, AI picks one. The one it picks is usually too long and shapeless.",
+    "realWorldScenario": "Deniz needs a list of 8 newsletter ideas. AI gives her a long essay with 'a few interesting directions could include' baked in. She wanted a list. She didn't ask for one.",
+    "scenes": [
+      {
+        "heading": "Without an output format",
+        "vague": "\"Give me newsletter ideas about AI.\"",
+        "specific": "AI returns 4 paragraphs of qualifications and meta-commentary. The actual ideas are buried.",
+        "note": "AI defaults to \"essay-with-disclaimers.\" Almost never what you want."
+      },
+      {
+        "heading": "Adding a list format",
+        "vague": "— (still no format)",
+        "specific": "\"... Reply as a numbered list of 8 ideas. One sentence each. No intro paragraph.\"",
+        "note": "Now you get exactly 8 ideas, one sentence each, ready to copy."
+      },
+      {
+        "heading": "Adding a table format",
+        "vague": "\"Compare ChatGPT and Claude for me.\"",
+        "specific": "\"Compare ChatGPT and Claude. Reply as a 4-column markdown table: criterion, ChatGPT, Claude, winner.\"",
+        "note": "Tables make decisions visible. Prose hides them."
+      }
+    ],
+    "airaOutro": "From now on, every important prompt ends with the format. List, table, paragraph cap, JSON. Watch your output get usable.",
+    "takeaway": "Always specify the shape.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_few_shot",
+    "trackId": "prompt",
+    "title": "Show, don't tell — the few-shot trick",
+    "character": "Maya",
+    "airaIntro": "Adjectives like 'punchy' and 'witty' don't actually tell the AI what you mean. Showing two examples does. Today: the move that makes AI mirror your taste.",
+    "learnFirst": "Few-shot prompting means giving AI 2-3 examples of the kind of output you want, then asking for one more like them. AI mirrors examples better than it follows descriptions. It's the most reliable way to lock in tone, style, and shape.",
+    "realWorldScenario": "Maya needs Instagram captions in her brand voice. She types 'write punchy, witty captions.' Output: generic, sounds like an MBA. She tries again — pastes 2 captions she actually wrote. Output: now sounds like her.",
+    "scenes": [
+      {
+        "heading": "The describe-it trap",
+        "vague": "\"Write 3 punchy, witty captions about morning runs.\"",
+        "specific": "Generic results, because AI guesses what punchy means based on a stereotype of those words.",
+        "note": "Adjectives are too soft. AI averages the internet's idea of \"punchy.\""
+      },
+      {
+        "heading": "Show 2 examples",
+        "vague": "— (no examples)",
+        "specific": "\"Here are 2 captions in my voice: [example 1] [example 2]. Now write 3 more about morning runs in that same voice.\"",
+        "note": "AI mirrors examples reliably. It's the single biggest tool for matching tone."
+      },
+      {
+        "heading": "Add a \"what to keep / drop\" note",
+        "vague": "Just trust the mirror.",
+        "specific": "\"...same voice. Keep the contractions and short sentences. Drop any \"as we all know\" filler.\"",
+        "note": "A keep/drop note tunes the mirror. Better than examples alone."
+      }
+    ],
+    "airaOutro": "Save 2-3 of your best paragraphs as a snippet. Reuse them as the few-shot top of every voice-sensitive prompt. AI will mirror you instead of averaging the internet.",
+    "takeaway": "Show two. Drop one. Done.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_negative",
+    "trackId": "prompt",
+    "title": "Tell AI what NOT to do",
+    "character": "Sam",
+    "airaIntro": "Most people only tell AI what they want. Telling it what to AVOID is just as powerful. Today: the move that strips out the corporate filler.",
+    "learnFirst": "AI is trained to be helpful, which often means cautious + verbose + cliché. Banning specific words and patterns ('no leverage / no synergy / no introducing') reliably fixes this. Negative prompts work better than vague positive ones.",
+    "realWorldScenario": "Sam asks AI to write a casual email. AI returns 'I hope this email finds you well... I wanted to leverage this opportunity...' Generic corporate sludge. Sam adds one line: 'Ban the words leverage, hope, and leveraging. Ban the opener about emails finding people.' Now it sounds like a person.",
+    "scenes": [
+      {
+        "heading": "Banning specific words",
+        "vague": "Hope AI knows your taste.",
+        "specific": "\"Don't use the words leverage, robust, seamless, or comprehensive.\"",
+        "note": "Word bans work reliably. AI obeys them more consistently than positive style notes."
+      },
+      {
+        "heading": "Banning patterns",
+        "vague": "\"Make it less corporate.\"",
+        "specific": "\"No three-word intros like \"In today's world\". No closing summary. No clichés about the future.\"",
+        "note": "Banning patterns (not just words) catches more sludge."
+      },
+      {
+        "heading": "Banning hedges",
+        "vague": "Accept the cautious AI default.",
+        "specific": "\"Don't hedge. No \"it depends\" or \"there are many factors.\" Pick a side and defend it.\"",
+        "note": "AI hedges by default. Banning hedges forces a real position."
+      }
+    ],
+    "airaOutro": "Save your top 5 banned words as a snippet. Paste them into every important prompt. Watch your output stop sounding like everyone else's.",
+    "takeaway": "Bans beat begs.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "critical_ai_bias",
+    "trackId": "critical",
+    "title": "Spotting AI bias before it spreads",
+    "character": "Lin",
+    "airaIntro": "AI mirrors its training data. The internet is biased. Therefore AI is biased. Today: the 30-second checks that catch the bias before you propagate it.",
+    "learnFirst": "AI bias usually shows up as missing perspectives, default-Western framings, and gendered assumptions. The fix is asking the same question from multiple angles and watching how the answer shifts. If the answer changes a lot when you swap one variable, the original was biased.",
+    "realWorldScenario": "Lin asks AI for 'examples of great leaders.' Gets back 8 men, mostly Western. Same prompt, same wording — she just adds 'global examples' and asks again. Now half are women, mostly non-Western. The first answer was biased. AI didn't lie; it averaged its training set.",
+    "scenes": [
+      {
+        "heading": "The variable-swap test",
+        "vague": "Trust the first answer.",
+        "specific": "\"Now give me the same list but only women / non-Western / under 40.\" Compare. If the answer changed wildly, the original was biased.",
+        "note": "Variable-swapping is the cheapest bias detector. Costs 30 seconds."
+      },
+      {
+        "heading": "The \"what perspective is missing\" prompt",
+        "vague": "Accept the framing.",
+        "specific": "\"What perspective or group is missing from this answer? Add it.\"",
+        "note": "AI surfaces blind spots when asked. It rarely surfaces them on its own."
+      },
+      {
+        "heading": "Defaults are tells",
+        "vague": "\"A great leader\" returns a man. Move on.",
+        "specific": "Notice the default. Defaults are training-data signals. The default tells you what AI assumes when you don't specify.",
+        "note": "The default isn't neutral. It's majority-data leaking through."
+      }
+    ],
+    "airaOutro": "Now you have the 30-second bias check. Variable-swap, ask what's missing, watch the defaults. Three habits that compound.",
+    "takeaway": "Defaults are tells.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "power_prompt_templates",
+    "trackId": "power",
+    "title": "Build a personal prompt library you actually use",
+    "character": "Jordan",
+    "airaIntro": "Stop typing the same prompt structure from scratch every day. Today: how to build 5-10 reusable templates that cover 80% of your real AI use.",
+    "learnFirst": "A prompt template has placeholders for the variables that change ({audience}, {topic}, {format}) and is otherwise stable. You save it once. You paste-and-fill it forever. The savings compound — same prompt taking 10 seconds instead of 2 minutes adds up to hours per month.",
+    "realWorldScenario": "Jordan does the same kind of work each Tuesday: summarise the team's slack threads. He retypes the prompt every time. Different prompt, slightly worse output, slightly different format. After this lesson he has one template, one paste, consistent results.",
+    "scenes": [
+      {
+        "heading": "Identify a recurring task",
+        "vague": "Treat every prompt as one-off.",
+        "specific": "Notice: \"I do this every week / every Monday / every time a customer X.\" That's a template candidate.",
+        "note": "Anything you do twice is a template candidate."
+      },
+      {
+        "heading": "Extract the variables",
+        "vague": "\"Summarise this slack thread for the team.\"",
+        "specific": "\"Summarise this {input_type} for {audience}. Reply in {format}. Length: {length_cap}.\"",
+        "note": "Variables in {curly_braces}. Everything else stays stable."
+      },
+      {
+        "heading": "Save it somewhere you'll actually find it",
+        "vague": "Memorise it. Lose it.",
+        "specific": "Put your top 5-10 templates in a Notion page, the Mac Notes app, or a saved AI Project. The retrieval matters as much as the template.",
+        "note": "A template you can't find isn't a template. It's a memory."
+      }
+    ],
+    "airaOutro": "Build 5 templates this week for tasks you actually do twice a week. Save them somewhere you'll find them. Watch your speed jump.",
+    "takeaway": "Twice = template.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "tools_research_workflow",
+    "trackId": "tools",
+    "title": "AI for research: 10x your speed without losing rigour",
+    "character": "Lin",
+    "airaIntro": "Most AI advice for research either trusts AI too much (cite the hallucination) or too little (skip AI altogether). Today: the four-step workflow that uses AI for what it's good at and humans for what they're good at.",
+    "learnFirst": "The workflow: (1) AI for the lay of the land, (2) Search-anchored AI (Perplexity / Gemini) for sources, (3) Click into actual papers / articles, (4) AI for synthesising your notes. AI is great at the bookends, dangerous in the middle.",
+    "realWorldScenario": "Lin is researching how remote work affects team culture. Old workflow: 4 hours googling, scattered notes, half remembered. New workflow: 90 minutes, clean notes, every claim traceable to a real source.",
+    "scenes": [
+      {
+        "heading": "Step 1 — AI for the landscape",
+        "vague": "Start by reading 20 articles.",
+        "specific": "Ask AI: \"What are the main schools of thought on X? Who are the key authors? What's the disagreement between them?\" Get a map in 60 seconds.",
+        "note": "AI gives you the shape. Saves hours of orienting."
+      },
+      {
+        "heading": "Step 2 — Search-anchored AI for sources",
+        "vague": "Ask AI for citations.",
+        "specific": "Open Perplexity or Gemini (both have search). Ask the same question. Get answers WITH actual links to actual papers and articles.",
+        "note": "Chat AI invents citations. Search-anchored AI gives you real ones."
+      },
+      {
+        "heading": "Step 3 — Read the actual sources",
+        "vague": "Trust the AI summary.",
+        "specific": "Click into the 5-7 most relevant sources. Read them. Take notes. AI never replaces this step — only speeds the steps around it.",
+        "note": "The middle step is human. AI doesn't do this."
+      },
+      {
+        "heading": "Step 4 — AI for synthesis",
+        "vague": "Try to remember what you read.",
+        "specific": "Paste your notes into Claude. \"Synthesise these into 3 themes with the strongest evidence for each.\" Now the work is yours but the structure is fast.",
+        "note": "AI is great at synthesising material you've already verified. Trust it here."
+      }
+    ],
+    "airaOutro": "Use this on your next real research task. The first time it feels slower (you're learning the rhythm). The third time it feels like a superpower.",
+    "takeaway": "AI on the bookends. Human in the middle.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_role",
+    "trackId": "prompt",
+    "title": "Give the AI a job title",
+    "character": "Deniz",
+    "airaIntro": "The fastest way to change how an AI talks is to tell it WHO it is. One line at the top of your prompt rewires the whole answer.",
+    "learnFirst": "When you say \"Act as a senior data scientist\", the model adjusts vocabulary, depth, and assumptions. It is not role-playing for fun — it is narrowing the probability space to answers that match that perspective.",
+    "realWorldScenario": "Deniz wants to explain API rate limiting to her non-technical CEO before a board meeting. She asks: \"Explain API rate limiting.\" The answer is buried in jargon.",
+    "scenes": [
+      {
+        "heading": "Without a role",
+        "vague": "Explain API rate limiting.",
+        "specific": "You are a friendly CTO explaining to a non-technical CEO in a 2-minute elevator ride. Explain API rate limiting using one everyday analogy.",
+        "note": "The role tells the AI how deep to go and what vocabulary to use. Without it, the AI defaults to a Wikipedia-level dump."
+      },
+      {
+        "heading": "Stacking roles",
+        "vague": "Review my business plan.",
+        "specific": "First, act as a skeptical VC partner and poke holes. Then, act as a supportive advisor and suggest fixes for each hole.",
+        "note": "You can chain multiple roles in one prompt. Each perspective surfaces different feedback."
+      },
+      {
+        "heading": "Role + audience",
+        "vague": "Write me a nutrition guide.",
+        "specific": "You are a registered dietitian. Write a 1-week meal plan for a college student with a $40/week grocery budget. No supplements.",
+        "note": "Role sets the expertise. Audience sets the context. Together they eliminate 80% of generic filler."
+      }
+    ],
+    "airaOutro": "One line at the top. That is all it takes to go from generic dump to targeted advice.",
+    "takeaway": "Role = lens. Change the lens, change the answer.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_context",
+    "trackId": "prompt",
+    "title": "Give AI the backstory it needs",
+    "character": "Lin",
+    "airaIntro": "An AI with no context is like a doctor who skips the medical history. Today you learn to give just enough background to get answers that fit your real situation.",
+    "learnFirst": "Context is the background information that shapes the answer. Who are you? What have you tried? What are the constraints? Without context, the AI writes for a generic person in a generic situation.",
+    "realWorldScenario": "Lin runs a small Etsy shop selling handmade candles. She asks: \"How can I grow my business?\" The AI suggests raising venture capital, hiring a marketing team, and running TV ads. Useless advice for a solo candle maker.",
+    "scenes": [
+      {
+        "heading": "Without context",
+        "vague": "How can I grow my business?",
+        "specific": "I run a one-person Etsy candle shop doing $2K/month. My best channel is Instagram (800 followers). Budget for growth: $200/month. What are 3 realistic next steps?",
+        "note": "The context eliminates \"hire a team\" and \"buy TV ads\" before the AI even starts thinking."
+      },
+      {
+        "heading": "Situation + constraint",
+        "vague": "Help me learn Python.",
+        "specific": "I am a data analyst who uses Excel daily. I have 30 minutes per evening. I want to automate my weekly sales report within 2 weeks.",
+        "note": "Your existing skills, time budget, and goal give the AI a clear lane. Without them it recommends a 6-month CS degree."
+      },
+      {
+        "heading": "What you've tried",
+        "vague": "My code has a bug.",
+        "specific": "My React app crashes on the Profile screen. I've checked: the API returns 200, the state updates, but the render throws \"Cannot read property name of undefined.\" I suspect the user object is null on first mount.",
+        "note": "Telling the AI what you already tried prevents it from repeating useless suggestions."
+      }
+    ],
+    "airaOutro": "Context is not extra typing. It is the difference between advice for you and advice for everyone.",
+    "takeaway": "Situation + constraints + past attempts. That is context.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_iteration",
+    "trackId": "prompt",
+    "title": "Your first prompt is a rough draft",
+    "character": "Jordan",
+    "airaIntro": "Nobody writes a perfect email on the first try. Prompts work the same way. The real skill is in the follow-up.",
+    "learnFirst": "Iteration means refining through conversation. Your first prompt gets you a starting point. Your follow-ups sculpt it into something great. Most people stop after round one — that is where they lose.",
+    "realWorldScenario": "Jordan asks an AI to write his conference talk abstract. The first draft is okay but too formal and too long. Instead of rewriting the whole prompt, he sends three quick follow-ups that transform it.",
+    "scenes": [
+      {
+        "heading": "Round 1: the rough draft",
+        "vague": "Write an abstract for my conference talk about remote team culture.",
+        "specific": "Write a 150-word abstract for a tech conference talk about how we built remote culture at a 40-person startup. Tone: direct, practical, not academic.",
+        "note": "Even a good first prompt produces a rough draft. That is normal. The follow-ups are where the real work happens."
+      },
+      {
+        "heading": "Round 2: sculpt",
+        "vague": "Make it better.",
+        "specific": "Too formal. Rewrite with shorter sentences. Open with a surprising stat. Cut the last paragraph — it's filler.",
+        "note": "\"Make it better\" tells the AI nothing. Specific feedback — what's wrong, what to change — gives it a clear target."
+      },
+      {
+        "heading": "Round 3: polish",
+        "vague": "Almost there, just fix it.",
+        "specific": "Good. Now swap \"synergy\" for a real word. Make the CTA in the last sentence punchier. Keep the stat opener.",
+        "note": "The third round is about small moves. You are directing, not starting over. That is iteration."
+      }
+    ],
+    "airaOutro": "Your first prompt is a draft. Your follow-ups are the edit. The best users never stop at round one.",
+    "takeaway": "Don't restart. Sculpt.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_decompose",
+    "trackId": "prompt",
+    "title": "Break big asks into small steps",
+    "character": "Sam",
+    "airaIntro": "The biggest mistake people make with AI: asking for everything in one shot. Today you learn to break complex tasks into steps the AI can actually nail.",
+    "learnFirst": "AI handles one clear task well. It handles \"do everything at once\" poorly. Decomposition means splitting a big request into a sequence of small, focused prompts. Each step uses the output of the last.",
+    "realWorldScenario": "Sam wants to create a complete marketing plan for his freelance photography business. He asks: \"Create a full marketing plan for my photography business.\" He gets 2000 words of generic advice that helps no one.",
+    "scenes": [
+      {
+        "heading": "The monolith prompt",
+        "vague": "Create a full marketing plan for my photography business.",
+        "specific": "Step 1: \"Who are the top 3 client segments for a freelance wedding photographer in Austin, TX?\" Then Step 2: \"For the highest-value segment, list 5 channels to reach them.\" Then Step 3: \"Draft a 30-day action plan for the top 2 channels.\"",
+        "note": "Three focused prompts beat one mega-prompt. Each step builds on real output, not assumptions."
+      },
+      {
+        "heading": "Output as input",
+        "vague": "Now make it all work together.",
+        "specific": "Use the client segment from Step 1 and the channels from Step 2. Create a week-by-week plan with one action per day.",
+        "note": "Feed the AI's previous answers into the next prompt. This chains the reasoning without losing focus."
+      },
+      {
+        "heading": "When to decompose",
+        "vague": "Always break everything into steps.",
+        "specific": "Decompose when the task has multiple parts that depend on each other: plans, analyses, multi-section documents. Skip it for simple one-shot tasks.",
+        "note": "A tweet doesn't need decomposition. A business plan does. Match the technique to the complexity."
+      }
+    ],
+    "airaOutro": "Big tasks, small steps. Each prompt does one job well. Chain the outputs and you get something no single prompt could produce.",
+    "takeaway": "One job per prompt. Chain the outputs.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "prompt_ai_limits",
+    "trackId": "prompt",
+    "title": "What AI cannot do (and what to do instead)",
+    "character": "Maya",
+    "airaIntro": "Knowing what AI can't do is just as important as knowing what it can. Today you learn the five blind spots — and the workaround for each.",
+    "learnFirst": "AI does not access the internet in real-time, does not know what happened yesterday, cannot do precise math reliably, hallucinates sources, and has no memory between conversations. These are not bugs — they are the shape of the tool. Knowing the shape means you stop blaming the tool and start working around it.",
+    "realWorldScenario": "Maya asks: \"What was the score of last night's Lakers game?\" The AI confidently gives a score. She checks — the game hasn't happened yet. She wonders what else the AI has been confidently wrong about.",
+    "scenes": [
+      {
+        "heading": "Blind spot: real-time data",
+        "vague": "What happened today in the stock market?",
+        "specific": "Explain how stock market circuit breakers work. I'll get today's numbers from my broker.",
+        "note": "Use AI for explanations and frameworks, not for live data. Pair it with a real-time source."
+      },
+      {
+        "heading": "Blind spot: precise math",
+        "vague": "Calculate my compound interest over 30 years with monthly contributions.",
+        "specific": "Write me a Python function that calculates compound interest with monthly contributions. I'll run it myself.",
+        "note": "AI fumbles multi-step math. But it writes code that does math perfectly. Ask for code, not calculations."
+      },
+      {
+        "heading": "Blind spot: memory",
+        "vague": "Remember what I told you last week.",
+        "specific": "Here's a summary of our previous discussion: [paste key points]. Continue from there.",
+        "note": "AI has no memory between sessions. You are the memory. Paste the relevant context at the start."
+      }
+    ],
+    "airaOutro": "Every tool has limits. The people who get the most from AI are the ones who know where the edge is — and build around it.",
+    "takeaway": "Know the five blind spots. Work around them, not into them.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "foundations_21_chain_of_thought",
+    "trackId": "prompt",
+    "title": "Chain-of-Thought: \"Let's think step by step\"",
+    "character": "Maya",
+    "airaIntro": "Add four words and the AI gets noticeably smarter. They're 'let's think step by step'. Today's the day you start using them.",
+    "learnFirst": "When you ask the AI to think out loud before answering, it slows down and shows its work. The intermediate steps catch errors that would otherwise hide inside a final number or claim.",
+    "realWorldScenario": "Maya, a detective intern, needs the AI to figure out which of 4 suspects could have been at the warehouse. Without 'step by step' she gets a confident wrong name. With it, the AI walks through alibis and lands on the right person.",
+    "scenes": [
+      {
+        "heading": "Without the magic words",
+        "vague": "\"Who did it? Suspects: A, B, C, D. Alibis: …\"",
+        "specific": "AI guesses fast, often wrong. No exposed reasoning to challenge.",
+        "note": "Confident wrong answers are the most dangerous. They look right."
+      },
+      {
+        "heading": "With the magic words",
+        "vague": "Same prompt + \"Let's think step by step before answering.\"",
+        "specific": "AI lists each suspect, their alibi, when they're ruled out, then the final answer. You can sanity-check the chain.",
+        "note": "Reasoning made visible is reasoning you can argue with."
+      },
+      {
+        "heading": "When NOT to use it",
+        "vague": "Always use it.",
+        "specific": "Skip on trivial tasks (one-word answers, simple rewrites). The chain bloats the response without helping.",
+        "note": "Step-by-step is for tasks with logic to expose, not chitchat."
+      }
+    ],
+    "airaOutro": "You now have a four-word upgrade most users never learn. Use it on every important decision-prompt today.",
+    "takeaway": "Visible reasoning beats hidden confidence.",
+    "followUpExplanations": {
+      "whyScore": "Chain-of-thought prompts are graded on whether the trigger phrase is present AND whether the user names intermediate steps. The judges look for 'step by step', 'first/then/finally', and any sub-task breakdown.",
+      "howToImprove": "Append 'Let's think step by step' to your prompt. Better: name the steps you want shown. 'List X, then evaluate Y, then conclude Z.'",
+      "example": "Solve this maths puzzle: a train leaves Paris at 14:00 going 80 km/h, another leaves Lyon at 14:30 going 100 km/h toward Paris. Where do they meet?\n\nLet's think step by step: 1) distance Paris-Lyon, 2) gap when train 2 leaves, 3) combined speed, 4) time to close gap, 5) final position."
+    }
+  },
+  {
+    "id": "foundations_22_persona",
+    "trackId": "prompt",
+    "title": "Personas — \"Act as a…\"",
+    "character": "Lin",
+    "airaIntro": "Personas are a hack so powerful most pros under-use them. Three words pivot the AI's entire output style. Today: how to set them properly.",
+    "learnFirst": "Telling the AI WHO to be ('Act as a senior editor') beats telling it WHAT to do alone. The role pulls in the vocabulary, the priorities, and the failure modes of that profession.",
+    "realWorldScenario": "Lin, a research chef, wants AI to critique her tasting-menu draft. 'Make it better' returns banalities. 'Act as a Michelin food critic who's seen 200 menus' gives sharp, named flaws.",
+    "scenes": [
+      {
+        "heading": "No persona",
+        "vague": "\"Critique this menu.\"",
+        "specific": "AI averages \"menu feedback\" from the internet. Lukewarm, vague.",
+        "note": "No role = AI defaults to a beige consultant."
+      },
+      {
+        "heading": "Generic persona",
+        "vague": "\"Act as a food expert.\"",
+        "specific": "Better. But still generic. AI imagines a Wikipedia expert.",
+        "note": "A vague role gives a vague performance."
+      },
+      {
+        "heading": "Specific persona with edges",
+        "vague": "\"Act as a Michelin food critic with 20 years of fine-dining experience. You're honest, allergic to clichés, and rate menus by surprise + technique.\"",
+        "specific": "Now the critique cuts. The persona has standards.",
+        "note": "A persona with specific values produces a specific judgment."
+      }
+    ],
+    "airaOutro": "Save 3 of your favourite personas as snippets. Use them whenever the AI gives you the dreaded \"as an AI, I can't…\" generic answer.",
+    "takeaway": "Specific personas. Edges over titles.",
+    "followUpExplanations": {
+      "whyScore": "Persona judges check for 'Act as', 'You are', or 'Imagine you are' + at least one specific credential (years, count, or named taste edge).",
+      "howToImprove": "Add credentials and edges. 'Act as a senior editor' is okay. 'Act as a senior editor at The Atlantic who's edited 50 cover stories and is allergic to filler' is sharp.",
+      "example": "Act as a startup pitch coach with 12 years of experience. You've heard 300 pitches and you can tell in the first 90 seconds whether a company will raise. Review the email below and tell me, in 3 sentences, whether you'd take the meeting.\n\n[email here]"
+    }
+  },
+  {
+    "id": "foundations_23_format",
+    "trackId": "prompt",
+    "title": "Format Control — JSON, tables, bullets",
+    "character": "Jordan",
+    "airaIntro": "AI defaults to prose. You almost never want prose. Today: how to demand the shape that fits the job.",
+    "learnFirst": "Stating the output format (JSON, markdown table, numbered list, paragraph cap) is one of the cheapest moves for usable output. It forces structure on otherwise mushy responses.",
+    "realWorldScenario": "Jordan, a product manager, asks AI for competitor analysis. The first reply: 800 words of essay. Useless. He adds '\\nReply as a 4-column markdown table' and gets exactly what his slide deck needs.",
+    "scenes": [
+      {
+        "heading": "Bullets vs paragraphs",
+        "vague": "\"Tell me about React hooks.\"",
+        "specific": "\"Explain React hooks. Reply as a numbered list of 5 hooks: name, what it does, one-line example.\"",
+        "note": "Numbered + per-item shape beats free-form prose."
+      },
+      {
+        "heading": "Tables for comparison",
+        "vague": "\"Compare MongoDB and PostgreSQL.\"",
+        "specific": "\"Compare MongoDB and PostgreSQL. 4-column markdown table: criterion, Mongo, Postgres, winner.\"",
+        "note": "The \"winner\" column forces a decision per row."
+      },
+      {
+        "heading": "JSON for code consumption",
+        "vague": "\"Give me a structured user profile.\"",
+        "specific": "\"Output as JSON with keys: name (string), age (number), interests (string[]), summary (string < 100 chars).\"",
+        "note": "Type hints in the prompt produce parseable output."
+      }
+    ],
+    "airaOutro": "Make format-specification a reflex. End every important prompt with \"Reply as a…\".",
+    "takeaway": "Name the shape. Always.",
+    "followUpExplanations": {
+      "whyScore": "Format judges check for explicit shape directives: 'list', 'table', 'JSON', 'markdown', or length caps with numbers.",
+      "howToImprove": "End your prompt with 'Reply as a [shape]'. Add column names for tables. Add type hints for JSON.",
+      "example": "Show me 10 use cases for AI in healthcare. Reply as a markdown table with 3 columns: use case, primary benefit, risk to watch. Sort by impact, high-to-low. Each cell ≤ 15 words."
+    }
+  },
+  {
+    "id": "foundations_24_few_shot",
+    "trackId": "prompt",
+    "title": "Few-shot examples — show, don't tell",
+    "character": "Deniz",
+    "airaIntro": "Adjectives are lazy. Examples are precise. Today: the move that locks in tone, voice, and shape better than any description.",
+    "learnFirst": "Few-shot prompting means showing the AI 2-3 examples of the kind of output you want, then asking for one more in the same style. AI mirrors examples reliably; descriptions of style are too soft to grip.",
+    "realWorldScenario": "Deniz is a freelance copywriter. She wants AI tweets in her brand voice. 'Be punchy and witty' returns generic. Pasting 3 of her real tweets + 'one more about [topic]' returns her voice.",
+    "scenes": [
+      {
+        "heading": "Describe-only",
+        "vague": "\"Write a tweet in my voice — punchy and witty.\"",
+        "specific": "AI guesses what \"punchy and witty\" means based on a stereotype.",
+        "note": "Adjectives carry almost no signal. AI averages the internet."
+      },
+      {
+        "heading": "Examples-only",
+        "vague": "Paste 3 examples + \"Write one more.\"",
+        "specific": "AI mirrors the rhythm, length, and word choices of the examples. Big improvement.",
+        "note": "Examples are the cheapest, highest-leverage style transfer."
+      },
+      {
+        "heading": "Examples + keep/drop note",
+        "vague": "Just trust the mirror.",
+        "specific": "Add: \"Keep the contractions and rhetorical questions. Drop any 'as we all know' filler.\"",
+        "note": "Tells the AI what to copy AND what to leave behind. Tightest output."
+      }
+    ],
+    "airaOutro": "Save 2-3 of your best samples as a snippet. Reuse them as the top of every voice-sensitive prompt.",
+    "takeaway": "Show two. Drop one.",
+    "followUpExplanations": {
+      "whyScore": "Few-shot judges check for: at least 2 example blocks (numbered or quoted), a 'now write one more' instruction, and ideally a keep/drop note.",
+      "howToImprove": "Paste 2-3 examples. Number them. End with 'Now write one more about [new topic] in the same voice.' Optionally add 'Keep X. Drop Y.'",
+      "example": "Here are 2 captions in my voice:\n\n1: \"It's not procrastination if I'm planning. I'm planning. (I'm planning.)\"\n2: \"Hot take: 'good enough' is a perfectly valid finish line.\"\n\nNow write 3 more captions about morning routines in the same voice. Keep the parentheticals and short sentences."
+    }
+  },
+  {
+    "id": "foundations_25_negative",
+    "trackId": "prompt",
+    "title": "Tell AI what NOT to do",
+    "character": "Sam",
+    "airaIntro": "Telling AI what to avoid is just as powerful as telling it what to do. Today: the move that strips out the corporate sludge.",
+    "learnFirst": "AI is trained to be helpful — which often means cautious, verbose, and cliché. Banning specific words and patterns reliably fixes this. Negative prompts work better than vague positive ones.",
+    "realWorldScenario": "Sam, a high-school teacher, asks AI to draft a casual email to parents. It returns 'I hope this email finds you well… I wanted to leverage…' He adds 'Ban: leverage, hope, this email finds, robust, seamless.' Now it sounds human.",
+    "scenes": [
+      {
+        "heading": "Banning words",
+        "vague": "Hope AI knows your taste.",
+        "specific": "\"Don't use the words leverage, robust, seamless, comprehensive.\"",
+        "note": "Word bans are obeyed reliably. More reliable than positive style notes."
+      },
+      {
+        "heading": "Banning patterns",
+        "vague": "\"Make it less corporate.\"",
+        "specific": "\"No three-word intros like \"In today's world\". No closing summary. No clichés about the future.\"",
+        "note": "Banning patterns (not just words) catches more sludge."
+      },
+      {
+        "heading": "Banning hedges",
+        "vague": "Accept the cautious default.",
+        "specific": "\"Don't hedge. No \"it depends\" or \"there are many factors.\" Pick a side and defend it.\"",
+        "note": "AI hedges by default. Banning hedges forces commitment."
+      }
+    ],
+    "airaOutro": "Save your top 5 banned words as a snippet. Paste them into every important prompt.",
+    "takeaway": "Bans beat begs.",
+    "followUpExplanations": {
+      "whyScore": "Negative-prompt judges check for specific 'don\\'t', 'avoid', 'no [word]', or 'ban' instructions in the prompt.",
+      "howToImprove": "Name specific words to avoid. Name specific patterns. Name hedges to drop. Bans are obeyed more reliably than vague style notes.",
+      "example": "Write a product launch announcement. Tone: warm but direct. Length: 80 words. Don\\'t use: leverage, robust, seamless, comprehensive, hope. Don\\'t open with an em-dash or a rhetorical question. Don\\'t end with \\\"the future is here\\\"."
+    }
+  },
+  {
+    "id": "foundations_26_tone",
+    "trackId": "prompt",
+    "title": "Tone calibration — match the room",
+    "character": "Ada",
+    "airaIntro": "Same content, wrong tone = wrong message. Today: how to dial the tone with precision.",
+    "learnFirst": "Tone shifts perception more than content. The same idea reads differently when delivered professionally, casually, warmly, or sharply. Tone words like 'professional' are weak; better is naming the FEEL you want and the BAN list.",
+    "realWorldScenario": "Ada, a startup founder, drafts an email firing a vendor. AI's 'professional' tone reads icy and corporate. She switches to 'warm but firm, with one specific compliment and one specific concern' and gets a tone that lands.",
+    "scenes": [
+      {
+        "heading": "Adjective tone",
+        "vague": "\"Make it professional.\"",
+        "specific": "AI imagines a generic corporate voice. Often colder than you want.",
+        "note": "One-word tones are too loose. AI picks the average."
+      },
+      {
+        "heading": "Feel-based tone",
+        "vague": "\"Make it warmer.\"",
+        "specific": "\"Tone: warm but firm. Like talking to a colleague you respect but need to disappoint. One specific compliment, one specific concern.\"",
+        "note": "Describing the relationship + feel beats the adjective."
+      },
+      {
+        "heading": "Tone + bans",
+        "vague": "\"Sound friendly.\"",
+        "specific": "\"Friendly but not chummy. Ban: 'just checking in', 'no worries', exclamation marks, emojis.\"",
+        "note": "Bans calibrate friendliness so it doesn't go fake."
+      }
+    ],
+    "airaOutro": "Build a \"tone library\" — 3-5 calibrated tone blocks you reuse. Saves 5 minutes per important email.",
+    "takeaway": "Tone is a feel, not an adjective.",
+    "followUpExplanations": {
+      "whyScore": "Tone judges look for tone descriptors PAIRED with a 'but' modifier, relationship metaphors, or specific bans on tone-killing words.",
+      "howToImprove": "Combine a 2-word tone ('warm but firm'), a relationship metaphor ('like talking to X'), and 2-3 bans.",
+      "example": "Tone: confident but humble. Like a senior engineer explaining a tricky bug to a junior — patient, not condescending. Ban: 'obviously', 'just', exclamation marks."
+    }
+  },
+  {
+    "id": "foundations_27_length",
+    "trackId": "prompt",
+    "title": "Length control — exactly N",
+    "character": "Kemal",
+    "airaIntro": "AI wanders. Word counts and sentence caps yank it back. Today: making AI hit your target length on the first try.",
+    "learnFirst": "'Brief' and 'short' are useless instructions. Specific numbers (80 words, 3 sentences, 5 bullets) get hit. The trick is also bounding both sides ('between 50 and 80 words') to prevent under-shooting.",
+    "realWorldScenario": "Kemal, a journalist, needs a 100-word summary. 'Make it brief' returns 240 words. '80-100 words, no more' returns 92. The difference is the bound.",
+    "scenes": [
+      {
+        "heading": "Vague length",
+        "vague": "\"Keep it brief.\"",
+        "specific": "Returns 200-400 words. \"Brief\" is in the eye of the model.",
+        "note": "Adjectives don't bind length. Numbers do."
+      },
+      {
+        "heading": "Single bound",
+        "vague": "\"Under 100 words.\"",
+        "specific": "Better. But AI may return 30 words and call it short.",
+        "note": "A single ceiling lets AI under-shoot."
+      },
+      {
+        "heading": "Two-sided bound",
+        "vague": "Just trust the ceiling.",
+        "specific": "\"Between 80 and 100 words. Not less. Not more.\"",
+        "note": "Bounding both sides prevents both bloat and laziness."
+      }
+    ],
+    "airaOutro": "Numbers > adjectives. Use them for length, count, and audience every time.",
+    "takeaway": "Bound both sides.",
+    "followUpExplanations": {
+      "whyScore": "Length-control judges check for specific numbers AND ideally two-sided bounds ('80-100 words', not just 'under 100').",
+      "howToImprove": "Replace 'brief' / 'short' / 'concise' with specific numbers. Bound both sides when you can.",
+      "example": "Summarise this article in exactly 3 sentences. Sentence 1: the claim. Sentence 2: the evidence. Sentence 3: the implication. Each sentence between 15 and 25 words."
+    }
+  },
+  {
+    "id": "foundations_28_priming",
+    "trackId": "prompt",
+    "title": "Priming — context before the ask",
+    "character": "Priya",
+    "airaIntro": "The order of information in your prompt matters. Today: front-loading context so AI doesn't guess at the basics.",
+    "learnFirst": "Priming means giving the AI relevant facts, audience, and constraints BEFORE the question. AI processes prompts top-to-bottom; context up front colours every subsequent inference.",
+    "realWorldScenario": "Priya, a doctor, asks 'What does this lab result mean?' and gets a textbook answer. Switching to 'Patient: 62F, on blood thinners, BP elevated for 3 weeks. What does this lab result mean?' gets a relevant, personalised reading.",
+    "scenes": [
+      {
+        "heading": "No priming",
+        "vague": "\"What does X mean?\"",
+        "specific": "AI gives the generic textbook answer.",
+        "note": "No context = no specificity. Wikipedia in your inbox."
+      },
+      {
+        "heading": "Inline priming",
+        "vague": "\"What does X mean? Context: I'm a teacher.\"",
+        "specific": "AI shifts toward teacher-friendly. But \"I'm a teacher\" is buried mid-prompt.",
+        "note": "Context placed late has weaker pull on the answer."
+      },
+      {
+        "heading": "Front-loaded priming",
+        "vague": "Same context, but first.",
+        "specific": "\"I'm a teacher with 8th-grade students. My class is mid-curriculum on World War 2. What does X mean for my lesson plan?\"",
+        "note": "Context first → AI infers tone, depth, vocabulary, and angle."
+      }
+    ],
+    "airaOutro": "Audit your prompts: is the context at the top or buried at the end? Move it up.",
+    "takeaway": "Context first. Ask second.",
+    "followUpExplanations": {
+      "whyScore": "Priming judges check whether key context (audience, situation, goals, constraints) appears in the first half of the prompt.",
+      "howToImprove": "Move context to the top. Put the ask at the bottom. The AI weighs front-loaded information more heavily.",
+      "example": "I'm a non-technical founder building an MVP. Solo, no engineering team. Budget: £5k. Timeline: 12 weeks. Goal: prove demand for a B2B notetaker.\n\nGiven all that, what 3 tech stack choices should I make this week, and why?"
+    }
+  },
+  {
+    "id": "foundations_29_ambiguity",
+    "trackId": "prompt",
+    "title": "Handling ambiguity — spotting vague prompts",
+    "character": "Yuki",
+    "airaIntro": "Most bad AI output is downstream of one bad prompt. Today: catching vagueness before you hit send.",
+    "learnFirst": "Before sending any prompt, run it through the 'three readings' test: read it as a literal expert, a literal beginner, and a malicious bug-hunter. If different readings produce different outputs, your prompt is ambiguous.",
+    "realWorldScenario": "Yuki, a musician, asks AI to 'write a sad song about losing someone.' AI returns a generic ballad. After the three-readings test, she rewrites: 'sad song about losing a friendship (not death), 60 seconds, indie-folk style, in the voice of a 24-year-old in their first studio apartment.' Now she gets her song.",
+    "scenes": [
+      {
+        "heading": "The literal-expert read",
+        "vague": "\"Help me improve my pitch.\"",
+        "specific": "Expert reads \"pitch\" → marketing, sales, music, business model? Five different answers.",
+        "note": "If a domain expert sees more than one interpretation, fix the prompt."
+      },
+      {
+        "heading": "The literal-beginner read",
+        "vague": "\"Make it pop.\"",
+        "specific": "Beginner reads \"pop\" → music genre? Brighter colours? More energetic? AI guesses.",
+        "note": "Jargon and slang are ambiguity traps."
+      },
+      {
+        "heading": "The bug-hunter read",
+        "vague": "\"Don't use long words.\"",
+        "specific": "Bug-hunter: \"How long? 8+ chars? Or just 'avoid academic jargon'?\" Different rules.",
+        "note": "Constraints need precision too, not just the main ask."
+      }
+    ],
+    "airaOutro": "Build a habit: before sending any prompt, do the three readings. 30 seconds saves 5 minutes.",
+    "takeaway": "Three reads. Then send.",
+    "followUpExplanations": {
+      "whyScore": "Ambiguity judges check for: named audience, specific scope, tonal direction, structural ask, and at least one constraint or ban.",
+      "howToImprove": "Run the three-readings test. Each ambiguous noun becomes a clarifier. Each adjective becomes a specific instruction.",
+      "example": "Original: \"Help me write a blog post about productivity.\"\n\nRewrite: \"Write a 1200-word blog post for first-time engineering managers. Topic: deep-work blocks for distributed teams. Tone: warm-direct. Include 3 concrete tactics, each ending with a one-line action they can do tomorrow. Avoid: pomodoro, GTD, 10x-productivity tropes.\""
+    }
+  },
+  {
+    "id": "foundations_30_iteration",
+    "trackId": "prompt",
+    "title": "Iterative refinement — the 3-prompt method",
+    "character": "Tomás",
+    "airaIntro": "First drafts are rarely great. Today: the systematic refinement loop that turns mediocre output into excellent.",
+    "learnFirst": "Most pros don't write one perfect prompt — they iterate three times. Prompt 1: get a draft. Prompt 2: critique it specifically. Prompt 3: refine based on the critique. Each step compounds.",
+    "realWorldScenario": "Tomás, an artist, wants a poem about exile. Prompt 1 → generic ballad. Prompt 2 → 'Critique this in 3 specific ways.' Prompt 3 → 'Now rewrite addressing each critique.' Final result is publishable.",
+    "scenes": [
+      {
+        "heading": "Prompt 1 — the draft",
+        "vague": "\"Write a poem about exile.\"",
+        "specific": "AI generates a first draft. Treat this as raw material, not the final.",
+        "note": "Goal: produce something to critique."
+      },
+      {
+        "heading": "Prompt 2 — the critique",
+        "vague": "\"Make it better.\"",
+        "specific": "\"Critique this poem in 3 specific ways: imagery, rhythm, emotional arc. Each critique 1-2 sentences.\"",
+        "note": "Structured critique surfaces specific weaknesses, not vibes."
+      },
+      {
+        "heading": "Prompt 3 — the refinement",
+        "vague": "\"Now rewrite it.\"",
+        "specific": "\"Now rewrite the poem addressing each critique. Keep the strongest lines (mark them). Replace the weakest with sharper alternatives.\"",
+        "note": "Explicitly preserve strengths AND fix weaknesses."
+      }
+    ],
+    "airaOutro": "Stop treating first AI outputs as finals. Build the 3-prompt habit on every important task.",
+    "takeaway": "Draft. Critique. Refine.",
+    "followUpExplanations": {
+      "whyScore": "Iteration judges check whether the user is asking for STRUCTURED critique (named dimensions) vs. vague 'make it better'.",
+      "howToImprove": "Replace 'make it better' with: 'critique in 3 specific dimensions — X, Y, Z. Each critique 1-2 sentences. Don\\'t rewrite yet.'",
+      "example": "Critique this product description in 3 ways: 1) Does the benefit appear in the first 10 words? 2) Are there any unmeasurable adjectives ('great', 'innovative')? 3) Does the CTA tell the reader exactly what to do? One sentence per critique."
+    }
+  },
+  {
+    "id": "foundations_31_roleplay",
+    "trackId": "prompt",
+    "title": "Roleplay — practise hard conversations",
+    "character": "Nadia",
+    "airaIntro": "AI as a roleplay partner is criminally under-used. Today: turning AI into the toughest interviewer you'll ever face.",
+    "learnFirst": "Roleplay prompts turn AI into a counterpart — interviewer, customer, sceptic, investor — so you can practise the conversation before it happens. The trick is making the roleplay HARD by giving the persona realistic objections and refusals.",
+    "realWorldScenario": "Nadia, an athlete-turned-coach, has a sponsorship pitch in 3 days. She runs 6 roleplay rounds with AI as a sceptical brand manager. By round 6, the real meeting feels easy.",
+    "scenes": [
+      {
+        "heading": "Soft roleplay",
+        "vague": "\"Pretend to be an interviewer.\"",
+        "specific": "AI plays nice. Asks softball questions. Doesn't prepare you.",
+        "note": "Easy roleplays feel good but don't train. They miss the point."
+      },
+      {
+        "heading": "Hard roleplay",
+        "vague": "\"Be a harder interviewer.\"",
+        "specific": "\"You're a hiring manager who's seen 200 candidates this year. You're sceptical of buzzwords. You ask hard follow-ups. You won't give me easy passes.\"",
+        "note": "Personas with stated standards push you."
+      },
+      {
+        "heading": "Roleplay loop",
+        "vague": "One round only.",
+        "specific": "\"Ask me one question. Wait for my answer. React in character. Ask the next harder question. Repeat 5 times.\"",
+        "note": "Single-turn roleplay teaches less than a multi-turn loop."
+      }
+    ],
+    "airaOutro": "Run 3 roleplay rounds before every important conversation. Your real meeting will feel easy.",
+    "takeaway": "Hard roleplay. Soft results.",
+    "followUpExplanations": {
+      "whyScore": "Roleplay judges look for: a specific role, credentials/context (years, count), a sceptical disposition, and a turn-taking structure.",
+      "howToImprove": "Avoid 'be friendly'. Add credentials ('200 candidates seen'), disposition ('sceptical'), and structure ('one question at a time').",
+      "example": "Roleplay as a Series A investor at a top SaaS fund. You've heard 300 pitches this year. You're sceptical, you hate buzzwords, you push back fast. Ask me one question at a time. React in character to my answer. Don't grade me — push me. Start with the hardest opening question you'd ask."
+    }
+  },
+  {
+    "id": "foundations_32_multipart",
+    "trackId": "prompt",
+    "title": "Multi-part prompts — structure + content + format",
+    "character": "Adesua",
+    "airaIntro": "Master prompts have three layers stacked: structure, content, format. Today: how to compose them.",
+    "learnFirst": "A multi-part prompt is layered: STRUCTURE (the role + outline of what you want), CONTENT (the actual task or material), FORMAT (the output shape). Stacking all three gets reliably excellent results in one shot.",
+    "realWorldScenario": "Adesua, an entrepreneur, needs to brief AI on a 7-step launch plan for her course. She layers: role ('marketing strategist with launch experience'), content ('here's my course + audience'), format ('7-step plan with deadline column'). Result is shippable in one prompt.",
+    "scenes": [
+      {
+        "heading": "Layer 1 — Structure",
+        "vague": "Skip the role.",
+        "specific": "Set the persona, the standards, the lens. \"Act as a marketing strategist with 10 years of course launches.\"",
+        "note": "Without structure, content has no frame."
+      },
+      {
+        "heading": "Layer 2 — Content",
+        "vague": "Vague materials.",
+        "specific": "Provide the raw inputs. \"Here's my course outline. Here's my audience profile. Here's my budget.\"",
+        "note": "AI can only work with what you give it."
+      },
+      {
+        "heading": "Layer 3 — Format",
+        "vague": "Free prose.",
+        "specific": "\"Output as a 7-step plan, markdown table, with columns: step, deadline, my-action, success-metric. No prose intro.\"",
+        "note": "Shape locks in usability."
+      }
+    ],
+    "airaOutro": "You now have the master prompt structure. Practise it on every important task this week.",
+    "takeaway": "Three layers. One prompt.",
+    "followUpExplanations": {
+      "whyScore": "Multi-part judges check for the presence of all three layers AND their correct order: persona/role first, materials second, format spec last.",
+      "howToImprove": "Audit your prompt for the 3 layers. If any layer is missing or out of order, add it.",
+      "example": "STRUCTURE: Act as a senior tax advisor for UK freelancers.\n\nCONTENT: I'm a self-employed designer, made £62k this tax year, have £4k in business expenses, paid £8k into a SIPP.\n\nFORMAT: List my expected tax liability as a numbered breakdown: 1) personal allowance, 2) basic rate band, 3) higher rate band, 4) NI, 5) total. Then 3 specific actions I can still take before April 5 to reduce it."
+    }
+  },
+  {
+    "id": "foundations_33_hallucination",
+    "trackId": "prompt",
+    "title": "Why AI makes things up (the real reason)",
+    "character": "Ravi",
+    "airaIntro": "Everyone says 'AI hallucinates'. Almost no one explains how. Today's the day you understand the mechanism — and what that means for trusting AI.",
+    "learnFirst": "An LLM is a probabilistic next-word predictor. It doesn't 'know' facts; it predicts the most likely token given context. When the right answer is in its training data, prediction = correct. When it isn't, prediction = plausible-sounding fiction. The model can't tell the difference.",
+    "realWorldScenario": "Ravi, a curious software engineer, asks an LLM for the name of the author of a niche 1987 academic paper. The model invents a perfectly-formatted citation: real-looking journal, real-looking date, plausible names. None of it exists. He learns why.",
+    "scenes": [
+      {
+        "heading": "It predicts, it doesn't look up",
+        "vague": "AI must have a giant fact database it queries.",
+        "specific": "AI has weights, not a database. It predicts the next likeliest token. No retrieval, no lookup — just probability.",
+        "note": "Treat any specific fact (year, percentage, citation) as \"needs verification\" until proven."
+      },
+      {
+        "heading": "Plausibility is the trap",
+        "vague": "If it sounds right, it probably is.",
+        "specific": "Plausibility = the model's objective function. \"Plausible\" is what it's optimised for. Plausible ≠ true.",
+        "note": "A confident, well-formatted answer is the most dangerous kind of wrong."
+      },
+      {
+        "heading": "The fix — anchor in retrieval",
+        "vague": "Hope the next model is better.",
+        "specific": "For factual questions, use search-anchored AI (Perplexity, Gemini with grounding) OR ask \"is this real? give me a verifiable source.\"",
+        "note": "Retrieval-grounded answers ground the prediction in real text. Big lift in accuracy."
+      }
+    ],
+    "airaOutro": "Now when AI invents a citation, you know exactly why. Use that knowledge as fuel for the verify habit.",
+    "takeaway": "Predict, not look up.",
+    "followUpExplanations": {
+      "whyScore": "Judges check whether your prompt asks for verifiable sources or hedges that invite the AI to admit uncertainty.",
+      "howToImprove": "Add 'cite a verifiable source' or 'tell me if you're not sure' — this forces the AI to flag rather than fabricate.",
+      "example": "Tell me the main argument of the paper 'X' by Y (2014). If you're not certain it exists, say so explicitly. Don't invent details."
+    }
+  },
+  {
+    "id": "foundations_34_scaling",
+    "trackId": "prompt",
+    "title": "Scaling laws — why bigger models really do matter",
+    "character": "Chen",
+    "airaIntro": "GPT-4 isn't just 'GPT-3 but newer.' It's the result of a discovered law that few outside research know about. Today: scaling laws in plain English.",
+    "learnFirst": "Researchers found that model capability scales predictably with three inputs: parameters, training data, and compute. Double all three → measurable jump in capability. This is why each new generation of models is a step-change, not a tweak.",
+    "realWorldScenario": "Chen, an AI researcher, explains to her non-technical brother why GPT-5 won't just be a faster GPT-4 — it'll likely be qualitatively different at certain tasks. The reason is scaling, not engineering tricks.",
+    "scenes": [
+      {
+        "heading": "Three knobs, predictable jump",
+        "vague": "Bigger models are randomly better.",
+        "specific": "Parameters × data × compute → predictable loss decrease. Plot it: it's a straight line on log-log axes.",
+        "note": "Scaling laws turn AI progress from \"magic\" into \"math\"."
+      },
+      {
+        "heading": "Emergent capabilities",
+        "vague": "Smaller models do everything bigger ones do, just worse.",
+        "specific": "Some abilities (multi-step reasoning, in-context learning) APPEAR only past a size threshold. They're emergent, not gradual.",
+        "note": "This is why GPT-4 can do things GPT-3 simply could not."
+      },
+      {
+        "heading": "Why this matters for you",
+        "vague": "It's academic.",
+        "specific": "It means: the model you tried 6 months ago is materially different from today's. Re-test your hard prompts on the latest model — they might work now.",
+        "note": "Capabilities evolve faster than your habits. Keep re-testing."
+      }
+    ],
+    "airaOutro": "Now you understand AI progress isn't magic. It's math. Use that confidence to re-test old failed prompts on the latest model.",
+    "takeaway": "Three knobs. One law. Re-test often.",
+    "followUpExplanations": {
+      "whyScore": "Judges check whether your prompt acknowledges model capability changes — flags like \"use the latest model\" or \"this requires reasoning\" reward specificity.",
+      "howToImprove": "For complex tasks, specify which model class you assume: \"Use a reasoning-capable model. If you can't do this, say so explicitly.\"",
+      "example": "Solve this multi-step logic puzzle. If your model isn't capable of multi-step reasoning, refuse the task rather than guess. [puzzle]"
+    }
+  },
+  {
+    "id": "foundations_35_temperature",
+    "trackId": "prompt",
+    "title": "Temperature — the AI's creativity knob",
+    "character": "Zara",
+    "airaIntro": "Most users don't know this knob exists. Setting it right turns AI from 'boring autocomplete' to 'imaginative co-writer' — or the opposite.",
+    "learnFirst": "Temperature controls how random the next-token sampling is. Temperature 0 = always pick the most likely word (deterministic, safe). Temperature 1 = sample proportional to probability (creative, varied). Temperature 2 = high randomness (wild, often incoherent).",
+    "realWorldScenario": "Zara, a journalist, asks AI for headline alternatives. At temp 0 she gets identical bland headlines every time. At temp 0.9 she gets bolder, more varied options. Same prompt, very different results.",
+    "scenes": [
+      {
+        "heading": "Temperature 0 — repeatable, safe",
+        "vague": "Always use the default.",
+        "specific": "Set temp 0 for: factual lookups, code, summaries you need to be reproducible. Same input → same output.",
+        "note": "Boring is a feature when you need accuracy."
+      },
+      {
+        "heading": "Temperature 0.7-1.0 — sweet spot for creativity",
+        "vague": "Higher = always better.",
+        "specific": "For brainstorming, marketing copy, naming, varied output: temp 0.7-1.0. Different runs produce different ideas.",
+        "note": "The same prompt at temp 0 gives you 1 answer. At temp 0.9, you can run it 5 times for 5 directions."
+      },
+      {
+        "heading": "Where to find it",
+        "vague": "It's hidden.",
+        "specific": "In ChatGPT custom GPTs: in the API. In Claude API: directly. In the consumer apps: rarely surfaced, but you can ask \"give me 5 wildly different versions\" to simulate higher temperature.",
+        "note": "Even without the knob, you can simulate temperature by asking for variety explicitly."
+      }
+    ],
+    "airaOutro": "You now understand a knob most users never touch. Use it to switch between \"boring autocomplete\" and \"creative partner\" on demand.",
+    "takeaway": "0 for repeatable. 0.9 for creative.",
+    "followUpExplanations": {
+      "whyScore": "Judges look for explicit creativity instructions: \"varied\", \"different angles\", \"N wildly different options\" — these simulate temperature.",
+      "howToImprove": "For creative tasks, add \"give me N completely different versions, each from a different angle\". For factual, ask for \"the canonical answer, no creativity\".",
+      "example": "Give me 10 wildly different one-line product taglines for a meditation app. Each should take a completely different emotional angle. Skip the obvious. End with the boldest version."
+    }
+  },
+  {
+    "id": "foundations_36_embeddings",
+    "trackId": "prompt",
+    "title": "Embeddings — how AI actually understands meaning",
+    "character": "Marcus",
+    "airaIntro": "The single most important concept in modern AI that nobody explains in plain English. Today: embeddings. Five minutes, and a lot of AI stops feeling magical.",
+    "learnFirst": "An embedding is a list of numbers that represents the MEANING of a word, sentence, or image. Similar meanings have similar numbers. 'King' and 'queen' are close. 'King' and 'banana' are far. AI does meaning-math by adding and comparing these number lists.",
+    "realWorldScenario": "Marcus, an artist, uses an AI image generator. He types 'cat in a top hat' and gets exactly that. He learns this works because 'cat' has an embedding, 'top hat' has one, and the model combines them — the same way you'd add 'apple' + 'red' to get 'red apple'.",
+    "scenes": [
+      {
+        "heading": "Meaning as math",
+        "vague": "AI understands words like a human.",
+        "specific": "AI turns each word into a 1500-dimension vector. Words with similar meaning sit near each other in this space.",
+        "note": "It's not understanding — it's geometry. But the geometry works."
+      },
+      {
+        "heading": "The classic example",
+        "vague": "AI knows definitions.",
+        "specific": "embedding(\"king\") - embedding(\"man\") + embedding(\"woman\") ≈ embedding(\"queen\"). Real result. Meaning arithmetic.",
+        "note": "This is why analogies and metaphors \"work\" in AI prompts."
+      },
+      {
+        "heading": "Why this matters for prompts",
+        "vague": "It doesn't.",
+        "specific": "Synonyms produce similar outputs because their embeddings are close. Anchoring with vivid words (\"rusty cargo ship\" vs \"ship\") shifts results meaningfully because vivid words have richer embeddings.",
+        "note": "Vivid > vague at the embedding level, not just stylistically."
+      }
+    ],
+    "airaOutro": "Now when AI understands \"shabby seaside diner with neon\" perfectly, you know it's not magic — it's meaning-math.",
+    "takeaway": "Meaning is math.",
+    "followUpExplanations": {
+      "whyScore": "Judges check vividness: specific nouns, sensory adjectives, named places. These have richer embeddings.",
+      "howToImprove": "Replace generic nouns with vivid ones. \"Diner\" → \"shabby seaside diner with neon\". The richer embedding pulls richer output.",
+      "example": "Generate a short story opening. Setting: a rain-soaked 1950s petrol station on a coastal highway. Protagonist: a 22-year-old waitress with a chipped front tooth. Mood: anxious anticipation. No clichés."
+    }
+  },
+  {
+    "id": "foundations_37_rag",
+    "trackId": "prompt",
+    "title": "RAG — making AI know YOUR stuff",
+    "character": "Olu",
+    "airaIntro": "AI doesn't know your company's docs, your school's syllabus, or your personal notes. RAG fixes that. Today: how it works, why it matters.",
+    "learnFirst": "RAG (Retrieval-Augmented Generation) means: before answering, the AI first SEARCHES a knowledge base (your documents) for relevant snippets, then includes them in the prompt. The model generates an answer grounded in YOUR data, not its general training.",
+    "realWorldScenario": "Olu, an educator, uploads her course materials to a RAG-powered AI tutor. When students ask 'What did we cover about photosynthesis?' the tutor answers from her actual slides, not generic biology. Hallucinations drop to near zero on in-scope questions.",
+    "scenes": [
+      {
+        "heading": "The two-step",
+        "vague": "AI just answers.",
+        "specific": "Step 1: search your documents for relevant chunks. Step 2: pass those chunks + the question to the LLM.",
+        "note": "Retrieval, then generation. The name says exactly what happens."
+      },
+      {
+        "heading": "Why it crushes hallucinations",
+        "vague": "It's magic.",
+        "specific": "The model answers from text it's LITERALLY HOLDING, not what it vaguely remembers. Hallucinations come from gaps; RAG fills the gap with real text.",
+        "note": "For factual Q&A on your own data, RAG > fine-tuning > raw prompting."
+      },
+      {
+        "heading": "How to use it today",
+        "vague": "I'd need to build it myself.",
+        "specific": "Claude Projects, ChatGPT custom GPTs with file uploads, Notion AI, Mem — all use RAG under the hood. Upload your docs, ask grounded questions.",
+        "note": "You're probably already using RAG. Now you know what it's called."
+      }
+    ],
+    "airaOutro": "Now you know the buzzword. Next time someone says \"we built an AI on top of our docs\" you'll know they probably built a RAG pipeline.",
+    "takeaway": "Retrieve first. Generate second.",
+    "followUpExplanations": {
+      "whyScore": "Judges check whether prompts that need YOUR data explicitly upload it or reference it — vs hoping the model already knows.",
+      "howToImprove": "If you need an answer grounded in specific documents, paste the relevant snippets OR use a Project/custom GPT with files attached. Don't guess.",
+      "example": "Here are the 3 relevant sections from my company's onboarding handbook:\n[snippet 1] [snippet 2] [snippet 3]\nUsing ONLY these sections, answer: what's our policy on remote work for new hires? If the sections don't cover it, say so."
+    }
+  },
+  {
+    "id": "foundations_38_ethics",
+    "trackId": "critical",
+    "title": "AI ethics — three real risks (not the sci-fi ones)",
+    "character": "Hana",
+    "airaIntro": "Most 'AI ethics' headlines are sci-fi. The real ethical issues are mundane and you encounter them weekly. Today: the three that matter for your daily use.",
+    "learnFirst": "Three risks worth knowing: 1) Bias — AI reproduces patterns in training data, including discriminatory ones. 2) Copyright — outputs may resemble copyrighted material; legal status is unsettled. 3) Energy & data — large models consume real water + electricity; your prompts have a footprint.",
+    "realWorldScenario": "Hana, an entrepreneur, asks AI for 'a CEO photo for a marketing deck'. Every output is a white man in a suit. She didn't notice the first three. Once she did, she understood why she should always specify.",
+    "scenes": [
+      {
+        "heading": "Bias is the default",
+        "vague": "AI is neutral.",
+        "specific": "AI reproduces patterns in its training data. If training data over-represents one group, outputs do too. Without specifying, the model picks the statistical mode.",
+        "note": "Always specify when you want diversity. The model won't add it on its own."
+      },
+      {
+        "heading": "Copyright is unsettled",
+        "vague": "AI output is free to use.",
+        "specific": "Legal status is evolving. Generated text/images may resemble training data; commercial use can carry risk. Check your jurisdiction and your tool's terms.",
+        "note": "For commercial work, prefer tools that explicitly grant commercial rights and indemnify users."
+      },
+      {
+        "heading": "Footprint is real",
+        "vague": "It's just text — no impact.",
+        "specific": "A single GPT-4 query uses 10x the energy of a Google search. Aggregated across billions of queries, it adds up.",
+        "note": "Use cheaper/smaller models for cheaper tasks. Don't use Claude Opus to summarise a tweet."
+      }
+    ],
+    "airaOutro": "Ethics isn't lofty — it's the small things you specify in every prompt. Get the habits right and you'll use AI better than 95% of users.",
+    "takeaway": "Specify diversity. Right-size models. Mind the footprint.",
+    "followUpExplanations": {
+      "whyScore": "Judges check whether prompts that could trigger biased defaults specify diversity, OR whether they right-size the model claim (\"use a small model for this\").",
+      "howToImprove": "For people/role prompts, add explicit diversity. For simple tasks, mention the smaller model is fine.",
+      "example": "Generate 6 stock-style photos of medical professionals. Mix: 3 different ethnicities, 3 different ages (25-60), even gender split. Setting: modern hospital lobby. Photorealistic."
+    }
+  },
+  {
+    "id": "code_python_beginner_1",
+    "trackId": "create",
+    "title": "Python — your first line of real code",
+    "character": "Maya",
+    "airaIntro": "We start where every Python coder ever started: print. One word, one line, you're a programmer.",
+    "learnFirst": "`print()` shows text on the screen. Anything inside the parentheses with quotes around it gets shown. That's it for now.",
+    "realWorldScenario": "Maya is following an online tutorial. The very first line is `print(\"Hello, world!\")`. She runs it. Words appear. She is officially writing Python.",
+    "scenes": [
+      {
+        "heading": "The simplest possible program",
+        "vague": "Just type code and hope.",
+        "specific": "Write: `print(\"Hello!\")` — exactly. Quotes around the words. Parentheses around the quotes.",
+        "note": "Python is picky about brackets and quotes. Match them and it works."
+      },
+      {
+        "heading": "Variables — give a name to a value",
+        "vague": "`print(\"Hello, friend.\")` over and over.",
+        "specific": "`name = \"Maya\"` then `print(\"Hello, \" + name)`. Now the name is reusable.",
+        "note": "Variables are nicknames for values. Reusing them keeps your code clean."
+      },
+      {
+        "heading": "Strings vs. numbers",
+        "vague": "`age = \"12\"` (a string). Trying to add 1 fails.",
+        "specific": "`age = 12` (a number). Now `age + 1` works and gives 13.",
+        "note": "Quotes mean \"treat this as text.\" No quotes means \"treat this as a number.\""
+      }
+    ],
+    "airaOutro": "That's the foundation. `print`, variables, types. Every Python program builds on these three.",
+    "takeaway": "Print, name, type.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "code_python_intermediate_1",
+    "trackId": "create",
+    "title": "Python — functions: bottle up logic so you can reuse it",
+    "character": "Lin",
+    "airaIntro": "Once you've copy-pasted the same code three times, it's time to make it a function. Today: how, why, and the one trap most beginners hit.",
+    "learnFirst": "A function is a named block of code you can run again and again. You define it with `def`, name it, give it inputs (parameters), and the body does the work. Inputs are caller-supplied; the body uses them.",
+    "realWorldScenario": "Lin keeps writing the same 3-line \"print a greeting for X\" code. Six greetings, eighteen lines. She wraps it in a function. Six greetings, six lines.",
+    "scenes": [
+      {
+        "heading": "Defining vs. calling",
+        "vague": "Define it once but never call it: `def greet(name): print(\"Hi, \" + name)`",
+        "specific": "Add `greet(\"Lin\")` BELOW the definition. That's the call. The call is what runs.",
+        "note": "`def` builds the function. `greet(\"Lin\")` runs it. Both are needed."
+      },
+      {
+        "heading": "Return — sending a value back",
+        "vague": "`def add(a, b): print(a + b)` — only prints, can't reuse the result.",
+        "specific": "`def add(a, b): return a + b`, then `total = add(2, 3)` — now `total` is `5` and you can use it elsewhere.",
+        "note": "`print` shows. `return` hands a value back to the caller."
+      },
+      {
+        "heading": "The classic trap",
+        "vague": "`def add(a, b): a + b` — no return, function gives back `None`.",
+        "specific": "Always `return` if you want a value. Forgetting `return` is the most common Python beginner bug.",
+        "note": "No `return` = no value. The function still ran, but you got nothing back."
+      }
+    ],
+    "airaOutro": "Functions are how you stop repeating yourself. Every real Python program is a tower of small functions.",
+    "takeaway": "Define. Return. Call.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "code_java_beginner_1",
+    "trackId": "create",
+    "title": "Java — the famous Hello World, line by line",
+    "character": "Sam",
+    "airaIntro": "Java looks scarier than Python at first. More words. More braces. Today we read the famous Hello World line by line so it stops looking like a wall.",
+    "learnFirst": "Java needs every program to live inside a class. The entry point is `public static void main(String[] args)`. Inside that, `System.out.println(\"Hello!\");` prints text. The semicolons are required.",
+    "realWorldScenario": "Sam joins a coding club. The first task is a Hello World in Java. The instructor pastes 5 lines of code. Sam panics. After this lesson, none of those 5 lines look strange anymore.",
+    "scenes": [
+      {
+        "heading": "The class wrapper",
+        "vague": "Just write code at the top, like Python.",
+        "specific": "Java needs: `public class Hello { ... your code here ... }`. Everything lives inside a class.",
+        "note": "A class is a container. Java refuses to run code that isn't inside one."
+      },
+      {
+        "heading": "main is the entry point",
+        "vague": "Java picks any function to start.",
+        "specific": "Java looks for exactly `public static void main(String[] args)`. That's the line that runs first.",
+        "note": "Misspell main and the program won't start. The signature is fixed."
+      },
+      {
+        "heading": "Printing — and the semicolon",
+        "vague": "`System.out.println(\"Hello!\")` — missing semicolon, won't compile.",
+        "specific": "`System.out.println(\"Hello!\");` — semicolon at the end of the statement.",
+        "note": "Semicolons end statements in Java. Forget one and the compiler refuses."
+      }
+    ],
+    "airaOutro": "Now Hello World in Java is just words you understand. The five lines aren’t scary anymore.",
+    "takeaway": "Class. Main. Statement. Semicolon.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "code_java_intermediate_1",
+    "trackId": "create",
+    "title": "Java — classes are nouns, methods are verbs",
+    "character": "Jordan",
+    "airaIntro": "If you only remember one thing about object-oriented design today: classes are nouns, methods are verbs. The whole language clicks once you see this.",
+    "learnFirst": "A class is a blueprint for a thing — a Dog, a Car, a User. Its fields are the thing's properties. Its methods are what the thing can do. To use it, you create an instance with `new` and then call methods on it.",
+    "realWorldScenario": "Jordan models a coffee shop's point-of-sale. Drink, Customer, Order — three nouns. Drink.brew(), Customer.pay(), Order.print() — three verbs. The whole system falls out cleanly.",
+    "scenes": [
+      {
+        "heading": "Fields = the noun's properties",
+        "vague": "Stuff some variables in a class.",
+        "specific": "A `Dog` class has `String name; int age;`. Those are facts about a dog.",
+        "note": "Pick fields that describe the thing. Skip anything that doesn't."
+      },
+      {
+        "heading": "Methods = the noun's verbs",
+        "vague": "A `Dog` with no actions is just data.",
+        "specific": "`void bark()` and `void wagTail()` are things a dog does. Now the class is alive.",
+        "note": "Verbs make a class useful. Without methods, it's just a struct."
+      },
+      {
+        "heading": "Using the class",
+        "vague": "Try to call `bark()` directly on the class.",
+        "specific": "`Dog rex = new Dog(); rex.bark();` — make an instance first, then call its methods.",
+        "note": "`new` builds an instance. The instance owns the methods you can call."
+      }
+    ],
+    "airaOutro": "Once you split your problem into nouns and verbs, OOP stops feeling like ceremony. Drink. Brew. Customer. Pay. The system writes itself.",
+    "takeaway": "Nouns are classes. Verbs are methods.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "code_html_beginner_1",
+    "trackId": "create",
+    "title": "HTML — what tags really are",
+    "character": "Maya",
+    "airaIntro": "HTML looks scary because of the angle brackets. It is not. Tags are just labels saying 'this part is a heading' or 'this part is a paragraph'.",
+    "learnFirst": "HTML uses tags to label parts of a page. Tags come in pairs: an opening `<p>` and a closing `</p>` with content in between. The tag name tells the browser what to render.",
+    "realWorldScenario": "Maya wants to make her first webpage about her dog. One title, one paragraph, one image. Three tags. That's the whole page.",
+    "scenes": [
+      {
+        "heading": "Headings",
+        "vague": "<bigtext>About my dog</bigtext> — `bigtext` is not a real tag.",
+        "specific": "`<h1>About my dog</h1>` — `h1` is a real heading tag. There's `<h1>` through `<h6>`.",
+        "note": "h1 is the biggest. h6 is the smallest. Use real tag names."
+      },
+      {
+        "heading": "Paragraphs",
+        "vague": "Just write text without tags.",
+        "specific": "`<p>He is the best dog ever.</p>` — wraps a paragraph. Browsers add space around it automatically.",
+        "note": "Wrap each paragraph in `<p>`. Browsers know what to do with it."
+      },
+      {
+        "heading": "Self-closing tags",
+        "vague": "`<img>` followed by `</img>` — wrong, images don't close.",
+        "specific": "`<img src=\"dog.jpg\" alt=\"My dog\">` — image tags self-close. No content between them.",
+        "note": "Some tags hold content (need closing). Some don't (self-closing). `img`, `br`, `hr`, `input` are self-closing."
+      }
+    ],
+    "airaOutro": "Tags are labels. h1 is a heading label. p is a paragraph label. img is an image label. That’s HTML.",
+    "takeaway": "Tags are labels.",
+    "followUpExplanations": null
+  },
+  {
+    "id": "code_html_intermediate_1",
+    "trackId": "create",
+    "title": "HTML — semantic tags + a real form",
+    "character": "Deniz",
+    "airaIntro": "There's a difference between HTML that works and HTML that's good. Today: semantic tags + how to make a real form people can fill in.",
+    "learnFirst": "Semantic tags describe what content IS, not just how it looks. Use `<header>`, `<nav>`, `<main>`, `<article>`, `<footer>` instead of `<div>` for everything. Forms use `<form>`, `<label>`, `<input>`, and `<button>`.",
+    "realWorldScenario": "Deniz is building a sign-up page. Email field, password field, submit button. The form has to actually be ACCESSIBLE — screen readers must understand it.",
+    "scenes": [
+      {
+        "heading": "Divs vs. semantic tags",
+        "vague": "`<div class=\"header\"><div class=\"nav\">...</div></div>` — works visually, but tells the browser nothing.",
+        "specific": "`<header><nav>...</nav></header>` — same layout, tells browsers and assistive tech what each part IS.",
+        "note": "Same look. Better meaning. Better SEO. Better accessibility. Same effort."
+      },
+      {
+        "heading": "Form basics",
+        "vague": "Just put inputs on the page.",
+        "specific": "Wrap them in `<form>`. Each input gets a `<label>`. The submit is a `<button type=\"submit\">`.",
+        "note": "A form without `<form>` won't submit. A label without `<label for=\"...\">` confuses screen readers."
+      },
+      {
+        "heading": "Connecting label to input",
+        "vague": "`<label>Email</label> <input>` — label and input float free.",
+        "specific": "`<label for=\"email\">Email</label> <input id=\"email\" type=\"email\">` — `for` connects to `id`.",
+        "note": "Now clicking the label focuses the input. And screen readers announce them together."
+      }
+    ],
+    "airaOutro": "Semantic HTML is HTML that means something. Browsers, search engines, and screen readers all reward you for it. Same effort as div soup.",
+    "takeaway": "Meaning is free. Use it.",
+    "followUpExplanations": null
+  }
+]
