@@ -15,13 +15,19 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "AIRA — Think with AI. Not against it.",
+  title: "AIRA — Better than Brilliant. $9.99 once.",
   description:
-    "Learn AI skills, prompt engineering, and critical thinking through interactive lessons. 5 minutes a day. Free to start.",
+    "Learn AI literacy through 62 hand-written lessons. Prompt engineering, critical thinking with AI, and tool mastery. $9.99 once — lifetime access. Brilliant alternative for the AI era.",
+  openGraph: {
+    title: "AIRA — Better than Brilliant. $9.99 once.",
+    description:
+      "62 lessons. AI literacy. One payment. Lifetime access. The Brilliant.org alternative built for the AI era.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0F",
+  themeColor: "#FFFEFC",
 };
 
 export default function RootLayout({
