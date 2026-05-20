@@ -15,14 +15,23 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "AIRA — Better than Brilliant. $9.99 once.",
+  title: "AIRA - Your AI Mentor for the AI-Native Era",
   description:
-    "Learn AI literacy through 62 hand-written lessons. Prompt engineering, critical thinking with AI, and tool mastery. $9.99 once — lifetime access. Brilliant alternative for the AI era.",
+    "Coming soon: AIRA is an AI mentor that teaches prompt judgment, generated lessons, workflow thinking, and the skill of using AI well.",
   openGraph: {
-    title: "AIRA — Better than Brilliant. $9.99 once.",
+    title: "AIRA - Your AI Mentor for the AI-Native Era",
     description:
-      "62 lessons. AI literacy. One payment. Lifetime access. The Brilliant.org alternative built for the AI era.",
+      "Coming soon: AI literacy, generated lessons, prompt practice, and workflow training in one mentor-style learning experience.",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AIRA - Your AI Mentor for the AI-Native Era",
+    description:
+      "Coming soon: AIRA helps you think, learn, and build with AI.",
+  },
+  icons: {
+    icon: "/icon.svg",
   },
 };
 

@@ -1,42 +1,23 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import {
-  Check,
-  ChevronDown,
-  Brain,
-  BookOpen,
-  Infinity as InfinityIcon,
-  Sparkles,
-  Smartphone,
-  Menu,
-  X,
-  Zap,
   ArrowRight,
+  BookOpen,
+  Brain,
+  CheckCircle2,
+  Cpu,
+  Mail,
+  MessageCircle,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Workflow,
 } from "lucide-react";
-
-/**
- * AIRA Landing v3 — Bright / Orange / Pink rebrand.
- *
- * The site's central pitch: AIRA is better than Brilliant.org for AI
- * literacy, at $9.99 once instead of $149/year. Every section ladders
- * up to that: hero, why-AIRA, comparison table, pricing, FAQ.
- *
- * Light theme throughout. Warm white background, orange→pink gradients,
- * generous whitespace. Designed to feel premium without feeling cold.
- */
-
-// Lemon Squeezy checkout URL — env var on Vercel, fallback for local dev.
-// When the Lemon Squeezy product is live the env var takes over.
-const CHECKOUT_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_URL ||
-  "https://boramir.lemonsqueezy.com/buy/PRO_PLACEHOLDER";
 
 const headingFont = {
   fontFamily:
     "var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif",
-  letterSpacing: "-0.02em",
 };
 
 const gradientText: React.CSSProperties = {
@@ -47,666 +28,459 @@ const gradientText: React.CSSProperties = {
 };
 
 const gradientBg = "linear-gradient(90deg, #FF6600 0%, #FF1A80 100%)";
-const sunsetBg = "linear-gradient(135deg, #FFA266 0%, #FF4D99 50%, #FFB3CC 100%)";
 
-/* ───────────────────────── Logo ───────────────────────── */
-
-function Logo({ size = 28, withWordmark = true }: { size?: number; withWordmark?: boolean }) {
+function Logo({ size = 38 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2 select-none" aria-label="AIRA">
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ filter: "drop-shadow(0 4px 10px rgba(255, 102, 0, 0.25))" }}
+    <span className="inline-flex items-center gap-3 select-none" aria-label="AIRA">
+      <span
+        className="grid place-items-center rounded-[10px] text-white font-black shadow-[0_12px_28px_rgba(255,26,128,0.24)]"
+        style={{
+          width: size,
+          height: size,
+          backgroundImage: gradientBg,
+          fontFamily:
+            "var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif",
+          letterSpacing: 0,
+          fontSize: Math.max(13, size * 0.38),
+        }}
       >
-        <defs>
-          <linearGradient id="airaLogoGradV3" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FF6600" />
-            <stop offset="100%" stopColor="#FF1A80" />
-          </linearGradient>
-          <linearGradient id="airaLogoSoftV3" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#FFF4ED" />
-            <stop offset="100%" stopColor="#FFF0F5" />
-          </linearGradient>
-        </defs>
-        <rect x="1.5" y="1.5" width="37" height="37" rx="10" fill="url(#airaLogoSoftV3)" stroke="url(#airaLogoGradV3)" strokeWidth="1.5" />
-        <path d="M11 30 L20 9 L29 30" stroke="url(#airaLogoGradV3)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-        <path d="M14.8 23 L25.2 23" stroke="url(#airaLogoGradV3)" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-        <circle cx="20" cy="9" r="2.1" fill="url(#airaLogoGradV3)" />
-      </svg>
-      {withWordmark && (
-        <span className="font-bold tracking-tight text-lg" style={{ ...headingFont, ...gradientText, letterSpacing: "0.04em" }}>
-          AIRA
-        </span>
-      )}
+        AI
+      </span>
+      <span
+        className="text-xl font-black tracking-normal text-aira-text"
+        style={headingFont}
+      >
+        AIRA
+      </span>
     </span>
   );
 }
 
-/* ───────────────────────── AIRA Orb ───────────────────────── */
+function MentorScene() {
+  const lanes = [
+    "Ask sharper",
+    "Judge answers",
+    "Build workflows",
+    "Practice prompts",
+    "Think with AI",
+    "Learn safely",
+  ];
 
-function AiraOrb({ size = 180 }: { size?: number }) {
   return (
     <div
-      className="relative"
-      style={{ width: size, height: size }}
       aria-hidden
+      className="absolute inset-0 -z-10 overflow-hidden bg-[linear-gradient(180deg,#fffefc_0%,#fff7f0_48%,#fff0f6_100%)]"
     >
-      {/* Outer halo */}
-      <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background: "radial-gradient(circle at center, rgba(255,102,0,0.22), transparent 65%)",
-          transform: "scale(1.3)",
-          filter: "blur(8px)",
-        }}
-      />
-      {/* Orb body */}
-      <div
-        className="absolute inset-0 rounded-full animate-pulse-slow"
-        style={{
-          background: "radial-gradient(circle at 30% 28%, #FFB088 0%, #FF6600 35%, #FF1A80 100%)",
-          boxShadow: "0 30px 60px -20px rgba(255, 26, 128, 0.45), 0 0 80px rgba(255,102,0,0.35)",
-        }}
-      />
-      {/* White top-left highlight */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          top: "12%",
-          left: "18%",
-          width: size * 0.28,
-          height: size * 0.18,
-          background: "radial-gradient(ellipse at center, rgba(255,255,255,0.75), transparent 70%)",
-          filter: "blur(2px)",
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.55] bg-[linear-gradient(rgba(26,26,31,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(26,26,31,0.055)_1px,transparent_1px)] bg-[size:72px_72px]" />
+      <div className="absolute left-0 right-0 top-[18%] h-px bg-gradient-to-r from-transparent via-orange-300/80 to-transparent" />
+      <div className="absolute left-0 right-0 top-[48%] h-px bg-gradient-to-r from-transparent via-pink-300/70 to-transparent" />
+      <div className="absolute left-0 right-0 top-[78%] h-px bg-gradient-to-r from-transparent via-orange-200/70 to-transparent" />
+      <div className="absolute inset-x-0 top-24 flex min-w-max animate-[airaMarquee_28s_linear_infinite] gap-3 px-6">
+        {[...lanes, ...lanes].map((lane, index) => (
+          <span
+            key={`${lane}-${index}`}
+            className="rounded-full border border-orange-200/80 bg-white/60 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-orange-700 shadow-sm backdrop-blur"
+          >
+            {lane}
+          </span>
+        ))}
+      </div>
+      <div className="absolute inset-x-0 bottom-16 flex min-w-max animate-[airaMarqueeReverse_34s_linear_infinite] gap-3 px-6">
+        {[...lanes.slice().reverse(), ...lanes.slice().reverse()].map((lane, index) => (
+          <span
+            key={`${lane}-${index}`}
+            className="rounded-full border border-pink-200/80 bg-white/55 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-pink-700 shadow-sm backdrop-blur"
+          >
+            {lane}
+          </span>
+        ))}
+      </div>
+      <div className="absolute left-[8%] top-[34%] h-28 w-28 rounded-[22px] border border-orange-200/70 bg-white/50 shadow-[0_24px_70px_rgba(255,102,0,0.12)] backdrop-blur-md" />
+      <div className="absolute right-[10%] top-[24%] h-36 w-36 rounded-[28px] border border-pink-200/70 bg-white/45 shadow-[0_24px_70px_rgba(255,26,128,0.12)] backdrop-blur-md" />
+      <div className="absolute bottom-[14%] left-[26%] h-20 w-20 rounded-[18px] border border-orange-200/70 bg-white/50 shadow-[0_18px_50px_rgba(255,102,0,0.10)] backdrop-blur-md" />
       <style jsx>{`
-        @keyframes airaBreathe {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.04); }
+        @keyframes airaMarquee {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
         }
-        .animate-pulse-slow {
-          animation: airaBreathe 4s ease-in-out infinite;
+
+        @keyframes airaMarqueeReverse {
+          from {
+            transform: translateX(-50%);
+          }
+          to {
+            transform: translateX(0);
+          }
         }
       `}</style>
     </div>
   );
 }
 
-/* ───────────────────────── Page ───────────────────────── */
+const proofPoints = [
+  "Generated lesson paths",
+  "Prompt practice with feedback",
+  "AI workflow training",
+  "Private sandbox practice",
+];
+
+const pillars = [
+  {
+    icon: Brain,
+    eyebrow: "Mentor",
+    title: "AIRA teaches judgment.",
+    body: "The product is not another chatbot wrapper. It trains the mental skill behind AI: how to ask, compare, verify, and improve.",
+  },
+  {
+    icon: BookOpen,
+    eyebrow: "Lessons",
+    title: "Generated learning, guided by structure.",
+    body: "We are building a lesson engine that can turn a goal into a clean path: concepts, examples, practice, feedback, and next steps.",
+  },
+  {
+    icon: Workflow,
+    eyebrow: "Workflows",
+    title: "From prompts to real output.",
+    body: "AIRA moves learners beyond clever prompts into repeatable workflows for research, writing, planning, coding, and decision-making.",
+  },
+];
+
+const buildList = [
+  "A premium mobile learning flow with generated lessons",
+  "A mentor-style AI literacy curriculum",
+  "Practice screens for prompt judgment and iteration",
+  "A web launch surface for waitlist, updates, and product story",
+  "A Hostinger-ready handoff plan for forms, SEO, and deployment",
+];
 
 export default function Home() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("");
 
-  const faqs = [
-    {
-      q: "Why is AIRA only $9.99 when Brilliant is $149/year?",
-      a: "Because Brilliant is a venture-funded company that needs subscription revenue to justify a billion-dollar valuation. AIRA is built by an indie maker. $9.99 covers our costs, lets us keep building, and means you own the app — not rent it. Like buying a book vs. paying monthly to read it.",
-    },
-    {
-      q: "How is AIRA actually better than Brilliant?",
-      a: "Brilliant is a wide curriculum: math, CS, science, all general. AIRA is laser-focused on AI literacy — the most important skill of this decade. We teach you to use ChatGPT, Claude, Gemini, Perplexity, and Cursor effectively. Brilliant teaches you geometry. Different problems, different tools.",
-    },
-    {
-      q: "Is the content really worth $9.99?",
-      a: "62 hand-written lessons (no AI-slop) drawn from Stanford CS324, MIT 6.S191, Anthropic's AI Fluency curriculum, and Lee Boonstra's whitepaper. Plus 30+ daily insights, 20 prompt patterns, 15 AI mistakes with fixes, and 25 quick wins. At $9.99, that works out to roughly 8 cents per lesson.",
-    },
-    {
-      q: "How do I get AIRA after paying?",
-      a: "Lemon Squeezy emails you an Android APK download link + license key within minutes of purchase. Tap the APK on your phone to install. First time? Android asks to allow 'install from unknown sources' — toggle it on, install, toggle it off. Standard one-time step. iOS coming soon, same purchase covers it.",
-    },
-    {
-      q: "What about iOS and the web app?",
-      a: "Web app is live now at airamentor.com — full lessons, sandbox, learning catalog. iOS is coming in a few weeks. One $9.99 purchase = lifetime access on all platforms we ship.",
-    },
-    {
-      q: "What if AIRA doesn't work for me?",
-      a: "14-day refund through Lemon Squeezy. Email us, get your $9.99 back. No questions asked. We'd rather you find the right product than feel stuck with the wrong one.",
-    },
-    {
-      q: "Is this another ChatGPT wrapper?",
-      a: "No. AIRA teaches the skill of using ANY AI — ChatGPT, Claude, Gemini, Perplexity, Cursor, whatever comes next. The mental models transfer. The prompt patterns transfer. The critical thinking transfers. Tools change every year. The skill of using them doesn't.",
-    },
-    {
-      q: "Who built AIRA?",
-      a: "One indie maker who got tired of bad AI tutorials. No VC. No ads. No data selling. Just one builder shipping real work from Turkey. You're not buying from a startup — you're buying from a person.",
-    },
-  ];
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setStatus("Enter a real email and AIRA will save your place.");
+      return;
+    }
+
+    const saved = JSON.parse(
+      window.localStorage.getItem("aira-coming-soon") || "[]",
+    ) as string[];
+    window.localStorage.setItem(
+      "aira-coming-soon",
+      JSON.stringify(Array.from(new Set([...saved, cleanEmail]))),
+    );
+    setStatus("You are on the early list. Hostinger capture can wire this to production.");
+    setEmail("");
+  }
 
   return (
-    <main className="relative w-full overflow-x-hidden bg-aira-bg text-aira-text">
-      {/* ─────────────────── NAV ─────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/75 border-b border-aira-border">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
-          <a href="#top" className="inline-flex items-center" aria-label="AIRA home">
-            <Logo size={30} />
+    <main className="relative min-h-screen overflow-x-hidden bg-aira-bg text-aira-text">
+      <MentorScene />
+
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-aira-border bg-white/78 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8 lg:px-10">
+          <a href="#top" aria-label="AIRA home">
+            <Logo size={34} />
           </a>
-          <div className="hidden md:flex items-center gap-7 text-sm text-aira-muted">
-            <Link href="/learn" className="hover:text-aira-text transition">Lessons</Link>
-            <Link href="/sandbox" className="hover:text-aira-text transition">Sandbox</Link>
-            <a href="#why" className="hover:text-aira-text transition">Why AIRA</a>
-            <Link href="/pricing" className="hover:text-aira-text transition">Pricing</Link>
-            <a href="#faq" className="hover:text-aira-text transition">FAQ</a>
-          </div>
-          <a
-            href={CHECKOUT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:inline-flex text-sm px-4 py-2 rounded-full text-white font-semibold shadow-[0_8px_24px_rgba(255,26,128,0.35)] hover:shadow-[0_12px_30px_rgba(255,26,128,0.5)] transition-all hover:-translate-y-0.5"
-            style={{ backgroundImage: gradientBg }}
-          >
-            Get AIRA — $9.99
-          </a>
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen((v) => !v)}
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-aira-text"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-aira-border bg-white/95 backdrop-blur-md">
-            <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3 text-sm text-aira-muted">
-              <Link href="/learn" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Lessons</Link>
-              <Link href="/sandbox" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Sandbox</Link>
-              <a href="#why" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Why AIRA</a>
-              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">Pricing</Link>
-              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="hover:text-aira-text">FAQ</a>
-              <a
-                href={CHECKOUT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 inline-flex items-center justify-center px-4 py-2 rounded-full text-white font-semibold"
-                style={{ backgroundImage: gradientBg }}
-              >
-                Get AIRA — $9.99
-              </a>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* ─────────────────── HERO ─────────────────── */}
-      <section id="top" className="relative pt-36 pb-20 px-6 sm:px-8 lg:px-12 overflow-hidden">
-        {/* Glow background */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(60% 60% at 50% 35%, rgba(255,102,0,0.13) 0%, rgba(255,26,128,0.08) 40%, transparent 75%)",
-          }}
-        />
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-[1.2fr,1fr] gap-10 lg:gap-16 items-center">
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[11px] tracking-[0.18em] uppercase text-orange-700 font-semibold">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                </span>
-                Live · 62 lessons · No subscription
-              </div>
-
-              <h1
-                className="mt-6 text-[40px] sm:text-[52px] lg:text-[64px] font-bold leading-[1.02]"
-                style={headingFont}
-              >
-                Brilliant teaches you math.
-                <br />
-                <span style={gradientText}>AIRA teaches you AI.</span>
-              </h1>
-
-              <p className="mt-6 text-lg sm:text-xl text-aira-muted max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                The AI literacy app that costs less than a coffee.
-                Pay <span className="font-bold text-aira-text">$9.99 once</span> — own it forever.
-                Brilliant charges $149/year. Same idea. Better focus. Better price.
-              </p>
-
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <a
-                  href={CHECKOUT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-white font-semibold shadow-[0_12px_30px_rgba(255,26,128,0.35)] hover:shadow-[0_16px_40px_rgba(255,26,128,0.5)] transition-all hover:-translate-y-0.5"
-                  style={{ backgroundImage: gradientBg }}
-                >
-                  Get AIRA — $9.99 once
-                  <ArrowRight size={18} />
-                </a>
-                <Link
-                  href="/learn"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-semibold border-2 border-orange-200 bg-white text-orange-700 hover:bg-orange-50 transition-colors"
-                >
-                  <BookOpen size={18} /> Browse 62 lessons
-                </Link>
-              </div>
-
-              <p className="mt-5 text-xs text-aira-dim">
-                14-day refund · No subscription · Lifetime updates
-              </p>
-            </div>
-
-            {/* Orb visual */}
-            <div className="flex justify-center lg:justify-end">
-              <AiraOrb size={260} />
-            </div>
-          </div>
-
-          {/* Stat strip */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            {[
-              { num: "62", label: "Lessons" },
-              { num: "$9.99", label: "Once. Forever." },
-              { num: "5 min", label: "Per session" },
-              { num: "0", label: "Subscriptions" },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="rounded-2xl bg-white border border-aira-border px-5 py-4 text-center"
-                style={{ boxShadow: "0 4px 12px rgba(255, 102, 0, 0.04)" }}
-              >
-                <div className="text-2xl font-bold tabular-nums" style={{ ...headingFont, ...gradientText }}>
-                  {s.num}
-                </div>
-                <div className="text-xs uppercase tracking-wider text-aira-dim mt-1 font-semibold">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────── WHY AIRA BEATS BRILLIANT ─────────────────── */}
-      <section id="why" className="relative py-24 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Why AIRA</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={headingFont}>
-              Brilliant is great. AIRA is built for <span style={gradientText}>this decade</span>.
-            </h2>
-            <p className="mt-4 text-lg text-aira-muted leading-relaxed">
-              Three reasons AIRA wins for AI literacy. Read them. Decide for yourself.
-            </p>
-          </div>
-
-          <div className="mt-14 grid md:grid-cols-3 gap-5">
-            {[
-              {
-                eyebrow: "Focus",
-                title: "Built for AI. Only AI.",
-                body: "Brilliant teaches geometry, statistics, neural net basics — wide curriculum. AIRA is laser-focused on the one skill that matters most right now: thinking with AI. Prompt craft. Critical thinking. When to use it. When not to.",
-                icon: Brain,
-              },
-              {
-                eyebrow: "Ownership",
-                title: "Pay once. Own forever.",
-                body: "Brilliant: $149/year, every year, forever. AIRA: $9.99 once. Like buying a book vs. renting one. After 5 years, AIRA users save $735. We don't think learning should come with a monthly bill.",
-                icon: InfinityIcon,
-              },
-              {
-                eyebrow: "Content",
-                title: "Real research. No fluff.",
-                body: "62 lessons drawn from Stanford CS324, MIT 6.S191, Anthropic's AI Fluency curriculum, and Lee Boonstra's prompt engineering whitepaper. Hand-written. Not AI-generated content about AI — that would be ironic.",
-                icon: Sparkles,
-              },
-            ].map((c) => {
-              const Icon = c.icon;
-              return (
-                <div
-                  key={c.title}
-                  className="group rounded-3xl bg-white border border-aira-border p-7 transition-all hover:-translate-y-1 hover:border-orange-200"
-                  style={{ boxShadow: "0 4px 16px rgba(255, 102, 0, 0.04)" }}
-                >
-                  <div
-                    className="inline-flex w-12 h-12 rounded-2xl items-center justify-center text-white shadow-md mb-5"
-                    style={{ backgroundImage: gradientBg }}
-                  >
-                    <Icon size={22} />
-                  </div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-600">{c.eyebrow}</p>
-                  <h3 className="mt-1 text-xl font-bold" style={headingFont}>{c.title}</h3>
-                  <p className="mt-3 text-sm text-aira-muted leading-relaxed">{c.body}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────── COMPARISON TABLE ─────────────────── */}
-      <section className="relative py-24 px-6 sm:px-8 lg:px-12 bg-orange-50/50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">The honest comparison</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold" style={headingFont}>
-              5 years of learning, side by side.
-            </h2>
-            <p className="mt-4 text-lg text-aira-muted">
-              Brilliant, Skillshare, MasterClass — all subscription. AIRA — one payment.
-            </p>
-          </div>
-
-          <div className="mt-12 overflow-x-auto rounded-3xl border border-aira-border bg-white shadow-sm">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-aira-border">
-                  <th className="text-left p-5 font-semibold text-aira-muted">Feature</th>
-                  <th className="text-center p-5 font-bold text-orange-700 bg-orange-50/60">AIRA</th>
-                  <th className="text-center p-5 font-semibold text-aira-muted">Brilliant</th>
-                  <th className="text-center p-5 font-semibold text-aira-muted">Skillshare</th>
-                  <th className="text-center p-5 font-semibold text-aira-muted">MasterClass</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { f: "Price", a: "$9.99 once", b: "$149/year", c: "$168/year", d: "$180/year" },
-                  { f: "5-year cost", a: "$9.99", b: "$745", c: "$840", d: "$900", highlight: true },
-                  { f: "Focus", a: "AI literacy", b: "Math/CS/Sci", c: "General", d: "General" },
-                  { f: "AI-specific", a: "✓ Core", b: "Some", c: "Few", d: "None" },
-                  { f: "Lifetime access", a: "✓ Yes", b: "Subscription", c: "Subscription", d: "Subscription" },
-                  { f: "Web + Android", a: "✓ Both", b: "Both", c: "Both", d: "Both" },
-                  { f: "Built by", a: "Indie maker", b: "VC-funded", c: "VC-funded", d: "VC-funded" },
-                ].map((r) => (
-                  <tr key={r.f} className="border-b border-aira-border last:border-b-0">
-                    <td className="p-5 font-medium text-aira-text">{r.f}</td>
-                    <td
-                      className={`p-5 text-center bg-orange-50/40 font-semibold ${
-                        r.highlight ? "text-orange-700" : "text-aira-text"
-                      }`}
-                    >
-                      {r.a}
-                    </td>
-                    <td className={`p-5 text-center ${r.highlight ? "text-aira-muted line-through" : "text-aira-muted"}`}>{r.b}</td>
-                    <td className={`p-5 text-center ${r.highlight ? "text-aira-muted line-through" : "text-aira-muted"}`}>{r.c}</td>
-                    <td className={`p-5 text-center ${r.highlight ? "text-aira-muted line-through" : "text-aira-muted"}`}>{r.d}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <p className="mt-6 text-xs text-aira-dim text-center max-w-2xl mx-auto">
-            Prices verified against each company&apos;s public pricing page. 5-year cost compounds annual subscriptions. AIRA never compounds.
-          </p>
-        </div>
-      </section>
-
-      {/* ─────────────────── HOW IT WORKS ─────────────────── */}
-      <section className="relative py-24 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">How AIRA works</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={headingFont}>
-              5 minutes a day. <span style={gradientText}>Real skills.</span>
-            </h2>
-          </div>
-
-          <div className="mt-14 grid md:grid-cols-3 gap-5">
-            {[
-              {
-                n: "01",
-                title: "Open a lesson.",
-                body: "No setup, no signup wall. Tap and start. Each lesson takes 5 minutes — built for the school commute, the coffee break, the 'I have 5 minutes' moment.",
-              },
-              {
-                n: "02",
-                title: "See it. Try it.",
-                body: "Every lesson shows you a vague prompt vs. a sharp one. You see the difference. Then you try it yourself in the sandbox. AIRA grades you with specific feedback.",
-              },
-              {
-                n: "03",
-                title: "Build a habit.",
-                body: "XP, streaks, badges — but designed to be encouraging, not punishing. Miss a day? AIRA gives you a free streak save once a week. We want you to keep going, not give up.",
-              },
-            ].map((s) => (
-              <div
-                key={s.n}
-                className="rounded-3xl bg-white border border-aira-border p-7"
-                style={{ boxShadow: "0 4px 16px rgba(255, 102, 0, 0.04)" }}
-              >
-                <div className="text-5xl font-black tabular-nums leading-none" style={{ ...headingFont, ...gradientText }}>
-                  {s.n}
-                </div>
-                <h3 className="mt-4 text-xl font-bold" style={headingFont}>{s.title}</h3>
-                <p className="mt-3 text-sm text-aira-muted leading-relaxed">{s.body}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="/sandbox"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 border-orange-300 text-orange-700 font-semibold hover:bg-orange-50 transition-colors"
-            >
-              <Zap size={16} /> Try the sandbox (free, no signup)
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────── TRACKS ─────────────────── */}
-      <section className="relative py-24 px-6 sm:px-8 lg:px-12 bg-orange-50/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">62 lessons across 6 tracks</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={headingFont}>
-              From <span className="text-aira-muted">&quot;what&apos;s a prompt&quot;</span> to <span style={gradientText}>&quot;I built this with AI&quot;</span>
-            </h2>
-          </div>
-
-          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { name: "AI Foundations", desc: "Think with AI, not at it. The mental models everything else builds on.", gradient: "linear-gradient(135deg, #FF6600 0%, #FF1A80 100%)" },
-              { name: "Critical Thinking", desc: "Know when AI is wrong. Know when to question. The skill that pays.", gradient: "linear-gradient(135deg, #FF4D99 0%, #FFAC30 100%)" },
-              { name: "Practical Power", desc: "Chain of thought, role prompting, follow-up mastery. The pro moves.", gradient: "linear-gradient(135deg, #FFA266 0%, #FF6600 100%)" },
-              { name: "Tools & Taste", desc: "ChatGPT vs Claude vs Gemini. Honest, real, opinionated comparisons.", gradient: "linear-gradient(135deg, #00C896 0%, #5BA8FF 100%)" },
-              { name: "Create with AI", desc: "Go from idea to working thing. Weekend projects. Prompt libraries.", gradient: "linear-gradient(135deg, #FF7F33 0%, #FFB3CC 100%)" },
-              { name: "Code Track", desc: "For builders. Vibe-code apps with Cursor, Copilot, and Claude.", gradient: "linear-gradient(135deg, #B380FF 0%, #FF4D99 100%)" },
-            ].map((t) => (
-              <Link
-                key={t.name}
-                href="/learn"
-                className="group block rounded-3xl bg-white border border-aira-border overflow-hidden transition-all hover:-translate-y-1"
-                style={{ boxShadow: "0 4px 16px rgba(255, 102, 0, 0.04)" }}
-              >
-                <div className="h-2 w-full" style={{ background: t.gradient }} />
-                <div className="p-6">
-                  <h3 className="text-lg font-bold" style={headingFont}>{t.name}</h3>
-                  <p className="mt-2 text-sm text-aira-muted leading-relaxed">{t.desc}</p>
-                  <div className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-orange-600 group-hover:translate-x-0.5 transition-transform">
-                    Browse <ArrowRight size={14} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────── PRICING ─────────────────── */}
-      <section id="pricing" className="relative py-24 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Pricing</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold" style={headingFont}>
-              One price. <span style={gradientText}>One purchase.</span>
-            </h2>
-            <p className="mt-4 text-lg text-aira-muted">No tiers. No upsells. No subscription.</p>
-          </div>
-
-          <div
-            className="mt-12 relative rounded-[28px] p-[2px]"
-            style={{ backgroundImage: sunsetBg }}
-          >
-            <div className="rounded-[26px] bg-white p-10 text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[11px] font-bold uppercase tracking-wider text-orange-700">
-                <Sparkles size={12} /> Founder pricing
-              </div>
-              <div className="mt-6 flex items-baseline justify-center gap-3">
-                <span className="text-2xl text-aira-dim line-through tabular-nums">$29.99</span>
-                <span className="text-6xl sm:text-7xl font-bold tabular-nums" style={{ ...headingFont, ...gradientText }}>
-                  $9.99
-                </span>
-              </div>
-              <p className="mt-2 text-aira-muted">One time. Yours forever.</p>
-
-              <ul className="mt-8 grid sm:grid-cols-2 gap-3 max-w-xl mx-auto text-left">
-                {[
-                  "62 hand-written lessons",
-                  "30+ daily insights",
-                  "20 prompt patterns",
-                  "15 AI mistake cards",
-                  "Practice sandbox + grader",
-                  "Web + Android + iOS",
-                  "Lifetime free updates",
-                  "14-day refund",
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <span
-                      className="mt-0.5 inline-flex w-5 h-5 rounded-full items-center justify-center text-white shrink-0"
-                      style={{ backgroundImage: gradientBg }}
-                    >
-                      <Check size={12} />
-                    </span>
-                    <span className="text-aira-text">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href={CHECKOUT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-10 inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full text-white font-bold text-base shadow-[0_12px_30px_rgba(255,26,128,0.35)] hover:shadow-[0_16px_40px_rgba(255,26,128,0.5)] transition-all hover:-translate-y-0.5"
-                style={{ backgroundImage: gradientBg }}
-              >
-                Get AIRA — $9.99
-                <ArrowRight size={18} />
-              </a>
-              <p className="mt-4 text-xs text-aira-dim">
-                Secure checkout · Lemon Squeezy · APK delivered by email
-              </p>
-            </div>
-          </div>
-
-          <p className="mt-6 text-center text-sm text-aira-muted">
-            Need to compare?{" "}
-            <Link href="/pricing" className="font-semibold text-orange-600 hover:underline">
-              See the full Brilliant comparison →
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      {/* ─────────────────── FAQ ─────────────────── */}
-      <section id="faq" className="relative py-24 px-6 sm:px-8 lg:px-12 bg-orange-50/30">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">Honest answers</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-bold" style={headingFont}>
-              Frequently asked.
-            </h2>
-          </div>
-
-          <div className="mt-12 space-y-3">
-            {faqs.map((f, i) => {
-              const open = openFaq === i;
-              return (
-                <div
-                  key={i}
-                  className="rounded-2xl bg-white border border-aira-border overflow-hidden"
-                  style={{ boxShadow: open ? "0 6px 20px rgba(255, 102, 0, 0.06)" : "0 2px 6px rgba(255, 102, 0, 0.03)" }}
-                >
-                  <button
-                    onClick={() => setOpenFaq(open ? null : i)}
-                    className="w-full flex items-center justify-between gap-4 p-5 text-left"
-                  >
-                    <span className="font-semibold text-aira-text">{f.q}</span>
-                    <ChevronDown
-                      size={18}
-                      className={`shrink-0 text-orange-500 transition-transform ${open ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  {open && (
-                    <div className="px-5 pb-5 -mt-1">
-                      <p className="text-sm text-aira-muted leading-relaxed">{f.a}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────── FINAL CTA ─────────────────── */}
-      <section className="relative py-24 px-6 sm:px-8 lg:px-12 overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(50% 60% at 50% 50%, rgba(255,102,0,0.10) 0%, rgba(255,26,128,0.08) 50%, transparent 80%)",
-          }}
-        />
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-5xl font-bold leading-tight" style={headingFont}>
-            Your first lesson takes <span style={gradientText}>5 minutes</span>.
-          </h2>
-          <p className="mt-5 text-lg text-aira-muted">
-            No signup needed to start. Browse 62 lessons. Try the sandbox. Then decide.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
-            <Link
-              href="/learn"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-white font-semibold shadow-[0_12px_30px_rgba(255,26,128,0.35)] hover:shadow-[0_16px_40px_rgba(255,26,128,0.5)] transition-all hover:-translate-y-0.5"
-              style={{ backgroundImage: gradientBg }}
-            >
-              Start free
-              <ArrowRight size={18} />
-            </Link>
-            <a
-              href={CHECKOUT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-semibold border-2 border-orange-200 bg-white text-orange-700 hover:bg-orange-50 transition-colors"
-            >
-              <Smartphone size={18} /> Or get the APK — $9.99
+          <div className="hidden items-center gap-6 text-sm font-semibold text-aira-muted md:flex">
+            <a className="transition hover:text-aira-text" href="#built">
+              Built
+            </a>
+            <a className="transition hover:text-aira-text" href="#mentor">
+              Mentor
+            </a>
+            <a className="transition hover:text-aira-text" href="#launch">
+              Launch
             </a>
           </div>
+          <a
+            href="#launch"
+            className="hidden items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-white shadow-[0_12px_28px_rgba(255,26,128,0.26)] transition hover:-translate-y-0.5 sm:inline-flex"
+            style={{ backgroundImage: gradientBg }}
+          >
+            Join waitlist
+            <ArrowRight size={16} />
+          </a>
+        </div>
+      </nav>
+
+      <section
+        id="top"
+        className="relative mx-auto flex min-h-[92vh] max-w-6xl flex-col justify-center px-5 pb-14 pt-28 sm:px-8 lg:px-10"
+      >
+        <div className="mobile-copy min-w-0 max-w-[calc(100vw-40px)] sm:max-w-4xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/70 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-orange-700 shadow-sm backdrop-blur">
+            <Sparkles size={14} />
+            Coming soon
+          </div>
+
+          <h1
+            className="mobile-copy mt-7 max-w-[calc(100vw-40px)] break-words text-[37px] font-black leading-[1.02] tracking-normal text-aira-text sm:max-w-5xl sm:text-[68px] lg:text-[92px] lg:leading-[0.98]"
+            style={headingFont}
+          >
+            <span className="block">
+              <span className="block sm:inline">AIRA is </span>
+              <span className="block sm:inline">coming soon.</span>
+            </span>
+            <span className="block" style={gradientText}>
+              Your AI mentor
+            </span>
+            <span className="block" style={gradientText}>
+              <span className="block sm:inline">for the </span>
+              <span className="block sm:inline">AI-native era.</span>
+            </span>
+          </h1>
+
+          <p className="mobile-copy mt-7 max-w-[calc(100vw-40px)] text-lg leading-8 text-aira-muted sm:max-w-2xl sm:text-xl">
+            AIRA turns AI from a tool you ask into a skill you own. It teaches
+            prompt judgment, workflow thinking, generated lessons, and the calm
+            habit of checking what AI gives back.
+          </p>
+
+          <div className="mobile-copy mt-9 flex max-w-[calc(100vw-40px)] flex-col gap-3 sm:max-w-none sm:flex-row">
+            <a
+              href="#launch"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full px-7 py-4 text-base font-black text-white shadow-[0_18px_38px_rgba(255,26,128,0.28)] transition hover:-translate-y-0.5 sm:w-auto"
+              style={{ backgroundImage: gradientBg }}
+            >
+              Get early access
+              <ArrowRight size={18} />
+            </a>
+            <a
+              href="#built"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-orange-200 bg-white/72 px-7 py-4 text-base font-black text-orange-700 shadow-sm backdrop-blur transition hover:bg-orange-50 sm:w-auto"
+            >
+              See what we built
+            </a>
+          </div>
+
+          <div className="mobile-copy mt-10 grid max-w-[calc(100vw-40px)] gap-3 sm:max-w-3xl sm:grid-cols-2">
+            {proofPoints.map((point) => (
+              <div
+                key={point}
+                className="flex min-w-0 items-start gap-3 rounded-[8px] border border-aira-border bg-white/68 p-4 shadow-sm backdrop-blur"
+              >
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
+                <span className="min-w-0 text-sm font-semibold leading-6 text-aira-muted">
+                  {point}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ─────────────────── FOOTER ─────────────────── */}
-      <footer className="relative border-t border-aira-border py-12 px-6 sm:px-8 lg:px-12 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center text-center md:text-left">
-            <div>
-              <Logo size={28} />
-              <p className="mt-3 text-sm text-aira-muted">
-                Better than Brilliant. <br className="hidden md:inline" />
-                Costs less than coffee.
+      <section id="built" className="relative bg-white/78 px-5 py-20 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-600">
+              What exists already
+            </p>
+            <h2
+              className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl"
+              style={headingFont}
+            >
+              We are not teasing a vague idea. We are shaping the learning
+              engine.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {buildList.map((item, index) => (
+                <div
+                  key={item}
+                  className="rounded-[8px] border border-aira-border bg-aira-card p-5 shadow-[0_14px_38px_rgba(255,102,0,0.06)]"
+                >
+                  <div
+                    className="mb-5 grid h-11 w-11 place-items-center rounded-[8px] text-sm font-black text-white"
+                    style={{ backgroundImage: gradientBg }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </div>
+                  <p className="text-base font-black leading-6 text-aira-text">
+                    {item}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-[8px] border border-aira-border bg-aira-surface p-6 shadow-[0_18px_52px_rgba(255,26,128,0.08)]">
+              <div className="flex items-center gap-3">
+                <div
+                  className="grid h-12 w-12 place-items-center rounded-[8px] text-white"
+                  style={{ backgroundImage: gradientBg }}
+                >
+                  <Cpu size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-600">
+                    Launch thesis
+                  </p>
+                  <h3 className="text-2xl font-black text-aira-text" style={headingFont}>
+                    AI literacy needs a mentor, not a maze.
+                  </h3>
+                </div>
+              </div>
+              <p className="mt-6 text-base leading-8 text-aira-muted">
+                AIRA should feel like the person beside you who says: ask it
+                this way, test that answer, turn this into a workflow, and do
+                not believe the shiny sentence until it survives a check.
               </p>
-            </div>
-            <div className="flex justify-center gap-6 text-sm text-aira-muted">
-              <Link href="/learn" className="hover:text-aira-text">Lessons</Link>
-              <Link href="/sandbox" className="hover:text-aira-text">Sandbox</Link>
-              <Link href="/pricing" className="hover:text-aira-text">Pricing</Link>
-              <Link href="/privacy" className="hover:text-aira-text">Privacy</Link>
-              <Link href="/terms" className="hover:text-aira-text">Terms</Link>
-            </div>
-            <div className="md:text-right text-sm text-aira-dim">
-              AIRA © 2026 · Made in Turkey · By a human who thinks with AI
+              <div className="mt-6 grid gap-3">
+                {["Calm", "Practical", "Private", "Built for real output"].map((tag) => (
+                  <div
+                    key={tag}
+                    className="flex items-center justify-between rounded-[8px] border border-orange-200 bg-white px-4 py-3 text-sm font-black text-aira-text"
+                  >
+                    <span>{tag}</span>
+                    <span className="h-2 w-12 rounded-full bg-gradient-to-r from-orange-500 to-pink-500" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="mentor" className="relative px-5 py-20 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-5 md:grid-cols-3">
+            {pillars.map((pillar) => {
+              const Icon = pillar.icon;
+
+              return (
+                <article
+                  key={pillar.title}
+                  className="rounded-[8px] border border-aira-border bg-white/76 p-6 shadow-[0_16px_44px_rgba(255,102,0,0.07)] backdrop-blur"
+                >
+                  <div
+                    className="mb-6 grid h-12 w-12 place-items-center rounded-[8px] text-white"
+                    style={{ backgroundImage: gradientBg }}
+                  >
+                    <Icon size={24} />
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-600">
+                    {pillar.eyebrow}
+                  </p>
+                  <h3
+                    className="mt-2 text-2xl font-black leading-tight text-aira-text"
+                    style={headingFont}
+                  >
+                    {pillar.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-7 text-aira-muted">
+                    {pillar.body}
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="launch" className="relative bg-aira-text px-5 py-20 text-white sm:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.95fr_1fr] lg:items-center">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-orange-300">
+              Early access
+            </p>
+            <h2
+              className="mt-3 text-4xl font-black leading-tight tracking-normal sm:text-5xl"
+              style={headingFont}
+            >
+              Join before the public launch.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-white/72">
+              The next job is simple: connect the form in Hostinger, publish the
+              coming-soon page, collect early users, then ship the web and
+              mobile mentor experience with a clean launch sequence.
+            </p>
+            <div className="mt-8 grid gap-3">
+              {[
+                { icon: ShieldCheck, text: "No mascot, no gimmicks, no generic AI hype." },
+                { icon: MessageCircle, text: "The story is mentor-first: AIRA helps you think better with AI." },
+                { icon: Rocket, text: "Hostinger team can wire capture, SEO, analytics, and final publish." },
+              ].map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.text} className="flex items-start gap-3 text-sm font-semibold text-white/78">
+                    <Icon className="mt-0.5 h-5 w-5 shrink-0 text-orange-300" />
+                    <span>{item.text}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="grid h-12 w-12 place-items-center rounded-[8px] text-white"
+                style={{ backgroundImage: gradientBg }}
+              >
+                <Mail size={24} />
+              </div>
+              <div>
+                <p className="text-sm font-black text-white">AIRA early list</p>
+                <p className="text-sm text-white/58">Preview capture until Hostinger form is wired.</p>
+              </div>
+            </div>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <label className="sr-only" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                className="min-h-14 flex-1 rounded-[8px] border border-white/16 bg-white px-4 text-base font-semibold text-aira-text outline-none transition placeholder:text-aira-dim focus:border-orange-300"
+              />
+              <button
+                type="submit"
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[8px] px-6 text-base font-black text-white transition hover:-translate-y-0.5"
+                style={{ backgroundImage: gradientBg }}
+              >
+                Join
+                <ArrowRight size={18} />
+              </button>
+            </div>
+
+            <p className="mt-4 min-h-6 text-sm font-semibold text-orange-200">
+              {status || "Coming soon. Early users get the cleanest path first."}
+            </p>
+          </form>
+        </div>
+      </section>
+
+      <style jsx global>{`
+        @media (max-width: 639px) {
+          .mobile-copy {
+            width: 320px;
+            max-width: calc(100vw - 40px);
+          }
+        }
+      `}</style>
+
+      <footer className="border-t border-aira-border bg-white px-5 py-8 sm:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 text-sm text-aira-muted sm:flex-row sm:items-center sm:justify-between">
+          <Logo size={30} />
+          <p>AIRA - Your AI mentor for the AI-native era.</p>
         </div>
       </footer>
     </main>
