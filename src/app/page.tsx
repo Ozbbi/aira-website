@@ -1,394 +1,261 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
-import {
-  Brain, Zap, Target, BookOpen, Code, LineChart, Globe, FlaskConical,
-  Scale, Briefcase, HeartPulse, Palette, CheckCircle2, Flame, Star,
-  Settings, LogOut, Crown, Plus, MessageCircle
+import React, { useState, useEffect } from 'react';
+import { 
+  Brain, Zap, Play, Pause, Headphones, Target, ArrowRight, 
+  ShieldCheck, Sparkles, Activity, Clock, Waves, 
+  CheckCircle2, Lock, Unlock, Menu, X, ChevronRight,
+  BarChart3, BrainCircuit, Lightbulb
 } from 'lucide-react';
 
-const subjects = [
-  { icon: Brain, title: "AI & Prompts", id: "ai-prompts" },
-  { icon: Code, title: "Programming", id: "programming" },
-  { icon: Target, title: "Mathematics", id: "math" },
-  { icon: Globe, title: "Languages", id: "languages" },
-  { icon: LineChart, title: "Data Science", id: "data-science" },
-  { icon: Briefcase, title: "Business", id: "business" },
-  { icon: HeartPulse, title: "Health", id: "health" },
-  { icon: FlaskConical, title: "Chemistry", id: "chemistry" },
-  { icon: Zap, title: "Physics", id: "physics" },
-  { icon: Scale, title: "Law", id: "law" },
-  { icon: Palette, title: "Philosophy", id: "philosophy" },
-  { icon: BookOpen, title: "History", id: "history" },
-  { icon: Star, title: "Psychology", id: "psychology" },
-  { icon: LineChart, title: "Finance", id: "finance" },
-  { icon: Target, title: "Marketing", id: "marketing" }
-];
+const AiraMentorMasterpiece = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const checkoutUrl = "https://boramir.lemonsqueezy.com/checkout/buy/985b69f3-b126-4452-bd49-129c9429d11a";
 
-interface UserProgress {
-  streak: number;
-  totalXP: number;
-  lastStudied: string;
-  isPro: boolean;
-}
-
-export default function Dashboard() {
-  const { user, isLoaded } = useUser();
-  const [progress, setProgress] = useState<UserProgress>({
-    streak: 0,
-    totalXP: 0,
-    lastStudied: '',
-    isPro: user?.publicMetadata?.isPro === true || false
-  });
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (isLoaded && !user) {
-      redirect('/');
-    }
-  }, [user, isLoaded]);
-
-  // Fetch user progress from Supabase
-  useEffect(() => {
-    if (user) {
-      fetchUserProgress();
-    }
-  }, [user]);
-
-  const fetchUserProgress = async () => {
-    try {
-      const response = await fetch(`/api/progress/${user?.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setProgress(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch progress:', error);
-    }
-  };
-
-  const startFlowSession = (subjectId: string) => {
-    setSelectedSubject(subjectId);
-    setChatOpen(true);
-  };
-
-  if (!isLoaded) {
-    return <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">Loading...</div>;
-  }
+  useEffect(( ) => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#1A1A24] border-r border-white/5 p-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Brain className="w-5 h-5" />
+    <div className="min-h-screen bg-[#020205] text-[#E2E8F0] font-sans selection:bg-blue-500/30 overflow-x-hidden">
+      {/* Animated Background Waves (Brain.fm Aesthetic) */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-900/10 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg' )] opacity-20 brightness-100 contrast-150" />
+      </div>
+
+      {/* Premium Navigation */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-[#020205]/80 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-8'}`}>
+        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
+          <div className="flex items-center gap-4 group cursor-pointer">
+            <div className="relative">
+              <div className="absolute inset-0 bg-blue-600 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
+              <div className="relative w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center shadow-2xl">
+                <Brain className="w-7 h-7 text-white" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tighter leading-none text-white">AIRA MENTOR</span>
+              <span className="text-[10px] font-bold tracking-[0.3em] text-blue-400 uppercase">Neural Focus Engine</span>
+            </div>
           </div>
-          <span className="text-lg font-bold">AIRA MENTOR</span>
+          
+          <div className="hidden lg:flex items-center gap-10">
+            {['Science', 'Technology', 'Pricing', 'About'].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-bold text-gray-400 hover:text-white transition-all hover:tracking-widest uppercase tracking-widest">
+                {item}
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-6">
+            <button className="hidden sm:block text-sm font-black text-white/70 hover:text-white transition-colors tracking-widest">LOG IN</button>
+            <a href={checkoutUrl} className="relative group overflow-hidden px-8 py-3.5 rounded-full bg-white text-black font-black text-sm tracking-widest hover:scale-105 transition-all">
+              <span className="relative z-10">TRY FREE</span>
+              <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            </a>
+          </div>
         </div>
+      </nav>
 
-        <nav className="space-y-2 flex-1">
-          <NavItem
-            icon={Brain}
-            label="Home"
-            active={activeTab === 'home'}
-            onClick={() => setActiveTab('home')}
-          />
-          <NavItem
-            icon={BookOpen}
-            label="My Studies"
-            active={activeTab === 'studies'}
-            onClick={() => setActiveTab('studies')}
-          />
-          <NavItem
-            icon={LineChart}
-            label="Progress"
-            active={activeTab === 'progress'}
-            onClick={() => setActiveTab('progress')}
-          />
-          <NavItem
-            icon={Settings}
-            label="Settings"
-            active={activeTab === 'settings'}
-            onClick={() => setActiveTab('settings')}
-          />
-        </nav>
+      {/* Hero Section: The Focus Core */}
+      <section className="relative pt-60 pb-40 px-8">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-blue-500/5 border border-blue-500/20 mb-12 animate-bounce-slow">
+            <Sparkles className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-black tracking-[0.4em] uppercase text-blue-300">Unlock 100% Neural Capacity</span>
+          </div>
+          
+          <h1 className="text-7xl md:text-[10rem] font-black mb-12 tracking-tighter leading-[0.85] text-white">
+            MASTER YOUR   
 
-        <div className="space-y-4 pt-4 border-t border-white/5">
-          {!progress.isPro && (
-            <button className="w-full px-4 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform">
-              <Crown className="w-5 h-5" />
-              Go Pro
-            </button>
-          )}
-          <button className="w-full px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-2 text-sm font-medium">
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
+            <span className="bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 bg-clip-text text-transparent">FLOW STATE.</span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-gray-400 mb-16 max-w-3xl mx-auto leading-relaxed font-medium italic">
+            "Aira Mentor uses AI-generated neural patterns to sync your brain for deep focus, combined with a Socratic study guide that ensures you never forget what you learn."
+          </p>
+
+          {/* Central Focus Trigger (Brain.fm Inspired) */}
+          <div className="relative flex flex-col items-center justify-center">
+            <div className="absolute w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[100px] -z-10" />
+            <a href={checkoutUrl} className="group relative w-48 h-48 flex items-center justify-center">
+              <div className="absolute inset-0 bg-blue-600 rounded-full animate-ping opacity-20" />
+              <div className="absolute inset-0 border-2 border-blue-500/30 rounded-full group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute inset-4 border border-blue-400/20 rounded-full group-hover:rotate-180 transition-transform duration-1000" />
+              <div className="relative w-36 h-36 bg-blue-600 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(37,99,235,0.6)] group-hover:scale-110 transition-all duration-500">
+                <Play className="w-16 h-16 text-white fill-current ml-2" />
+              </div>
+            </a>
+            <div className="mt-10 text-center">
+              <p className="text-lg font-black tracking-[0.5em] text-blue-400 uppercase mb-2">Initialize Session</p>
+              <p className="text-sm text-gray-500 font-mono">Neural Phase Locking: READY</p>
+            </div>
+          </div>
         </div>
-      </aside>
+      </section>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="sticky top-0 z-40 border-b border-white/5 bg-[#0A0A0F]/80 backdrop-blur-xl px-8 py-6">
-          <div className="flex items-center justify-between">
+      {/* Feature Section: Neural Tech */}
+      <section id="science" className="py-40 px-8 bg-[#04040A] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-24 items-center">
             <div>
-              <h1 className="text-3xl font-black">Welcome back, {user?.firstName || 'Learner'}! 👋</h1>
-              <p className="text-gray-400 mt-1">Keep your streak alive and level up today.</p>
+              <h2 className="text-5xl md:text-7xl font-black mb-10 leading-none text-white">
+                SCIENCE   
+ <span className="text-blue-600">MEETS STUDY.</span>
+              </h2>
+              <p className="text-xl text-gray-400 mb-12 leading-relaxed">
+                Traditional study methods are passive. Aira Mentor is active. Our AI Assistant monitors your cognitive rhythm and adjusts the mentoring pace to keep you in the "Challenge-Skill" sweet spot of flow.
+              </p>
+              
+              <div className="space-y-8">
+                <FeatureRow 
+                  icon={<Waves className="text-blue-500" />} 
+                  title="Neural-Phase Locking" 
+                  desc="Syncs your brain waves to specific frequencies designed for deep cognitive absorption."
+                />
+                <FeatureRow 
+                  icon={<BrainCircuit className="text-purple-500" />} 
+                  title="Socratic AI Mentor" 
+                  desc="An AI that asks the right questions to lead you to deep understanding, not just memorization."
+                />
+                <FeatureRow 
+                  icon={<Activity className="text-green-500" />} 
+                  title="Real-time Adaptation" 
+                  desc="Detects mental fatigue and adjusts study complexity to maintain maximum productivity."
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              {progress.isPro && (
-                <div className="px-4 py-2 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center gap-2">
-                  <Crown className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm font-bold text-purple-300">Pro Member</span>
-                </div>
-              )}
+            
+            <div className="grid grid-cols-2 gap-6">
+              <StatCard label="Focus Increase" value="400%" />
+              <StatCard label="Retention Rate" value="92%" />
+              <StatCard label="Time to Flow" value="<12m" />
+              <StatCard label="Daily Active" value="50k+" />
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Content */}
-        <div className="p-8">
-          {activeTab === 'home' && (
-            <div className="space-y-8">
-              {/* Progress Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <ProgressCard
-                  icon={Flame}
-                  label="Current Streak"
-                  value={progress.streak}
-                  unit="days"
-                  color="orange"
-                />
-                <ProgressCard
-                  icon={Zap}
-                  label="Total XP"
-                  value={progress.totalXP}
-                  unit="points"
-                  color="purple"
-                />
-                <ProgressCard
-                  icon={Star}
-                  label="Level"
-                  value={Math.floor(progress.totalXP / 1000)}
-                  unit="of 50"
-                  color="pink"
-                />
-              </div>
-
-              {/* XP Progress Bar */}
-              <div className="p-6 rounded-3xl bg-[#1A1A24] border border-white/5">
-                <h3 className="font-bold mb-3">Progress to Next Level</h3>
-                <div className="w-full bg-white/5 rounded-full h-4 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all"
-                    style={{ width: `${(progress.totalXP % 1000) / 10}%` }}
-                  />
-                </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  {1000 - (progress.totalXP % 1000)} XP until next level
-                </p>
-              </div>
-
-              {/* Subject Selection */}
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Start a Flow Session</h2>
-                  <p className="text-gray-400 text-sm">15 subjects available</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {subjects.map((subject) => (
-                    <SubjectCard
-                      key={subject.id}
-                      subject={subject}
-                      onClick={() => startFlowSession(subject.id)}
-                      isSelected={selectedSubject === subject.id}
-                    />
-                  ))}
-                </div>
-              </div>
+      {/* Pricing: The "No-Brainer" Offer */}
+      <section id="pricing" className="py-40 px-8 relative">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-24">
+            <h2 className="text-6xl font-black mb-6 text-white uppercase tracking-tighter">Choose Your Mindset.</h2>
+            <p className="text-xl text-gray-400">Join thousands of high-performers mastering their flow.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            {/* Free Plan */}
+            <div className="p-12 rounded-[3rem] bg-white/5 border border-white/10 hover:border-white/20 transition-all group">
+              <h3 className="text-2xl font-bold mb-4 uppercase tracking-widest text-gray-400">Explorer</h3>
+              <div className="text-6xl font-black mb-10 text-white">$0</div>
+              <ul className="space-y-6 mb-12">
+                {['3 Focus Sessions / Day', 'Basic AI Mentoring', 'Standard Subjects'].map(feat => (
+                  <li key={feat} className="flex items-center gap-4 text-gray-400 font-bold text-sm uppercase tracking-wider">
+                    <CheckCircle2 className="w-5 h-5 text-gray-600" /> {feat}
+                  </li>
+                ))}
+              </ul>
+              <a href={checkoutUrl} className="block w-full py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-black text-center hover:bg-white/10 transition-all uppercase tracking-widest">
+                Start Free
+              </a>
             </div>
-          )}
 
-          {activeTab === 'progress' && (
-            <div className="p-8 rounded-3xl bg-[#1A1A24] border border-white/5">
-              <h2 className="text-2xl font-bold mb-6">Your Learning Journey</h2>
-              <div className="space-y-4">
-                <p className="text-gray-400">Streak: <span className="text-white font-bold">{progress.streak} days</span></p>
-                <p className="text-gray-400">Total XP: <span className="text-white font-bold">{progress.totalXP} points</span></p>
-                <p className="text-gray-400">Last studied: <span className="text-white font-bold">{progress.lastStudied || 'Never'}</span></p>
+            {/* Pro Plan (Brain.fm Blue) */}
+            <div className="p-12 rounded-[3rem] bg-blue-600 border-2 border-blue-400 shadow-[0_0_80px_rgba(37,99,235,0.3)] relative overflow-hidden group">
+              <div className="absolute top-0 right-0 px-8 py-3 bg-white text-blue-600 text-[10px] font-black uppercase tracking-[0.4em] transform rotate-0">
+                RECOMMENDED
               </div>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="p-8 rounded-3xl bg-[#1A1A24] border border-white/5">
-              <h2 className="text-2xl font-bold mb-6">Settings</h2>
-              <p className="text-gray-400">Account settings coming soon...</p>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* AI Chat Modal */}
-      {chatOpen && selectedSubject && (
-        <AIChatModal
-          subject={subjects.find(s => s.id === selectedSubject)?.title || ''}
-          onClose={() => setChatOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// Components
-function NavItem({ icon: Icon, label, active, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-        active
-          ? 'bg-white/10 text-white font-bold'
-          : 'text-gray-400 hover:text-white hover:bg-white/5'
-      }`}
-    >
-      <Icon className="w-5 h-5" />
-      {label}
-    </button>
-  );
-}
-
-function ProgressCard({ icon: Icon, label, value, unit, color }: any) {
-  const colorClasses = {
-    orange: 'bg-orange-500/20 border-orange-500/50',
-    purple: 'bg-purple-500/20 border-purple-500/50',
-    pink: 'bg-pink-500/20 border-pink-500/50'
-  };
-
-  return (
-    <div className={`p-6 rounded-2xl border ${colorClasses[color]} backdrop-blur`}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-gray-400 text-sm font-medium">{label}</span>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div className="text-4xl font-black mb-1">{value}</div>
-      <p className="text-xs text-gray-500">{unit}</p>
-    </div>
-  );
-}
-
-function SubjectCard({ subject, onClick, isSelected }: any) {
-  const { icon: Icon, title } = subject;
-  return (
-    <button
-      onClick={onClick}
-      className={`p-6 rounded-2xl border transition-all ${
-        isSelected
-          ? 'bg-purple-500/20 border-purple-500/50'
-          : 'bg-[#1A1A24] border-white/5 hover:border-purple-500/50'
-      }`}
-    >
-      <Icon className="w-8 h-8 mb-3 text-purple-500" />
-      <h4 className="font-bold text-sm leading-tight">{title}</h4>
-      <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
-        <span className="text-xs text-gray-500">Start</span>
-        <MessageCircle className="w-4 h-4 text-gray-500" />
-      </div>
-    </button>
-  );
-}
-
-function AIChatModal({ subject, onClose }: any) {
-  const [messages, setMessages] = useState<any[]>([]);
-  const [input, setInput] = useState('');
-
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { role: 'user', content: input };
-    setMessages([...messages, userMessage]);
-    setInput('');
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, message: input })
-      });
-
-      const data = await response.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
-    } catch (error) {
-      console.error('Chat error:', error);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl h-[600px] rounded-3xl bg-[#0A0A0F] border border-white/5 flex flex-col">
-        {/* Header */}
-        <div className="border-b border-white/5 p-6 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{subject} - AI Flow Session</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 ? (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-center">
-                Ask me anything about {subject}. I'll guide you step by step using the Socratic method.
+              <h3 className="text-2xl font-bold mb-4 uppercase tracking-widest text-blue-100">Neural Pro</h3>
+              <div className="text-7xl font-black mb-10 text-white">$9.99<span className="text-xl opacity-60">/mo</span></div>
+              <ul className="space-y-6 mb-12">
+                {[
+                  'Unlimited Flow Sessions',
+                  'Full Socratic AI Mentor',
+                  'Neural Analytics Dashboard',
+                  'All 15+ Advanced Subjects',
+                  'Priority AI Response'
+                ].map(feat => (
+                  <li key={feat} className="flex items-center gap-4 text-white font-bold text-sm uppercase tracking-wider">
+                    <CheckCircle2 className="w-5 h-5 text-blue-200" /> {feat}
+                  </li>
+                ))}
+              </ul>
+              <a href={checkoutUrl} className="block w-full py-6 rounded-2xl bg-white text-blue-600 font-black text-center text-xl hover:scale-[1.03] transition-transform shadow-2xl uppercase tracking-widest">
+                Start 5-Day Trial
+              </a>
+              <p className="mt-6 text-center text-blue-100/60 text-[10px] font-bold uppercase tracking-widest">
+                No credit card required to start
               </p>
             </div>
-          ) : (
-            messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs rounded-2xl p-4 ${
-                    msg.role === 'user'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white/5 border border-white/10 text-gray-200'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              </div>
-            ))
-          )}
+          </div>
         </div>
+      </section>
 
-        {/* Input */}
-        <div className="border-t border-white/5 p-4 flex gap-3">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Ask your question..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50"
-          />
-          <button
-            onClick={sendMessage}
-            className="px-6 py-3 rounded-xl bg-purple-600 font-bold hover:bg-purple-700 transition-colors"
-          >
-            Send
-          </button>
+      {/* Footer: Minimal & Dark */}
+      <footer className="py-32 px-8 border-t border-white/5 bg-[#010103]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-16">
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <div className="flex items-center gap-3">
+              <Brain className="w-8 h-8 text-blue-600" />
+              <span className="text-2xl font-black tracking-tighter text-white uppercase">AIRA MENTOR</span>
+            </div>
+            <p className="text-gray-600 text-sm max-w-xs text-center md:text-left font-medium">
+              Revolutionizing the way humanity learns through AI and neuroscience.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-20">
+            <FooterColumn title="Product" links={['Science', 'Pricing', 'Dashboard']} />
+            <FooterColumn title="Legal" links={['Privacy', 'Terms', 'Security']} />
+            <FooterColumn title="Social" links={['Twitter', 'Discord', 'LinkedIn']} />
+          </div>
         </div>
-      </div>
+        <div className="max-w-7xl mx-auto mt-32 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+          <p className="text-gray-700 text-[10px] font-black uppercase tracking-[0.5em]">© 2026 AIRA MENTOR. MADE IN TURKEY 🇹🇷</p>
+          <div className="flex gap-4">
+            <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
+              <Activity className="w-4 h-4 text-white" />
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
-}
+};
+
+const FeatureRow = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
+  <div className="flex gap-6 group">
+    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-blue-600/20 group-hover:border-blue-500/50 transition-all">
+      {React.cloneElement(icon as React.ReactElement, { className: 'w-7 h-7' })}
+    </div>
+    <div>
+      <h4 className="text-xl font-bold mb-2 text-white group-hover:text-blue-400 transition-colors">{title}</h4>
+      <p className="text-gray-500 leading-relaxed text-sm">{desc}</p>
+    </div>
+  </div>
+);
+
+const StatCard = ({ label, value }: { label: string, value: string }) => (
+  <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 text-center hover:scale-105 transition-transform">
+    <div className="text-4xl font-black text-white mb-2">{value}</div>
+    <div className="text-[10px] font-black uppercase tracking-widest text-blue-500">{label}</div>
+  </div>
+);
+
+const FooterColumn = ({ title, links }: { title: string, links: string[] }) => (
+  <div className="flex flex-col gap-6">
+    <h5 className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">{title}</h5>
+    <ul className="flex flex-col gap-4">
+      {links.map(link => (
+        <li key={link} className="text-sm font-bold text-gray-500 hover:text-white transition-colors cursor-pointer tracking-wider uppercase">
+          {link}
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export default AiraMentorMasterpiece;
