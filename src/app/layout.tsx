@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google';
+// AIRA Mentor - Brain.fm-inspired SaaS landing page v2.1
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
