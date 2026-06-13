@@ -7,9 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = { title: 'AIRA Mentor' };
 
 export default function RootLayout({ children }) {
-      return (
-              <html lang="en" className={inter.className}>
-                        <body>{children}</body>body>
-              </html>html>
-            );
+        return (
+                  <html lang="en" className={inter.className}>
+                              <body>{children}</body>body>
+                  </html>html>
+                );
 }</body>
