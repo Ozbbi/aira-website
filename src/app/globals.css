@@ -1,128 +1,27 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/*
- * AIRA Brand v2 — Bright/Orange/Pink rebrand.
- *
- * The aira-* tokens used to be dark navy + purple. They now map onto a
- * warm white + orange + pink palette so every existing component
- * (landing page, cards, gradients) flips to the new theme without
- * touching markup. The old token NAMES are preserved so we don't have
- * to thrash through every file:
- *
- *   aira-bg      — page background (now warm white)
- *   aira-surface — softly tinted surface (peach wash)
- *   aira-card    — card background (pure white)
- *   aira-border  — subtle border (warm peach)
- *   aira-purple  — primary brand (now orange 500)
- *   aira-indigo  — secondary brand (now pink 500)
- *   aira-pink    — accent (now hot pink 400)
- *   aira-glow    — small-accent text color (now orange 600)
- *   aira-text    — primary text (near-black)
- *   aira-muted   — secondary text
- *   aira-dim     — tertiary text
- *
- * New tokens are also exposed (orange-50..700, pink-50..700) for places
- * that want explicit ramp access.
- */
+@layer base {
+    :root {
+          --primary: #4488FF;
+          --primary-light: #6BA3FF;
+          --secondary: #8844FF;
+          --secondary-light: #A366FF;
+          --bg: #020205;
+          --bg-secondary: #080809;
+          --text: #F0F0FF;
+          --text-secondary: #8888AA;
+          --border: #1E1E2E;
+    }
 
-@theme {
-  /* Surfaces — warm whites + peach tints */
-  --color-aira-bg: #FFFEFC;
-  --color-aira-surface: #FFF8F3;
-  --color-aira-card: #FFFFFF;
-  --color-aira-border: #FFE8DC;
-  --color-aira-border-strong: #FFB088;
+  * {
+        @apply border-border;
+  }
 
-  /* Brand — orange / pink. The "purple/indigo/pink" names are kept for
-     backwards compat with the old landing page markup. They now point at
-     the orange-pink ramp. */
-  --color-aira-purple: #FF6600;
-  --color-aira-indigo: #FF1A80;
-  --color-aira-pink: #FF4D99;
-  --color-aira-glow: #E55500;
+  html {
+        @apply scroll-smooth;
+  }
 
-  /* Text */
-  --color-aira-text: #1A1A1F;
-  --color-aira-muted: #4A4A55;
-  --color-aira-dim: #8A8A95;
-  --color-aira-subtle: #BABAC5;
-
-  /* Orange ramp */
-  --color-orange-50: #FFF4ED;
-  --color-orange-100: #FFE0CC;
-  --color-orange-200: #FFC499;
-  --color-orange-300: #FFA266;
-  --color-orange-400: #FF7F33;
-  --color-orange-500: #FF6600;
-  --color-orange-600: #E55500;
-  --color-orange-700: #BD4400;
-
-  /* Pink ramp */
-  --color-pink-50: #FFF0F5;
-  --color-pink-100: #FFD9E6;
-  --color-pink-200: #FFB3CC;
-  --color-pink-300: #FF80B3;
-  --color-pink-400: #FF4D99;
-  --color-pink-500: #FF1A80;
-  --color-pink-600: #E60073;
-  --color-pink-700: #B30059;
-
-  /* Semantic — warm versions */
-  --color-success: #00C896;
-  --color-soft-error: #FF6B8A;
-  --color-warning: #FFAC30;
-  --color-info: #5BA8FF;
-
-  --font-heading: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Inter", system-ui, sans-serif;
-}
-
-html, body {
-  background: #FFFEFC;
-  color: #1A1A1F;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-::selection {
-  background: rgba(255, 102, 0, 0.18);
-  color: #1A1A1F;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-/* Tabular numerics for stat displays */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-/* Soft grain texture for hero backgrounds (purely decorative). */
-.aira-grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 102, 0, 0.04) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Animated shimmer for skeleton loaders. */
-@keyframes aira-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.aira-shimmer {
-  background: linear-gradient(
-    90deg,
-    #FFF8F3 0%,
-    #FFE8DC 50%,
-    #FFF8F3 100%
-  );
-  background-size: 200% 100%;
-  animation: aira-shimmer 1.6s linear infinite;
+  body {
+        @apply bg-bg text-text;
+  }
 }
