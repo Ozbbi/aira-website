@@ -1,1 +1,85 @@
-'use client';import{useState,useEffect}from'react';import{Menu,X,ChevronDown,Check}from'lucide-react';export default function Home(){const[scroll,setScroll]=useState(false);const[menu,setMenu]=useState(false);const url='https://boamir.lemonsqueezy.com/checkout/buy/985b69f3-b126-4452-bd49-129c9429d11a';useEffect(()=>{const h=()=>setScroll(window.scrollY>50);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h);},[]);return(<div className="min-h-screen bg-[#020205] text-[#F0F0FF]"><nav className={`fixed top-0 w-full z-50 ${scroll?'bg-[#020205]/95 border-b border-[#1E1E2E]':'bg-[#020205]/80'} backdrop-blur-md`}><div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"><div className="text-2xl font-bold bg-gradient-to-r from-[#4488FF] to-[#8844FF] bg-clip-text text-transparent">AIRA</div>div><div className="hidden md:flex gap-8"><a href="#how" className="text-[#8888AA] hover:text-white">How</a>a><a href="#pricing" className="text-[#8888AA] hover:text-white">Pricing</a>a></div>div><a href={url} className="hidden md:block px-6 py-2 rounded-full bg-gradient-to-r from-[#4488FF] to-[#8844FF] text-sm">Start</a>a><button className="md:hidden" onClick={()=>setMenu(!menu)}>{menu?<X/>:<Menu/>}</button>button></div>div></nav>nav><section className="pt-32 pb-20 px-6 min-h-screen flex items-center justify-center text-center"><div className="max-w-2xl"><h1 className="text-6xl font-bold mb-6">Get into <span className="bg-gradient-to-r from-[#4488FF] to-[#8844FF] bg-clip-text text-transparent">flow</span>span></h1>h1><p className="text-xl text-[#8888AA] mb-8">AI-powered study platform with Pomodoro, spaced repetition, and an intelligent mentor.</p>p><a href={url} className="inline-block px-8 py-4 bg-gradient-to-r from-[#4488FF] to-[#8844FF] rounded-lg font-bold">Start free</a>a></div>div></section>section><section className="py-20 px-6 bg-[#06060F]"><div className="max-w-6xl mx-auto"><h2 className="text-4xl font-bold text-center mb-16">Brain.fm + AI = AIRA</h2>h2><div className="grid md:grid-cols-3 gap-6"><div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]"><h3 className="font-bold mb-2">Deep Work</h3>h3><p className="text-[#8888AA] text-sm">25-min Pomodoro sessions with ambient audio</p>p></div>div><div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]"><h3 className="font-bold mb-2">AI Mentor</h3>h3><p className="text-[#8888AA] text-sm">Socratic method guidance 24/7</p>p></div>div><div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]"><h3 className="font-bold mb-2">Spaced Rep</h3>h3><p className="text-[#8888AA] text-sm">Auto-scheduled reviews for retention</p>p></div>div></div>div></div>div></section>section><section id="pricing" className="py-20 px-6"><div className="max-w-4xl mx-auto"><h2 className="text-4xl font-bold text-center mb-16">$10/month</h2>h2><div className="grid md:grid-cols-2 gap-8"><div className="p-8 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]"><h3 className="text-2xl font-bold mb-4">Free</h3>h3><p className="text-3xl font-bold">$0</p>p><p className="text-[#8888AA] my-4">7-day trial</p>p><a href={url} className="w-full block text-center py-2 border border-[#1E1E2E] rounded">Start</a>a></div>div><div className="p-8 bg-[#0D0D1A] rounded-lg border-2 border-[#4488FF]"><div className="bg-gradient-to-r from-[#4488FF] to-[#8844FF] px-3 py-1 rounded-full inline-block text-sm font-bold mb-4">BEST</div>div><h3 className="text-2xl font-bold mb-4">Pro</h3>h3><p className="text-3xl font-bold">$10</p>p><p className="text-[#8888AA] my-4">/month</p>p><a href={url} className="w-full block text-center py-2 bg-gradient-to-r from-[#4488FF] to-[#8844FF] rounded font-bold">Start</a>a></div>div></div>div></div>div></section>section><footer className="py-12 px-6 bg-[#020205] border-t border-[#1E1E2E] text-center text-[#8888AA]"><p>© 2026 AIRA Mentor</p>p></footer>footer></div>div>)}</div>
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Menu, X, ChevronDown, Check } from 'lucide-react';
+
+export default function Home() {
+    const [scroll, setScroll] = useState(false);
+    const [menu, setMenu] = useState(false);
+    const checkoutUrl = 'https://boamir.lemonsqueezy.com/checkout/buy/985b69f3-b126-4452-bd49-129c9429d11a';
+
+  useEffect(() => {
+        const handleScroll = () => setScroll(window.scrollY > 50);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+        <div className="min-h-screen bg-[#020205] text-[#F0F0FF]">
+              <nav className={`fixed top-0 w-full z-50 ${scroll ? 'bg-[#020205]/95 border-b border-[#1E1E2E]' : 'bg-[#020205]/80'} backdrop-blur-md`}>
+                      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                                <div className="text-2xl font-bold bg-gradient-to-r from-[#4488FF] to-[#8844FF] bg-clip-text text-transparent">AIRA</div>div>
+                                <div className="hidden md:flex gap-8">
+                                            <a href="#how" className="text-[#8888AA] hover:text-white">How</a>a>
+                                            <a href="#pricing" className="text-[#8888AA] hover:text-white">Pricing</a>a>
+                                </div>div>
+                                <a href={checkoutUrl} className="hidden md:block px-6 py-2 rounded-full bg-gradient-to-r from-[#4488FF] to-[#8844FF] text-sm">Start</a>a>
+                                <button className="md:hidden" onClick={() => setMenu(!menu)}>{menu ? <X /> : <Menu />}</button>button>
+                      </div>div>
+              </nav>nav>
+        
+              <section className="pt-32 pb-20 px-6 min-h-screen flex items-center justify-center text-center">
+                      <div className="max-w-2xl">
+                                <h1 className="text-6xl font-bold mb-6">Get into <span className="bg-gradient-to-r from-[#4488FF] to-[#8844FF] bg-clip-text text-transparent">flow</span>span></h1>h1>
+                                <p className="text-xl text-[#8888AA] mb-8">AI-powered study platform with Pomodoro, spaced repetition, and intelligent mentoring.</p>p>
+                                <a href={checkoutUrl} className="inline-block px-8 py-4 bg-gradient-to-r from-[#4488FF] to-[#8844FF] rounded-lg font-bold">Start free</a>a>
+                      </div>div>
+              </section>section>
+        
+              <section className="py-20 px-6 bg-[#06060F]">
+                      <div className="max-w-6xl mx-auto">
+                                <h2 className="text-4xl font-bold text-center mb-16">Three Systems. One Flow.</h2>h2>
+                                <div className="grid md:grid-cols-3 gap-6">
+                                            <div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]">
+                                                          <h3 className="font-bold mb-2">Deep Work Sessions</h3>h3>
+                                                          <p className="text-[#8888AA] text-sm">25-min Pomodoro + ambient audio + tracking</p>p>
+                                            </div>div>
+                                            <div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]">
+                                                          <h3 className="font-bold mb-2">AI Mentor</h3>h3>
+                                                          <p className="text-[#8888AA] text-sm">Socratic method guidance 24/7</p>p>
+                                            </div>div>
+                                            <div className="p-6 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]">
+                                                          <h3 className="font-bold mb-2">Spaced Repetition</h3>h3>
+                                                          <p className="text-[#8888AA] text-sm">Auto-scheduled reviews for retention</p>p>
+                                            </div>div>
+                                </div>div>
+                      </div>div>
+              </section>section>
+        
+              <section id="pricing" className="py-20 px-6">
+                      <div className="max-w-4xl mx-auto">
+                                <h2 className="text-4xl font-bold text-center mb-16">$10/month. Everything.</h2>h2>
+                                <div className="grid md:grid-cols-2 gap-8">
+                                            <div className="p-8 bg-[#0D0D1A] rounded-lg border border-[#1E1E2E]">
+                                                          <h3 className="text-2xl font-bold mb-4">Free</h3>h3>
+                                                          <p className="text-3xl font-bold">$0</p>p>
+                                                          <p className="text-[#8888AA] my-4">7-day trial</p>p>
+                                                          <a href={checkoutUrl} className="w-full block text-center py-2 border border-[#1E1E2E] rounded">Start</a>a>
+                                            </div>div>
+                                            <div className="p-8 bg-[#0D0D1A] rounded-lg border-2 border-[#4488FF] relative">
+                                                          <div className="absolute -top-3 left-8 bg-gradient-to-r from-[#4488FF] to-[#8844FF] px-3 py-1 rounded-full text-sm font-bold text-white">BEST</div>div>
+                                                          <h3 className="text-2xl font-bold mb-4 mt-6">Pro</h3>h3>
+                                                          <p className="text-3xl font-bold">$10</p>p>
+                                                          <p className="text-[#8888AA] my-4">/month</p>p>
+                                                          <a href={checkoutUrl} className="w-full block text-center py-2 bg-gradient-to-r from-[#4488FF] to-[#8844FF] rounded font-bold">Start</a>a>
+                                            </div>div>
+                                </div>div>
+                      </div>div>
+              </section>section>
+        
+              <footer className="py-12 px-6 bg-[#020205] border-t border-[#1E1E2E] text-center text-[#8888AA]">
+                      <p>© 2026 AIRA Mentor</p>p>
+              </footer>footer>
+        </div>div>
+      );
+}</div>
