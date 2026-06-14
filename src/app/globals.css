@@ -1,27 +1,25 @@
-@import 'tailwindcss';
+/* AIRA MENTOR - Global Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-@layer base {
-    :root {
-          --primary: #4488FF;
-          --primary-light: #6BA3FF;
-          --secondary: #8844FF;
-          --secondary-light: #A366FF;
-          --bg: #020205;
-          --bg-secondary: #080809;
-          --text: #F0F0FF;
-          --text-secondary: #8888AA;
-          --border: #1E1E2E;
-    }
+html {
+  scroll-behavior: smooth;
+}
 
-  * {
-        @apply border-border;
-  }
+body {
+  background: #020205;
+  color: #F8FAFC;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  html {
-        @apply scroll-smooth;
-  }
-
-  body {
-        @apply bg-bg text-text;
-  }
+:root {
+  --primary: #6366F1;
+  --secondary: #8B5CF6;
+  --cyan: #06B6D4;
+  --bg: #020205;
+  --text: #F8FAFC;
 }
