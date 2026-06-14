@@ -375,6 +375,47 @@ function SoundPlayer({ seen }: { seen: { [k: string]: boolean } }) {
   );
 }
 
+/* ════════════ GIFT CODE REDEEMER (lifetime Pro for special code) ════════════ */
+const LIFETIME_CODE = "16025397070";
+function GiftCode() {
+  const [code, setCode] = useState("");
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [unlocked, setUnlocked] = useState(false);
+  const redeem = () => {
+    if (code.trim() === LIFETIME_CODE) {
+      setStatus("success"); setUnlocked(true);
+      try { window.localStorage.setItem("aira_lifetime", "true"); } catch {}
+    } else {
+      setStatus("error");
+    }
+  };
+  return (
+    <div style={{ maxWidth: 520, margin: "0 auto" }}>
+      <div style={{ background: unlocked ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.green},${C.cyan}) border-box` : `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,rgba(251,191,36,0.5),rgba(168,85,247,0.3)) border-box`, border: "1px solid transparent", borderRadius: 24, padding: 40, backdropFilter: "blur(20px)", textAlign: "center", transition: "all 0.5s ease" }}>
+        {!unlocked ? (
+          <>
+            <div style={{ fontSize: 44, marginBottom: 16 }}>🎁</div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Have a gift code?</h3>
+            <p style={{ fontSize: 14, color: C.muted, marginBottom: 28, lineHeight: 1.6 }}>Enter your code below to unlock lifetime AIRA Pro access — no subscription, yours forever.</p>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <input value={code} onChange={(e) => { setCode(e.target.value); setStatus("idle"); }} onKeyDown={(e) => e.key === "Enter" && redeem()} placeholder="Enter gift code" style={{ flex: 1, minWidth: 180, padding: "15px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${status === "error" ? C.red : C.border}`, color: C.fg, fontSize: 16, outline: "none", letterSpacing: "0.05em", textAlign: "center" }} />
+              <button onClick={redeem} style={{ padding: "15px 28px", borderRadius: 14, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.amber},${C.violet})`, color: "#fff", fontSize: 15, fontWeight: 700, boxShadow: `0 0 30px ${C.amber}33`, whiteSpace: "nowrap" }}>Redeem</button>
+            </div>
+            {status === "error" && <p style={{ fontSize: 13, color: C.red, marginTop: 16 }}>That code isn't valid. Double-check and try again.</p>}
+          </>
+        ) : (
+          <div style={{ animation: `popIn 0.5s ${C.spring}` }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 10, color: C.green }}>Lifetime Pro unlocked!</h3>
+            <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 24 }}>You now have unlimited access to every AIRA Pro feature — forever. No subscription, no expiry. Welcome to the inner circle.</p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 999, background: `${C.green}18`, border: `1px solid ${C.green}44`, fontSize: 13, fontWeight: 600, color: C.green }}>✓ Lifetime access active</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ════════════ DATA ════════════ */
 const SCIENCE = [
   { i: "⚡", t: "Neural Phase Locking", s: "Ultradian Rhythm Research", b: "Structured focus intervals align with your brain's natural ultradian rhythms — the foundation of deep concentration." },
@@ -399,6 +440,16 @@ const PREMIUM = [
   { i: "🌙", t: "Device-Free Mode", b: "AIRA tells you exactly when to put your phone down and work on paper — the biggest focus upgrade most students never make." },
   { i: "🧩", t: "Auto Flashcard Generator", b: "AIRA turns any session into spaced-repetition flashcards automatically — no manual card-making, just instant review material." },
   { i: "🎙️", t: "Full Subject Library", b: "15 categories from AI to Philosophy, plus any custom topic. AIRA adapts to anything you want to learn." },
+  { i: "🧠", t: "Smart Concept Maps", b: "AIRA auto-builds a visual map of how every concept you learn connects — see the big picture, not just isolated facts." },
+  { i: "⏰", t: "Smart Reminders", b: "AIRA learns your schedule and nudges you to study at the moments you're most likely to actually do it." },
+];
+
+/* extra: how-it-works steps for the new flow section */
+const FLOW_STEPS = [
+  { n: "1", i: "✦", t: "Open your study space", b: "Tap the portal, pick from six science-backed focus techniques.", c: C.cyan },
+  { n: "2", i: "🎯", t: "AIRA structures it", b: "Your timer starts, distractions are blocked, and the session is built around how your brain learns.", c: C.indigo },
+  { n: "3", i: "🤖", t: "Learn with your mentor", b: "AIRA asks Socratic questions, catches your weak spots, and never just hands you the answer.", c: C.violet },
+  { n: "4", i: "📊", t: "Track & review", b: "Everything lands on your dashboard. Spaced reviews get scheduled automatically so it sticks.", c: C.pink },
 ];
 const FOCUS_MODES = [
   { i: "🔕", t: "Notifications Off", b: "AIRA's focus mode signals you to silence your phone and close every tab. Deep work demands an undivided mind." },
@@ -468,6 +519,11 @@ export default function Home() {
     <main style={{ background: C.void, minHeight: "100vh", color: C.fg, position: "relative", overflowX: "hidden" }}>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+      {/* favicon + social preview — replace with your hosted URLs after deploy */}
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      <meta name="theme-color" content="#03030A" />
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
         :root{--font-display:'Space Grotesk',sans-serif}
@@ -528,6 +584,23 @@ export default function Home() {
         <div {...reveal("bn-h")} style={{ ...reveal("bn-h").style, textAlign: "center", marginBottom: 70 }}><Label>Everything you need</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>One system. <Grad>Total focus.</Grad></h2></div>
         <div className="bento" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
           {BENTO.map((b, i) => <Tilt key={b.t} k={`bn-${i}`} seen={seen} delay={i * 100} span={b.span} style={{ padding: 36 }}><div style={{ fontSize: 40, marginBottom: 18 }}>{b.i}</div><h3 style={HD({ fontSize: 22, marginBottom: 10, color: b.c })}>{b.t}</h3><p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.7 }}>{b.b}</p></Tilt>)}
+        </div>
+      </section>
+
+      {/* HOW IT FLOWS — numbered steps */}
+      <section className="sec" style={{ position: "relative", zIndex: 2, padding: "130px 48px", maxWidth: 1140, margin: "0 auto" }}>
+        <div {...reveal("fl-h")} style={{ ...reveal("fl-h").style, textAlign: "center", marginBottom: 70 }}><Label>How it works</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>From distracted to <Grad>deep focus.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 16, maxWidth: 520, margin: "18px auto 0", lineHeight: 1.7 }}>Four steps. Under a minute to start. This is the whole loop.</p></div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 22 }}>
+          {FLOW_STEPS.map((s, i) => (
+            <Tilt key={s.n} k={`fl-${i}`} seen={seen} delay={i * 110}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, background: `linear-gradient(135deg,${s.c},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "#fff", boxShadow: `0 0 24px ${s.c}44` }}>{s.n}</div>
+                <span style={{ fontSize: 30 }}>{s.i}</span>
+              </div>
+              <h3 style={HD({ fontSize: 19, marginBottom: 10 })}>{s.t}</h3>
+              <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7 }}>{s.b}</p>
+            </Tilt>
+          ))}
         </div>
       </section>
 
@@ -606,6 +679,15 @@ export default function Home() {
       <section className="sec" style={{ position: "relative", zIndex: 2, padding: "130px 48px", maxWidth: 820, margin: "0 auto" }}>
         <div {...reveal("f-h")} style={{ ...reveal("f-h").style, textAlign: "center", marginBottom: 52 }}><Label>Questions</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Common questions</h2></div>
         {FAQ.map((f, i) => <div key={f[0]} {...reveal(`fq-${i}`, i * 50)} style={{ ...reveal(`fq-${i}`, i * 50).style, borderBottom: `1px solid ${C.border}` }}><button onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ width: "100%", background: "none", border: "none", padding: "22px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", textAlign: "left", color: C.fg }}><span style={{ fontSize: 16, fontWeight: 500 }}>{f[0]}</span><span style={{ fontSize: 22, color: C.violet, transform: openFaq === i ? "rotate(45deg)" : "none", transition: `transform 0.3s ${C.ease}`, flexShrink: 0, marginLeft: 16 }}>+</span></button><div style={{ maxHeight: openFaq === i ? 240 : 0, overflow: "hidden", transition: `max-height 0.45s ${C.ease}` }}><p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, paddingBottom: 22 }}>{f[1]}</p></div></div>)}
+      </section>
+
+      {/* GIFT CODE — special lifetime access */}
+      <section className="sec" style={{ position: "relative", zIndex: 2, padding: "130px 48px" }}>
+        <div {...reveal("gc-h")} style={{ ...reveal("gc-h").style, textAlign: "center", marginBottom: 48 }}>
+          <Label>Special access</Label>
+          <h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Got a <Grad>gift code?</Grad></h2>
+        </div>
+        <div {...reveal("gc-c")} style={reveal("gc-c").style}><GiftCode /></div>
       </section>
 
       {/* FINAL CTA */}
