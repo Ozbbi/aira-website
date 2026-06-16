@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 
 /* ════════════════════════════════════════════════════════════════════════
    AIRA MENTOR — V9 FINAL · clean, no emojis, minimal line icons
@@ -88,15 +89,17 @@ function LivingBackground({ p }: { p: number }) {
   const tint = useTint(p);
   useEffect(() => {
     const canvas = ref.current; if (!canvas) return;
+    const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || ((navigator as any).deviceMemory || 8) <= 4 || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (lowEnd) { canvas.style.display = "none"; return; }
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let w = 0, h = 0;
     const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
     resize();
-    const stars = Array.from({ length: 130 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
-    const nodes = Array.from({ length: 30 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
+    const stars = Array.from({ length: 55 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
+    const nodes = Array.from({ length: 13 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
     let raf = 0, t = 0;
     const draw = () => {
-      t += 0.012; ctx.clearRect(0, 0, w, h);
+      t += 0.008; ctx.clearRect(0, 0, w, h);
       stars.forEach((s) => { const a = (0.3 + Math.sin(t * 2 + s.tw) * 0.3) * s.z; ctx.beginPath(); ctx.arc(s.x, s.y, s.z * 1.3, 0, Math.PI * 2); ctx.fillStyle = `rgba(190,200,255,${a})`; ctx.fill(); });
       nodes.forEach((n) => { n.x += n.vx; n.y += n.vy; if (n.x < 0 || n.x > w) n.vx *= -1; if (n.y < 0 || n.y > h) n.vy *= -1; ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2); ctx.fillStyle = "rgba(150,160,255,0.4)"; ctx.fill(); });
       for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) { const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, d = Math.hypot(dx, dy); if (d < 150) { ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y); ctx.strokeStyle = `rgba(140,150,255,${0.09 * (1 - d / 150)})`; ctx.lineWidth = 0.6; ctx.stroke(); } }
@@ -546,7 +549,17 @@ export default function Home() {
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "gradShift 6s ease infinite" }}>AIRA</span></div>
         <div className="nav-links" style={{ display: "flex", gap: 26, fontSize: 14, color: C.muted }}>{[["Features", "features"], ["Science", "science"], ["Guide", "guide"], ["Premium", "premium"], ["Pricing", "pricing"]].map(([l, h]) => <a key={l} href={`#${h}`} style={{ color: C.muted, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.fg)} onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}>{l}</a>)}</div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}><button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button><GBtn onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={16} color="#fff" /></GBtn></div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <SignedOut>
+            <SignInButton mode="modal"><button className="nav-auth-extra" style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button></SignInButton>
+            <SignUpButton mode="modal"><GBtn>Get Started <Icon name="arrow" size={16} color="#fff" /></GBtn></SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button>
+            <GBtn onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={16} color="#fff" /></GBtn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
       </nav>
 
       {/* HERO */}
@@ -556,7 +569,11 @@ export default function Home() {
           <div {...reveal("hp")} style={{ ...reveal("hp").style, marginBottom: 34 }}><Pill>AI-Powered Study Mentor</Pill></div>
           <h1 className="hero-h1" style={HD({ fontSize: "clamp(46px,9vw,104px)", lineHeight: 1.0, marginBottom: 30, maxWidth: 1000 })}>Get into<br /><WordCycler /></h1>
           <p style={{ fontSize: "clamp(17px,3vw,21px)", color: C.muted, maxWidth: 600, lineHeight: 1.7, margin: "0 auto 44px" }}>Pick a study technique, and your AI mentor structures the session, keeps you focused, and tracks everything on your dashboard. Deep study, made effortless.</p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}><GBtn big onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={18} color="#fff" /></GBtn><GhostBtn onClick={() => setWorkspace("dashboard")}>Open Dashboard</GhostBtn></div>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
+            <SignedOut><SignUpButton mode="modal"><GBtn big>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn></SignUpButton></SignedOut>
+            <SignedIn><GBtn big onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={18} color="#fff" /></GBtn></SignedIn>
+            <GhostBtn onClick={() => setWorkspace("dashboard")}>Open Dashboard</GhostBtn>
+          </div>
           <p style={{ fontSize: 13, color: C.faint }}>7-day free trial · No credit card · Cancel anytime</p>
         </div>
         <div style={{ position: "absolute", bottom: 36 }}><div style={{ width: 26, height: 42, border: `2px solid ${C.border}`, borderRadius: 999, display: "flex", justifyContent: "center", paddingTop: 8 }}><div style={{ width: 4, height: 8, borderRadius: 999, background: C.cyan, animation: "scrollDot 1.8s ease-in-out infinite" }} /></div></div>
