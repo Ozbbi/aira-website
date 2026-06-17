@@ -20,10 +20,11 @@ export const viewport = { themeColor: "#03030A" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-          <ClerkProvider>
-                <html lang="en">
-                        <body className={inter.className}>{children}</body>body>
-                </html>html>
-          </ClerkProvider>ClerkProvider>
-        );
+
+            <ClerkProvider>
+                  <html lang="en">
+                          <body className={inter.className}>{children}</body>body>
+                  </html>html>
+            </ClerkProvider>ClerkProvider>
+          );
 }</ClerkProvider>
