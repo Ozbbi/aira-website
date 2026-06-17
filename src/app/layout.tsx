@@ -10,7 +10,7 @@ export const metadata = {
     icons: { icon: "/favicon.svg", apple: "/apple-touch-icon.png" },
     openGraph: {
           title: "AIRA - Your AI Study Mentor",
-          description: "Get into flow. Stay there.",
+          description: "Get into flow. Stay there.",h
           url: "https://airamentor.com",
           images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
