@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 
 /* ════════════════════════════════════════════════════════════════════════
    AIRA MENTOR — V9 FINAL · clean, no emojis, minimal line icons
@@ -550,15 +549,8 @@ export default function Home() {
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "gradShift 6s ease infinite" }}>AIRA</span></div>
         <div className="nav-links" style={{ display: "flex", gap: 26, fontSize: 14, color: C.muted }}>{[["Features", "features"], ["Science", "science"], ["Guide", "guide"], ["Premium", "premium"], ["Pricing", "pricing"]].map(([l, h]) => <a key={l} href={`#${h}`} style={{ color: C.muted, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.fg)} onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}>{l}</a>)}</div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <SignedOut>
-            <SignInButton mode="modal"><button className="nav-auth-extra" style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button></SignInButton>
-            <SignUpButton mode="modal"><GBtn>Get Started <Icon name="arrow" size={16} color="#fff" /></GBtn></SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button>
-            <GBtn onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={16} color="#fff" /></GBtn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          <button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button>
+          <GBtn onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={16} color="#fff" /></GBtn>
         </div>
       </nav>
 
@@ -570,8 +562,7 @@ export default function Home() {
           <h1 className="hero-h1" style={HD({ fontSize: "clamp(46px,9vw,104px)", lineHeight: 1.0, marginBottom: 30, maxWidth: 1000 })}>Get into<br /><WordCycler /></h1>
           <p style={{ fontSize: "clamp(17px,3vw,21px)", color: C.muted, maxWidth: 600, lineHeight: 1.7, margin: "0 auto 44px" }}>Pick a study technique, and your AI mentor structures the session, keeps you focused, and tracks everything on your dashboard. Deep study, made effortless.</p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
-            <SignedOut><SignUpButton mode="modal"><GBtn big>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn></SignUpButton></SignedOut>
-            <SignedIn><GBtn big onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={18} color="#fff" /></GBtn></SignedIn>
+            <GBtn big onClick={() => setWorkspace("study")}>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn>
             <GhostBtn onClick={() => setWorkspace("dashboard")}>Open Dashboard</GhostBtn>
           </div>
           <p style={{ fontSize: 13, color: C.faint }}>7-day free trial · No credit card · Cancel anytime</p>
