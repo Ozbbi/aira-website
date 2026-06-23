@@ -111,6 +111,7 @@ function LivingBackground({ p }: { p: number }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }} aria-hidden>
       <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "60vw", height: "60vw", borderRadius: "50%", background: tint.a, filter: "blur(140px)", opacity: 0.14, transition: "background 0.6s linear", animation: "drift 28s ease-in-out infinite", willChange: "transform" }} />
       <div style={{ position: "absolute", bottom: "-15%", right: "-5%", width: "65vw", height: "65vw", borderRadius: "50%", background: tint.b, filter: "blur(150px)", opacity: 0.13, transition: "background 0.6s linear", animation: "drift 34s ease-in-out infinite reverse", willChange: "transform" }} />
+      <div style={{ position: "absolute", top: "-30%", left: "50%", width: "120vw", height: "85vh", background: `conic-gradient(from 200deg at 50% 50%, ${C.cyan}00, ${C.indigo}24, ${C.violet}26, ${C.cyan}18, ${C.cyan}00)`, filter: "blur(80px)", opacity: 0.45, animation: "auroraSpin 48s linear infinite", willChange: "transform" }} />
       <canvas ref={ref} style={{ position: "absolute", inset: 0, opacity: 0.55 }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "45vh", background: `linear-gradient(transparent, ${C.void})`, zIndex: 1 }} />
       <div style={{ position: "fixed", top: 0, left: 0, height: 2, width: `${p * 100}%`, background: `linear-gradient(90deg,${tint.a},${tint.b})`, zIndex: 300, transition: "width 0.1s linear", boxShadow: `0 0 10px ${tint.a}` }} />
@@ -118,35 +119,29 @@ function LivingBackground({ p }: { p: number }) {
   );
 }
 function BrainLogo({ size = 30 }: { size?: number }) {
-  // Premium geometric neural mark: hex node-ring + central hub, crisp at any size.
-  const hex = [
-    [24, 10.5], [35.7, 17.25], [35.7, 30.75], [24, 37.5], [12.3, 30.75], [12.3, 17.25],
-  ] as const;
+  // AIRA mark v3 — a neural "core" with two crossed orbits + a live node. Iconic at any size.
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-label="AIRA">
       <defs>
         <linearGradient id="lg" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={C.cyan} /><stop offset="52%" stopColor={C.indigo} /><stop offset="100%" stopColor={C.violet} />
+          <stop offset="0%" stopColor={C.cyan} /><stop offset="50%" stopColor={C.indigo} /><stop offset="100%" stopColor={C.violet} />
         </linearGradient>
-        <radialGradient id="lgGlow" cx="50%" cy="44%" r="55%">
-          <stop offset="0%" stopColor={C.indigo} stopOpacity="0.5" /><stop offset="100%" stopColor={C.indigo} stopOpacity="0" />
+        <radialGradient id="lgGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={C.indigo} stopOpacity="0.6" /><stop offset="100%" stopColor={C.indigo} stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="lgCore" cx="38%" cy="32%" r="75%">
+          <stop offset="0%" stopColor="#FFFFFF" /><stop offset="38%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} />
         </radialGradient>
       </defs>
-      <circle cx="24" cy="24" r="23" fill="url(#lgGlow)" />
-      {/* perimeter links */}
-      <g stroke="url(#lg)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" fill="none">
-        <path d={`M${hex.map((p) => p.join(" ")).join(" L")} Z`} />
+      <circle cx="24" cy="24" r="22" fill="url(#lgGlow)" />
+      <g stroke="url(#lg)" fill="none" strokeWidth="1.9">
+        <ellipse cx="24" cy="24" rx="21" ry="7.6" transform="rotate(32 24 24)" opacity="0.9" />
+        <ellipse cx="24" cy="24" rx="21" ry="7.6" transform="rotate(-32 24 24)" opacity="0.65" />
       </g>
-      {/* spokes to hub */}
-      <g stroke="url(#lg)" strokeWidth="1.5" strokeLinecap="round" opacity="0.8">
-        {hex.map((p, i) => <line key={i} x1="24" y1="24" x2={p[0]} y2={p[1]} />)}
-      </g>
-      {/* nodes */}
-      <g fill="url(#lg)">
-        {hex.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r="2.5" />)}
-        <circle cx="24" cy="24" r="4.4" />
-      </g>
-      <circle cx="24" cy="24" r="1.7" fill={C.void} />
+      <circle cx="24" cy="24" r="7.6" fill="url(#lgCore)" />
+      <circle cx="21" cy="21" r="2" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="41.3" cy="12.6" r="2.7" fill={C.cyan} />
+      <circle cx="6.7" cy="35.4" r="2.1" fill={C.violet} />
     </svg>
   );
 }
@@ -157,13 +152,47 @@ function WordCycler() {
   return <span style={{ position: "relative", display: "inline-block", minWidth: "5ch" }}>{WORDS.map((w, k) => <span key={w.t} style={{ position: k === i ? "relative" : "absolute", left: 0, top: 0, whiteSpace: "nowrap", color: w.c, opacity: k === i ? 1 : 0, transform: k === i ? "translateY(0) rotateX(0)" : "translateY(0.4em) rotateX(-50deg)", transition: `opacity 0.55s ${C.ease}, transform 0.55s ${C.ease}`, textShadow: `0 0 50px ${w.c}66`, display: "inline-block" }}>{w.t}</span>)}</span>;
 }
 
+/* ════════════ HERO PRODUCT PREVIEW ════════════ */
+function HeroPreview() {
+  const caps = [
+    { ic: "pencil", t: "Summarize notes", c: C.cyan },
+    { ic: "cards", t: "Make a test", c: C.violet },
+    { ic: "map", t: "Study program", c: C.blue },
+    { ic: "bot", t: "Mentor me", c: C.pink },
+  ];
+  return (
+    <div className="hero-preview" style={{ perspective: 1600, width: "100%", maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
+      <div style={{ position: "relative", transform: "rotateX(16deg) scale(0.98)", transformOrigin: "center top", animation: "floaty 7s ease-in-out infinite", willChange: "transform" }}>
+        <div style={{ position: "absolute", inset: "-60px -30px 10px", background: `radial-gradient(60% 55% at 50% 0%, ${C.indigo}40, transparent 70%)`, filter: "blur(50px)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", border: `1px solid ${C.border}`, background: `linear-gradient(${C.elev},${C.base})`, boxShadow: "0 50px 140px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 18px", borderBottom: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)" }}>
+            {[C.pink, C.amber, C.green].map((c) => <span key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, opacity: 0.7 }} />)}
+            <span style={{ marginLeft: 10, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: C.faint }}><BrainLogo size={16} /> AIRA · AI Mentor</span>
+          </div>
+          <div style={{ padding: "24px 26px", display: "flex", flexDirection: "column", gap: 16, textAlign: "left" }}>
+            <div style={{ display: "flex", gap: 12 }}>
+              <span style={{ flexShrink: 0, width: 32, height: 32, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={16} color="#fff" /></span>
+              <div style={{ maxWidth: 460, padding: "12px 16px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}`, fontSize: 14, lineHeight: 1.6, color: C.fg }}>Hi, I&apos;m AIRA. Paste your notes and I&apos;ll summarize them, or ask me for a test from your own material.</div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }} className="hp-caps">
+              {caps.map((c) => <div key={c.t} style={{ padding: "12px 12px", borderRadius: 13, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${c.c}55,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", display: "flex", flexDirection: "column", gap: 8 }}><span style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${c.c}33,${c.c}11)`, border: `1px solid ${c.c}33`, display: "flex", alignItems: "center", justifyContent: "center", color: c.c }}><Icon name={c.ic} size={17} color={c.c} /></span><span style={{ fontSize: 12.5, fontWeight: 600, color: C.fg }}>{c.t}</span></div>)}
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}><div style={{ padding: "11px 16px", borderRadius: 14, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13.5, fontWeight: 500 }}>Summarize my biology notes</div></div>
+            <div style={{ display: "flex", gap: 10, padding: 8, borderRadius: 14, background: C.elev, border: `1px solid ${C.border}` }}><div style={{ flex: 1, padding: "9px 12px", fontSize: 14, color: C.faint }}>Ask AIRA anything…</div><span style={{ width: 38, height: 38, borderRadius: 11, background: `linear-gradient(135deg,${C.blue},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="send" size={16} color="#fff" /></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════ UI PRIMITIVES ════════════ */
 function Pill({ children }: { children: React.ReactNode }) {
   return <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glass, border: `1px solid ${C.border}`, borderRadius: 999, padding: "7px 18px", fontSize: 12, fontWeight: 600, letterSpacing: "0.12em", color: C.cyan, textTransform: "uppercase", backdropFilter: "blur(10px)" }}>{children}</span>;
 }
 function GBtn({ children, big, full, onClick }: { children: React.ReactNode; big?: boolean; full?: boolean; onClick?: () => void }) {
   const [h, setH] = useState(false);
-  return <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, backgroundSize: "200% 200%", color: "#fff", border: "none", padding: big ? "18px 44px" : "12px 26px", width: full ? "100%" : "auto", borderRadius: 999, fontSize: big ? 17 : 15, fontWeight: 600, cursor: "pointer", boxShadow: h ? `0 0 60px ${C.indigo}66` : `0 0 32px ${C.indigo}33`, transform: h ? "translateY(-2px)" : "none", animation: "gradShift 4s ease infinite", transition: `transform 0.3s ${C.ease}, box-shadow 0.3s`, willChange: "transform" }}>{children}</button>;
+  return <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} style={{ position: "relative", overflow: "hidden", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, backgroundSize: "200% 200%", color: "#fff", border: "none", padding: big ? "18px 44px" : "12px 26px", width: full ? "100%" : "auto", borderRadius: 999, fontSize: big ? 17 : 15, fontWeight: 600, cursor: "pointer", boxShadow: h ? `0 0 60px ${C.indigo}66` : `0 0 32px ${C.indigo}33`, transform: h ? "translateY(-2px)" : "none", animation: "gradShift 4s ease infinite", transition: `transform 0.3s ${C.ease}, box-shadow 0.3s`, willChange: "transform" }}><span style={{ position: "absolute", top: 0, left: 0, width: "45%", height: "100%", background: "linear-gradient(105deg,transparent,rgba(255,255,255,0.4),transparent)", transform: "translateX(-130%)", animation: "shine 5s ease-in-out infinite", pointerEvents: "none" }} /><span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{children}</span></button>;
 }
 function GhostBtn({ children, full, onClick }: { children: React.ReactNode; full?: boolean; onClick?: () => void }) {
   const [h, setH] = useState(false);
@@ -789,12 +818,15 @@ export default function Home() {
         @keyframes growW{from{width:0}}
         @keyframes scrollDot{0%{transform:translateY(0);opacity:1}80%{opacity:0}100%{transform:translateY(36px);opacity:0}}
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        @keyframes auroraSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
+        @keyframes shine{0%{transform:translateX(-130%)}60%,100%{transform:translateX(130%)}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%)}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
-        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}}
+        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}}
       `}</style>
 
       <LivingBackground p={p} />
+      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
       {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} />}
@@ -825,6 +857,9 @@ export default function Home() {
         </div>
         <div style={{ position: "absolute", bottom: 36 }}><div style={{ width: 26, height: 42, border: `2px solid ${C.border}`, borderRadius: 999, display: "flex", justifyContent: "center", paddingTop: 8 }}><div style={{ width: 4, height: 8, borderRadius: 999, background: C.cyan, animation: "scrollDot 1.8s ease-in-out infinite" }} /></div></div>
       </section>
+
+      {/* HERO PREVIEW */}
+      <div style={{ position: "relative", zIndex: 2, marginTop: -10, marginBottom: 60 }}><HeroPreview /></div>
 
       {/* MARQUEE */}
       <div style={{ position: "relative", zIndex: 2, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "18px 0", overflow: "hidden", background: "rgba(0,0,4,0.4)" }}><div style={{ display: "flex", gap: 48, whiteSpace: "nowrap", animation: "marquee 26s linear infinite", width: "max-content" }}>{[...Array(2)].map((_, r) => <div key={r} style={{ display: "flex", gap: 48 }}>{["Neural Phase Locking", "Spaced Repetition", "Active Recall", "Socratic Method", "Timeboxing", "Ultradian Rhythm", "15 Subjects", "Focus Audio"].map((t) => <span key={t + r} style={{ fontSize: 14, color: C.muted, letterSpacing: "0.04em" }}>{t}</span>)}</div>)}</div></div>
