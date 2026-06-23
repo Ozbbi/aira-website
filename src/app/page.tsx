@@ -212,7 +212,7 @@ function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d
 /* ════════════ APP WORKSPACE ════════════ */
 function AppWorkspace({ initial, onClose, onAuth, lifetime }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean }) {
   const [tab, setTab] = useState(initial);
-  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "study", ic: "target", label: "Study" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
+  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "study", ic: "target", label: "Focus" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
       <aside className="app-side" style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
@@ -271,7 +271,7 @@ function DashTab({ onGo }: { onGo: (t: string) => void }) {
             <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: "rgba(255,255,255,0.18)", marginBottom: 18 }}><Icon name="play" size={24} color="#fff" /></div>
             <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Start a focus session</div>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.82)", lineHeight: 1.6, maxWidth: 380 }}>Pick a technique and AIRA structures the whole session. One tap to deep work.</p>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600 }}>Open study space <Icon name="arrow" size={16} color="#fff" /></span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600 }}>Open focus space <Icon name="arrow" size={16} color="#fff" /></span>
           </div>
         </button>
         <button onClick={() => onGo("mentor")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
@@ -381,6 +381,12 @@ const MODE_CHIPS: { mode: MMode; ic: string; label: string; guide: string }[] = 
   { mode: "program", ic: "map", label: "Study program", guide: "**Study-program mode.** Tell me your topic, your goal, and how many days you have — I'll build a day-by-day plan." },
   { mode: "chat", ic: "bot", label: "Mentor me", guide: "**Mentor mode.** Ask me anything about your subject and I'll guide you Socratically." },
 ];
+const CAPS: { mode: MMode; ic: string; title: string; desc: string; c: string }[] = [
+  { mode: "summary", ic: "pencil", title: "Summarize my notes", desc: "Paste lecture notes — get a clean, structured summary of the key concepts.", c: C.cyan },
+  { mode: "test", ic: "cards", title: "Make me a test", desc: "Turn any material into a practice quiz with a full answer key.", c: C.violet },
+  { mode: "program", ic: "map", title: "Build a study program", desc: "A personalized, day-by-day plan built around your goal and deadline.", c: C.blue },
+  { mode: "chat", ic: "bot", title: "Mentor me Socratically", desc: "Get guided to the answer with questions — not just handed it.", c: C.pink },
+];
 
 function MentorTab({ lifetime, onUpgrade }: { lifetime: boolean; onUpgrade: () => void }) {
   const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: "Hi, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, and **mentor you Socratically**. Pick an action below or just tell me what you need." }]);
@@ -418,6 +424,14 @@ function MentorTab({ lifetime, onUpgrade }: { lifetime: boolean; onUpgrade: () =
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, paddingBottom: 16 }}>
         {msgs.map((m, i) => <div key={i} style={{ display: "flex", gap: 12, flexDirection: m.role === "user" ? "row-reverse" : "row", animation: "tabIn 0.4s ease" }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: m.role === "ai" ? `linear-gradient(135deg,${C.cyan},${C.violet})` : C.surface, border: m.role === "user" ? `1px solid ${C.border}` : "none" }}><Icon name={m.role === "ai" ? "bot" : "user"} size={17} color={m.role === "ai" ? "#fff" : C.muted} /></div><div style={{ maxWidth: "78%", padding: "13px 17px", borderRadius: 16, fontSize: 14.5, lineHeight: 1.65, background: m.role === "ai" ? C.elev : `linear-gradient(135deg,${C.blue},${C.violet})`, color: m.role === "ai" ? C.fg : "#fff", border: m.role === "ai" ? `1px solid ${C.border}` : "none" }}>{m.role === "ai" ? <MarkdownLite text={m.text} /> : m.text}</div></div>)}
         {loading && <div style={{ display: "flex", gap: 12 }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${C.cyan},${C.violet})` }}><Icon name="bot" size={17} color="#fff" /></div><div style={{ padding: "16px 18px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: C.cyan, animation: "eq 0.6s ease-in-out infinite alternate", animationDelay: `${d * 0.15}s` }} />)}</div></div>}
+        {msgs.length <= 1 && !loading && (
+          <div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.faint, margin: "6px 2px 12px" }}>Here&apos;s what I can do — tap one</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="dash-grid">
+              {CAPS.map((c) => <button key={c.mode} onClick={() => pickMode(c.mode)} style={{ textAlign: "left", cursor: "pointer", padding: 18, borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${c.c}55,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", transition: `transform 0.25s ${C.ease}, box-shadow 0.25s` }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 14px 36px ${c.c}33`; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}><div style={{ width: 42, height: 42, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${c.c}33,${c.c}11)`, border: `1px solid ${c.c}33`, color: c.c, marginBottom: 12 }}><Icon name={c.ic} size={20} color={c.c} /></div><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15.5, marginBottom: 4 }}>{c.title}</div><p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.55 }}>{c.desc}</p></button>)}
+            </div>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
 
@@ -740,7 +754,8 @@ export default function Home() {
         <div style={{ position: "relative", zIndex: 1 }}>
           <div {...reveal("hp")} style={{ ...reveal("hp").style, marginBottom: 34 }}><Pill>AI-Powered Study Mentor</Pill></div>
           <h1 className="hero-h1" style={HD({ fontSize: "clamp(46px,9vw,104px)", lineHeight: 1.0, marginBottom: 30, maxWidth: 1000 })}>Get into<br /><WordCycler /></h1>
-          <p style={{ fontSize: "clamp(17px,3vw,21px)", color: C.muted, maxWidth: 600, lineHeight: 1.7, margin: "0 auto 44px" }}>Pick a study technique, and your AI mentor structures the session, keeps you focused, and tracks everything on your dashboard. Deep study, made effortless.</p>
+          <p style={{ fontSize: "clamp(17px,3vw,21px)", color: C.muted, maxWidth: 640, lineHeight: 1.7, margin: "0 auto 26px" }}>More than a focus timer. Paste your notes and AIRA <strong style={{ color: C.fg, fontWeight: 600 }}>summarizes them</strong>, ask for a test and it <strong style={{ color: C.fg, fontWeight: 600 }}>writes one</strong>, give it a goal and it <strong style={{ color: C.fg, fontWeight: 600 }}>builds your study plan</strong> — then keeps you in deep focus.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 40 }}>{([["pencil", "Summarize notes"], ["cards", "Make tests"], ["map", "Study programs"], ["bot", "Socratic mentor"]] as const).map(([ic, t]) => <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 16px", borderRadius: 999, background: C.glass, border: `1px solid ${C.border}`, color: C.fg, fontSize: 13.5, fontWeight: 500, backdropFilter: "blur(10px)" }}><Icon name={ic} size={15} color={C.cyan} />{t}</span>)}</div>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 20 }}>
             <GBtn big onClick={() => setWorkspace("study")}>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn>
             <GhostBtn onClick={() => setWorkspace("dashboard")}>Open Dashboard</GhostBtn>
