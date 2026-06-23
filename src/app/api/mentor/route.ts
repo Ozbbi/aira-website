@@ -1,9 +1,9 @@
 /**
- * AIRA AI Mentor — server-side Anthropic proxy.
+ * AIRA AI Mentor — server-side Google Gemini proxy (free tier).
  *
- * ANTHROPIC_API_KEY lives ONLY in server env (Vercel env var) and is never
+ * GEMINI_API_KEY lives ONLY in server env (Vercel env var) and is never
  * exposed to the client. The browser POSTs { messages, mode }; we add the
- * right system prompt, call Anthropic, and return the assistant text.
+ * right system prompt, call Gemini, and return the assistant text.
  *
  * mode ∈ "chat" | "summary" | "test" | "program"
  */
@@ -11,7 +11,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
 type Mode = "chat" | "summary" | "test" | "program";
 
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     mode?: unknown;
   };
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return Response.json(
       { error: "not_configured", message: "The mentor is not connected yet." },
@@ -70,39 +70,48 @@ export async function POST(req: Request) {
 
   const selectedMode: Mode = isMode(mode) ? mode : "chat";
 
+  // Normalize, guard, and convert to Gemini's content format (role: user | model).
   const cleaned = (Array.isArray(messages) ? messages : [])
     .map((m) => ({
-      role: m?.role === "assistant" ? "assistant" : "user",
+      role: m?.role === "assistant" ? "model" : "user",
       content: typeof m?.content === "string" ? m.content : String(m?.content ?? ""),
     }))
     .filter((m) => m.content.trim().length > 0);
 
-  while (cleaned.length && cleaned[0].role === "assistant") cleaned.shift();
+  while (cleaned.length && cleaned[0].role === "model") cleaned.shift();
   if (cleaned.length === 0) return Response.json({ error: "Nothing to send." }, { status: 400 });
 
+  const contents = cleaned.map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
   const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: system }] },
+          contents,
+          generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
+        }),
       },
-      body: JSON.stringify({ model: MODEL, max_tokens: 2000, system, messages: cleaned }),
-    });
+    );
 
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
-      console.error("Anthropic error", res.status, detail);
+      console.error("Gemini error", res.status, detail);
       return Response.json({ error: "The mentor is unavailable right now." }, { status: 502 });
     }
 
-    const data = (await res.json()) as { content?: Array<{ type?: string; text?: string }> };
-    const text = Array.isArray(data.content)
-      ? data.content.filter((b) => b?.type === "text" && typeof b.text === "string").map((b) => b.text as string).join("\n").trim()
-      : "";
+    const data = (await res.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+
+    const text = (data.candidates?.[0]?.content?.parts ?? [])
+      .map((p) => (typeof p?.text === "string" ? p.text : ""))
+      .join("")
+      .trim();
 
     if (!text) return Response.json({ error: "Empty response." }, { status: 502 });
     return Response.json({ text });
