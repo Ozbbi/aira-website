@@ -4,17 +4,22 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
+const DESC =
+  "AIRA is your AI study mentor. It summarizes your notes, makes practice tests from your own material, builds personalized study programs, and keeps you in deep focus — backed by learning science.";
+
 export const metadata: Metadata = {
   title: "AIRA - Your AI Study Mentor",
-  description: "Get into flow. Stay there.",
+  description: DESC,
   metadataBase: new URL("https://airamentor.com"),
-  icons: { icon: "/favicon.svg", apple: "/apple-touch-icon.png" },
+  icons: { icon: "/favicon.svg" },
   openGraph: {
     title: "AIRA - Your AI Study Mentor",
-    description: "Get into flow. Stay there.",
+    description: DESC,
     url: "https://airamentor.com",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    siteName: "AIRA",
+    type: "website",
   },
+  twitter: { card: "summary", title: "AIRA - Your AI Study Mentor", description: DESC },
 };
 
 export const viewport: Viewport = { themeColor: "#03030A" };

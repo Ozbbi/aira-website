@@ -55,9 +55,10 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { messages, mode } = (body ?? {}) as {
+  const { messages, mode, name } = (body ?? {}) as {
     messages?: Array<{ role?: string; content?: unknown }>;
     mode?: unknown;
+    name?: unknown;
   };
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -82,7 +83,8 @@ export async function POST(req: Request) {
   if (cleaned.length === 0) return Response.json({ error: "Nothing to send." }, { status: 400 });
 
   const contents = cleaned.map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
-  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}`;
+  const learner = typeof name === "string" && name.trim() ? `\n\nThe learner's name is ${name.trim()}. Address them by name naturally and personalize your guidance to them.` : "";
+  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${learner}`;
 
   try {
     const res = await fetch(

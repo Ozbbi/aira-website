@@ -210,11 +210,12 @@ function logSession(s: Omit<SessionLog, "id" | "ts">) { try { const list = getSe
 function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d / 60000); if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); return days === 1 ? "yesterday" : `${days}d ago`; }
 
 /* ════════════ APP WORKSPACE ════════════ */
-function AppWorkspace({ initial, onClose, onAuth, lifetime }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean }) {
+function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void }) {
   const [tab, setTab] = useState(initial);
   const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "study", ic: "target", label: "Focus" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
+      {!userName && <NameModal onSave={onSaveName} />}
       <aside className="app-side" style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px 18px" }}>
           <BrainLogo size={26} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</span>
@@ -232,7 +233,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime }: { initial: string;
         </div>
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 3 }}>
           <button style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: "transparent", color: C.muted, fontSize: 14 }}><Icon name="settings" size={18} color={C.muted} /> Settings</button>
-          <button onClick={onAuth} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 14px", borderRadius: 11, border: `1px solid ${C.border}`, cursor: "pointer", textAlign: "left", background: C.surface, color: C.fg, fontSize: 14, fontWeight: 600 }}><span style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="user" size={14} color="#fff" /></span> Sign in</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 14px", borderRadius: 11, border: `1px solid ${C.border}`, textAlign: "left", background: C.surface, color: C.fg, fontSize: 14, fontWeight: 600 }}><span style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName ? userName.trim()[0] : <Icon name="user" size={14} color="#fff" />}</span><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName || "Guest"}</span></div>
         </div>
       </aside>
       <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
@@ -241,9 +242,9 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime }: { initial: string;
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button onClick={onAuth} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Upgrade to Pro</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
-          {tab === "dashboard" && <DashTab onGo={setTab} />}
+          {tab === "dashboard" && <DashTab onGo={setTab} userName={userName} />}
           {tab === "study" && <StudyTab />}
-          {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={onAuth} />}
+          {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={onAuth} userName={userName} />}
           {tab === "subjects" && <SubjectsTab />}
           {tab === "history" && <HistoryTab />}
           {tab === "progress" && <ProgressTab />}
@@ -254,7 +255,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime }: { initial: string;
 }
 
 /* ░░ DASHBOARD TAB ░░ */
-function DashTab({ onGo }: { onGo: (t: string) => void }) {
+function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: string }) {
   const cards = [{ l: "Focus time today", v: "2h 15m", c: C.cyan, ic: "clock" }, { l: "Sessions this week", v: "9", c: C.violet, ic: "target" }, { l: "Concepts mastered", v: "47", c: C.green, ic: "brain" }, { l: "Retention rate", v: "94%", c: C.pink, ic: "chart" }];
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const hr = new Date().getHours();
@@ -262,7 +263,7 @@ function DashTab({ onGo }: { onGo: (t: string) => void }) {
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
       <div style={{ fontSize: 12.5, color: C.faint, marginBottom: 5, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>{today}</div>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}. Ready to focus?</h3>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}{userName ? `, ${userName}` : ""}. Ready to focus?</h3>
       <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>You have 2 reviews due and 1 session planned for today.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }} className="dash-grid">
         <button onClick={() => onGo("study")} style={{ position: "relative", overflow: "hidden", textAlign: "left", cursor: "pointer", border: "none", padding: 28, borderRadius: 20, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, color: "#fff", boxShadow: `0 18px 50px ${C.indigo}44`, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
@@ -307,7 +308,10 @@ function StudyTab() {
   const [running, setRunning] = useState(false); const [onBreak, setOnBreak] = useState(false);
   const [goal, setGoal] = useState("");
   const [sound, setSound] = useState("silence");
-  useEffect(() => { if (!running) return; const id = setInterval(() => setSecs((s) => { if (s <= 1) { if (!onBreak) logSession({ tech: tech.name, color: tech.color, mins: tech.work }); setOnBreak((b) => !b); return (!onBreak ? tech.brk : tech.work) * 60; } return s - 1; }), 1000); return () => clearInterval(id); }, [running, onBreak, tech]);
+  const [sessions, setSessions] = useState<SessionLog[]>([]);
+  useEffect(() => { setSessions(getSessions()); }, []);
+  useEffect(() => { if (!running) return; const id = setInterval(() => setSecs((s) => { if (s <= 1) { if (!onBreak) { logSession({ tech: tech.name, color: tech.color, mins: tech.work }); setSessions(getSessions()); } setOnBreak((b) => !b); return (!onBreak ? tech.brk : tech.work) * 60; } return s - 1; }), 1000); return () => clearInterval(id); }, [running, onBreak, tech]);
+  const topTech = (() => { const counts: Record<string, number> = {}; sessions.forEach((s) => { counts[s.tech] = (counts[s.tech] || 0) + 1; }); return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]; })();
   const pick = (t: typeof TECHNIQUES[0]) => { setTech(t); setSecs(t.work * 60); setOnBreak(false); setRunning(false); };
   const total = (onBreak ? tech.brk : tech.work) * 60;
   const mm = String(Math.floor(secs / 60)).padStart(2, "0"), ss = String(secs % 60).padStart(2, "0");
@@ -315,6 +319,10 @@ function StudyTab() {
   return (
     <div style={{ animation: "tabIn 0.4s ease", display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }} className="study-grid">
       <div>
+        <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 12, background: `linear-gradient(135deg,${C.cyan}1a,${C.violet}0d)`, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+          <Icon name="spark" size={16} color={C.cyan} />
+          <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{sessions.length > 0 ? <>AIRA learned from your last <strong style={{ color: C.fg }}>{sessions.length}</strong> session{sessions.length > 1 ? "s" : ""}{topTech ? <> — your go-to is <strong style={{ color: C.fg }}>{topTech[0]}</strong>. Want to beat your streak?</> : "."}</> : <>Complete a session and AIRA starts adapting to your rhythm and peak hours.</>}</span>
+        </div>
         <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 14 }}>Pick your technique</h3>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {TECHNIQUES.map((t) => { const on = t.id === tech.id; return <button key={t.id} onClick={() => pick(t)} style={{ textAlign: "left", cursor: "pointer", padding: 18, borderRadius: 16, background: on ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${t.color},${C.violet}) border-box` : C.surface, border: on ? "1.5px solid transparent" : `1px solid ${C.border}`, transform: on ? "translateY(-3px)" : "none", boxShadow: on ? `0 14px 36px ${t.color}33` : "none", transition: `all 0.3s ${C.ease}` }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}><span style={{ color: t.color }}><Icon name={t.ic} size={22} color={t.color} /></span><span style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.tag}</span></div><div style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: on ? C.fg : C.muted, marginBottom: 4 }}>{t.name}</div><p style={{ fontSize: 12, color: C.faint, lineHeight: 1.5 }}>{t.best}</p></button>; })}
@@ -326,6 +334,7 @@ function StudyTab() {
           <div style={{ fontSize: 12, color: onBreak ? C.green : tech.color, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, marginBottom: 14 }}>{onBreak ? "Break" : "Focus"}{running && !onBreak && goal.trim() ? "" : ""}</div>
           <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="What's your goal this session?" style={{ width: "100%", textAlign: "center", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 11, color: C.fg, fontSize: 13.5, padding: "10px 12px", outline: "none", marginBottom: 20 }} />
           <div style={{ position: "relative", width: 240, height: 240, margin: "0 auto 22px" }}>
+            {running && <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: `radial-gradient(circle, ${tech.color}33, transparent 70%)`, animation: "breathe 3s ease-in-out infinite", pointerEvents: "none" }} />}
             <svg viewBox="0 0 264 264" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}><defs><linearGradient id={`ring-${tech.id}`} x1="0" y1="0" x2="264" y2="264"><stop offset="0%" stopColor={tech.color} /><stop offset="100%" stopColor={C.violet} /></linearGradient></defs><circle cx="132" cy="132" r={R} fill="none" stroke={C.border} strokeWidth="8" /><circle cx="132" cy="132" r={R} fill="none" stroke={`url(#ring-${tech.id})`} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: "stroke-dashoffset 1s linear", filter: `drop-shadow(0 0 10px ${tech.color}aa)` }} /></svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 52, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{mm}:{ss}</div><div style={{ fontSize: 11, color: C.faint, marginTop: 6 }}>{running ? "in session" : "ready"}</div></div>
           </div>
@@ -388,8 +397,8 @@ const CAPS: { mode: MMode; ic: string; title: string; desc: string; c: string }[
   { mode: "chat", ic: "bot", title: "Mentor me Socratically", desc: "Get guided to the answer with questions — not just handed it.", c: C.pink },
 ];
 
-function MentorTab({ lifetime, onUpgrade }: { lifetime: boolean; onUpgrade: () => void }) {
-  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: "Hi, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, and **mentor you Socratically**. Pick an action below or just tell me what you need." }]);
+function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpgrade: () => void; userName: string }) {
+  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: `Hi${userName ? ` ${userName}` : ""}, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, and **mentor you Socratically**. Pick an action below or just tell me what you need.` }]);
   const [input, setInput] = useState("");
   const [notes, setNotes] = useState("");
   const [mode, setMode] = useState<MMode>("chat");
@@ -411,7 +420,7 @@ function MentorTab({ lifetime, onUpgrade }: { lifetime: boolean; onUpgrade: () =
     if (!lifetime) { const u = used + 1; setUsed(u); try { window.localStorage.setItem("aira_free_used", String(u)); } catch {} }
     const apiMessages = convo.filter((m) => !m.local).map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
     try {
-      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode }) });
+      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName }) });
       const d = await r.json();
       if (r.ok && d.text) setMsgs((m) => [...m, { role: "ai", text: d.text }]);
       else setMsgs((m) => [...m, { role: "ai", text: mockReply(t) }]); // graceful fallback (e.g. key not set)
@@ -526,6 +535,28 @@ function HistoryTab() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/* ════════════ NAME ONBOARDING ════════════ */
+function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => void }) {
+  const [name, setName] = useState("");
+  const [remember, setRemember] = useState(true);
+  const submit = () => { if (name.trim()) onSave(name, remember); };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1700, background: "rgba(0,0,4,0.92)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
+      <div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 25, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>Welcome — what should we call you?</h2>
+        <p style={{ fontSize: 14, color: C.muted, marginBottom: 24, lineHeight: 1.6 }}>AIRA personalizes your mentoring, goals, and study plan around you.</p>
+        <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} autoFocus placeholder="Your name" style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 16, marginBottom: 18, outline: "none" }} />
+        <div onClick={() => setRemember((r) => !r)} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: C.muted, cursor: "pointer", marginBottom: 24, userSelect: "none" }}>
+          <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `1px solid ${remember ? "transparent" : C.border}`, background: remember ? `linear-gradient(135deg,${C.cyan},${C.violet})` : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{remember && <Icon name="check" size={14} color="#fff" stroke={3} />}</span>
+          Keep me signed in on this device
+        </div>
+        <GBtn full onClick={submit}>Continue <Icon name="arrow" size={18} color="#fff" /></GBtn>
+      </div>
     </div>
   );
 }
@@ -669,6 +700,36 @@ function StatsBand({ seen }: { seen: { [k: string]: boolean } }) {
   const stats = [{ v: a, suf: "%", label: "retention with active recall vs 10% from re-reading", col: C.cyan }, { v: b, suf: "x", label: "stronger neural pathways via the Socratic method", col: C.violet }, { v: c, suf: "%", label: "more deep-focus time in structured sessions", col: C.blue }, { v: d, suf: "", label: "science-backed focus techniques to choose from", col: C.pink }];
   return <div data-k="stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 24 }}>{stats.map((s, i) => <div key={i} style={{ textAlign: "center", opacity: seen["stats"] ? 1 : 0, transform: seen["stats"] ? "translateY(0)" : "translateY(20px)", transition: `all 0.7s ${C.ease} ${i * 100}ms` }}><div style={{ fontFamily: "var(--font-display)", fontSize: 52, fontWeight: 700, color: s.col, lineHeight: 1, marginBottom: 12, textShadow: `0 0 30px ${s.col}44` }}>{Math.round(s.v)}{s.suf}</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 200, margin: "0 auto" }}>{s.label}</p></div>)}</div>;
 }
+function ComparisonGraphic({ seen }: { seen: { [k: string]: boolean } }) {
+  const on = !!seen["cmpg"];
+  const aira = "0,170 100,150 200,118 300,92 400,68 500,48 600,32";
+  const other = "0,170 100,186 200,206 300,226 400,246 500,262 600,276";
+  const days = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+  return (
+    <div data-k="cmpg" style={{ opacity: on ? 1 : 0, transform: on ? "translateY(0)" : "translateY(30px)", transition: `all 0.8s ${C.ease}`, background: C.elev, border: `1px solid ${C.border}`, borderRadius: 24, padding: "32px 28px", maxWidth: 920, margin: "0 auto", willChange: "transform,opacity" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 22 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="brain" size={18} color="#fff" /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.fg }}>With AIRA</div><div style={{ fontSize: 12.5, color: C.muted }}>Active recall · spaced reviews · mentor</div></div></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: C.surface, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="play" size={16} color={C.faint} /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.muted }}>Videos & cramming</div><div style={{ fontSize: 12.5, color: C.faint }}>Passive watching · re-reading</div></div></div>
+      </div>
+      <svg viewBox="0 0 600 300" style={{ width: "100%", height: "auto", display: "block" }}>
+        <defs>
+          <linearGradient id="airaLine" x1="0" y1="0" x2="600" y2="0"><stop offset="0%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></linearGradient>
+          <linearGradient id="airaFill" x1="0" y1="0" x2="0" y2="300"><stop offset="0%" stopColor={C.indigo} stopOpacity="0.3" /><stop offset="100%" stopColor={C.indigo} stopOpacity="0" /></linearGradient>
+        </defs>
+        {[0, 1, 2, 3, 4].map((i) => <line key={i} x1="0" y1={i * 64 + 18} x2="600" y2={i * 64 + 18} stroke={C.border} strokeWidth="1" />)}
+        <polygon points={`${aira} 600,300 0,300`} fill="url(#airaFill)" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.5s" }} />
+        <polyline points={other} fill="none" stroke={C.faint} strokeWidth="3" strokeDasharray="6 7" strokeLinecap="round" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.5s" }} />
+        <polyline points={aira} fill="none" stroke="url(#airaLine)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength={100} strokeDasharray={100} strokeDashoffset={on ? 0 : 100} style={{ transition: "stroke-dashoffset 1.6s ease 0.2s", filter: `drop-shadow(0 0 6px ${C.indigo}88)` }} />
+        <circle cx="600" cy="32" r="6" fill={C.cyan} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.6s" }} />
+        <circle cx="600" cy="276" r="5" fill={C.faint} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.2s" }} />
+        <text x="592" y="20" fill={C.cyan} fontSize="22" fontWeight="700" textAnchor="end" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.7s" }}>94%</text>
+        <text x="592" y="268" fill={C.faint} fontSize="16" fontWeight="700" textAnchor="end" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.3s" }}>~20%</text>
+      </svg>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.faint, marginTop: 8, padding: "0 2px" }}>{days.map((d) => <span key={d}>{d}</span>)}</div>
+      <p style={{ textAlign: "center", fontSize: 14.5, color: C.muted, marginTop: 20, lineHeight: 1.7, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>Same week, same material. With AIRA&apos;s active recall and spaced reviews you <strong style={{ color: C.fg }}>retain up to 94%</strong> — passive video-watching forgets most of it within days.</p>
+    </div>
+  );
+}
 function StudyGuide({ seen, open, setOpen }: { seen: { [k: string]: boolean }; open: number | null; setOpen: (n: number | null) => void }) {
   return <div>{GUIDE.map((g, i) => <div key={g.n} data-k={`g-${i}`} style={{ opacity: seen[`g-${i}`] ? 1 : 0, transform: seen[`g-${i}`] ? "translateY(0)" : "translateY(20px)", transition: `all 0.6s ${C.ease} ${i * 60}ms`, background: open === i ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo}55,rgba(255,255,255,0.05)) border-box` : "transparent", border: open === i ? "1px solid transparent" : `1px solid ${C.border}`, borderRadius: 18, marginBottom: 12, overflow: "hidden" }}><button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", background: "none", border: "none", padding: "22px 24px", display: "flex", alignItems: "center", gap: 18, cursor: "pointer", textAlign: "left", color: C.fg }}><span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: open === i ? C.cyan : C.faint, minWidth: 36 }}>{g.n}</span><span style={{ fontSize: 17, fontWeight: 600, flex: 1 }}>{g.t}</span><span style={{ color: C.violet, transform: open === i ? "rotate(45deg)" : "none", transition: `transform 0.3s ${C.ease}`, display: "flex" }}><Icon name="plus" size={20} color={C.violet} /></span></button><div style={{ maxHeight: open === i ? 240 : 0, overflow: "hidden", transition: `max-height 0.45s ${C.ease}` }}><p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.75, padding: "0 24px 24px 70px" }}>{g.b}</p></div></div>)}</div>;
 }
@@ -689,7 +750,9 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [openGuide, setOpenGuide] = useState<number | null>(0);
   const [lifetime, setLifetime] = useState(false);
-  useEffect(() => { const params = new URLSearchParams(window.location.search); if (params.get("success") === "true" || params.get("checkout") === "success") setShowWelcome(true); try { if (window.localStorage.getItem("aira_lifetime") === "true") setLifetime(true); } catch {} }, []);
+  const [userName, setUserName] = useState("");
+  useEffect(() => { const params = new URLSearchParams(window.location.search); if (params.get("success") === "true" || params.get("checkout") === "success") setShowWelcome(true); try { if (window.localStorage.getItem("aira_lifetime") === "true") setLifetime(true); const n = window.localStorage.getItem("aira_name"); if (n) setUserName(n); } catch {} }, []);
+  const saveName = useCallback((n: string, remember: boolean) => { const name = n.trim(); if (!name) return; setUserName(name); if (remember) { try { window.localStorage.setItem("aira_name", name); } catch {} } }, []);
   const buy = useCallback(() => { window.location.href = CHECKOUT_URL; }, []);
   const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(40px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(6px)", transition: `opacity 0.9s ${C.ease} ${d}ms, transform 0.9s ${C.ease} ${d}ms, filter 0.9s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
   const HD = (e: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", ...e });
@@ -700,8 +763,6 @@ export default function Home() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <meta name="theme-color" content="#03030A" />
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0}
@@ -735,7 +796,7 @@ export default function Home() {
 
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
-      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} />}
+      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
       {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} />}
 
       {/* NAV */}
@@ -792,6 +853,12 @@ export default function Home() {
       <section className="sec" style={sec({ maxWidth: 1100, margin: "0 auto", padding: "100px 48px" })}>
         <div {...reveal("stats-h")} style={{ ...reveal("stats-h").style, textAlign: "center", marginBottom: 60 }}><Label>The numbers</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Methods that <Grad>actually work.</Grad></h2></div>
         <StatsBand seen={seen} />
+      </section>
+
+      {/* VS GRAPHIC */}
+      <section className="sec" style={sec({ maxWidth: 1000, margin: "0 auto" })}>
+        <div {...reveal("vs-h")} style={{ ...reveal("vs-h").style, textAlign: "center", marginBottom: 52 }}><Label>The difference</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Two students, <Grad>one week.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 16, maxWidth: 540, margin: "18px auto 0", lineHeight: 1.7 }}>One studies with AIRA. The other watches videos and crams. Here&apos;s what they remember.</p></div>
+        <ComparisonGraphic seen={seen} />
       </section>
 
       {/* COMPARISON */}
