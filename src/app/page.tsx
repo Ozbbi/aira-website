@@ -931,7 +931,7 @@ export default function Home() {
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       <meta name="theme-color" content="#03030A" />
-      <style>{`
+      <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
         *{box-sizing:border-box;margin:0;padding:0}
         :root{--font-display:'Space Grotesk',sans-serif}
         html{scroll-behavior:smooth}
@@ -961,7 +961,7 @@ export default function Home() {
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%)}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
         @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:20px!important}.story-art{display:none!important}}
-      `}</style>
+      ` }} />
 
       <LivingBackground p={p} />
       <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
