@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent, MotionValue } from "framer-motion";
 
 /* ════════════════════════════════════════════════════════════════════════
    AIRA MENTOR — V9 FINAL · clean, no emojis, minimal line icons
@@ -805,27 +806,28 @@ function WelcomeModal({ onClose, onEnter }: { onClose: () => void; onEnter: () =
   return <div style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.88)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}><div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 48, maxWidth: 460, width: "100%", textAlign: "center", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.5s ${C.spring}` }}><div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: C.cyan }}><Icon name={s.ic} size={48} color={C.cyan} /></div><h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 16, letterSpacing: "-0.02em" }}>{s.title}</h2><p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 32 }}>{s.body}</p><div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28 }}>{steps.map((_, i) => <div key={i} style={{ width: i === step ? 28 : 8, height: 8, borderRadius: 999, background: i === step ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : C.border, transition: `all 0.4s ${C.ease}` }} />)}</div><GBtn full onClick={() => (last ? onEnter() : setStep(step + 1))}>{s.cta}</GBtn>{!last && <button onClick={onClose} style={{ marginTop: 16, background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer" }}>Skip intro</button>}</div></div>;
 }
 
-/* ════════════ FLOATING STORY VISUAL (premium glass panel, changes per step) ════════════ */
-function StoryVisual({ step }: { step: number }) {
-  const panel = (i: number): React.CSSProperties => ({
-    position: "absolute", inset: 0, opacity: step === i ? 1 : 0,
-    transform: step === i ? "translateZ(0) scale(1)" : "translateZ(-90px) scale(0.9)",
-    transition: "opacity 0.5s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1)",
-    pointerEvents: "none", backfaceVisibility: "hidden",
-  });
+/* ════════════ FLOATING STORY VISUAL (scroll-linked glass panel) ════════════ */
+function PanelSlide({ progress, i, n, children }: { progress: MotionValue<number>; i: number; n: number; children: React.ReactNode }) {
+  const seg = 1 / n, band = 0.05;
+  const lo = i * seg, hi = (i + 1) * seg;
+  const opacity = useTransform(progress, [lo - band, lo + band, hi - band, hi + band], [i === 0 ? 1 : 0, 1, 1, i === n - 1 ? 1 : 0]);
+  const scale = useTransform(progress, [lo, lo + band], [i === 0 ? 1 : 0.92, 1]);
+  return <motion.div style={{ opacity, scale, position: "absolute", inset: 0, pointerEvents: "none", willChange: "transform, opacity" }}>{children}</motion.div>;
+}
+function StoryVisual({ progress }: { progress: MotionValue<number> }) {
   const R = 68, CIRC = 2 * Math.PI * R;
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: 460, margin: "0 auto" }}>
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", transform: "perspective(1500px) rotateX(6deg) rotateY(-6deg)" }}>
         <div style={{ position: "absolute", inset: "-55px -30px 25px", background: `radial-gradient(60% 60% at 50% 28%, ${C.indigo}48, transparent 70%)`, filter: "blur(50px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", borderRadius: 22, overflow: "hidden", border: `1px solid ${C.border}`, background: "linear-gradient(160deg, rgba(20,20,42,0.97), rgba(8,8,18,0.98))", boxShadow: "0 50px 130px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 18px", borderBottom: `1px solid ${C.border}` }}>
             {[C.pink, C.amber, C.green].map((c) => <span key={c} style={{ width: 10, height: 10, borderRadius: 9, background: c, opacity: 0.65 }} />)}
             <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: C.faint }}><BrainLogo size={15} /> AIRA Mentor</span>
           </div>
-          <div style={{ position: "relative", height: 322, perspective: "760px" }}>
+          <div style={{ position: "relative", height: 322 }}>
             {/* 0 — notes */}
-            <div style={panel(0)}>
+            <PanelSlide progress={progress} i={0} n={4}>
               <div style={{ padding: "24px 26px" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.cyan, marginBottom: 20 }}>Lecture notes · pasted</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
@@ -833,18 +835,18 @@ function StoryVisual({ step }: { step: number }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ height: 9, width: "40%", borderRadius: 5, background: "rgba(255,255,255,0.10)" }} /><span style={{ width: 2, height: 16, background: C.cyan, animation: "blink 1s step-end infinite" }} /></div>
                 </div>
               </div>
-            </div>
+            </PanelSlide>
             {/* 1 — summary + test */}
-            <div style={panel(1)}>
+            <PanelSlide progress={progress} i={1} n={4}>
               <div style={{ padding: "24px 26px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}><span style={{ width: 28, height: 28, borderRadius: 9, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="spark" size={15} color="#fff" /></span><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>Summary</span></div>
                 {[88, 76, 66].map((w, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}><span style={{ width: 6, height: 6, borderRadius: 9, background: C.cyan, flexShrink: 0 }} /><div style={{ height: 8, width: `${w}%`, borderRadius: 4, background: "rgba(255,255,255,0.12)" }} /></div>)}
                 <div style={{ height: 1, background: C.border, margin: "18px 0" }} />
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: `${C.green}15`, border: `1px solid ${C.green}40`, fontSize: 12.5, color: C.green, fontWeight: 600 }}><Icon name="check" size={13} color={C.green} /> Practice quiz ready · 6 questions</div>
               </div>
-            </div>
+            </PanelSlide>
             {/* 2 — focus */}
-            <div style={panel(2)}>
+            <PanelSlide progress={progress} i={2} n={4}>
               <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
                 <div style={{ position: "relative", width: 150, height: 150 }}>
                   <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: `radial-gradient(circle,${C.cyan}26,transparent 70%)`, animation: "breathe 3s ease-in-out infinite" }} />
@@ -857,15 +859,15 @@ function StoryVisual({ step }: { step: number }) {
                 </div>
                 <div style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: C.cyan, fontWeight: 600 }}>Deep Work · Focus</div>
               </div>
-            </div>
+            </PanelSlide>
             {/* 3 — retention chart */}
-            <div style={panel(3)}>
+            <PanelSlide progress={progress} i={3} n={4}>
               <div style={{ padding: "24px 26px", height: "100%", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>Retention</span><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 26, color: C.cyan }}>94%</span></div>
                 <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 12, paddingTop: 16 }}>{[32, 48, 60, 78, 100].map((h, i) => <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "6px 6px 0 0", background: i === 4 ? `linear-gradient(${C.cyan},${C.violet})` : "rgba(255,255,255,0.10)" }} />)}</div>
                 <div style={{ fontSize: 12, color: C.faint, marginTop: 14 }}>vs ~10% from passive re-reading</div>
               </div>
-            </div>
+            </PanelSlide>
           </div>
         </div>
       </div>
@@ -873,15 +875,22 @@ function StoryVisual({ step }: { step: number }) {
   );
 }
 
+function TextSlide({ progress, i, n, t, b }: { progress: MotionValue<number>; i: number; n: number; t: string; b: string }) {
+  const seg = 1 / n, band = 0.05;
+  const lo = i * seg, hi = (i + 1) * seg;
+  const opacity = useTransform(progress, [lo - band, lo + band, hi - band, hi + band], [i === 0 ? 1 : 0, 1, 1, i === n - 1 ? 1 : 0]);
+  const y = useTransform(progress, [lo, lo + band], [i === 0 ? 0 : 46, 0]);
+  return (
+    <motion.div style={{ opacity, y, position: "absolute", top: 0, left: 0, right: 0, willChange: "transform, opacity" }}>
+      <h1 className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, marginBottom: 22 }}>{t}</h1>
+      <p style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460 }}>{b}</p>
+    </motion.div>
+  );
+}
+
 function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const artRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const hintRef = useRef<HTMLDivElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const stepRef = useRef(0);
-  const prevP = useRef(0);
-  const blurTimer = useRef<number | null>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [step, setStep] = useState(0);
   const STEPS = [
     { t: "Drop in your notes.", b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
@@ -889,62 +898,23 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
     { t: "Lock into deep focus.", b: "Pick a technique and AIRA structures the whole session around your brain." },
     { t: "Actually remember it.", b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
   ];
-  useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const el = ref.current; if (!el) return;
-        const total = el.offsetHeight - window.innerHeight;
-        const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), Math.max(total, 1));
-        const p = total > 0 ? scrolled / total : 0;
-        if (artRef.current) artRef.current.style.transform = `translateY(${((0.5 - p) * 54).toFixed(1)}px) rotateX(${(8 - p * 6).toFixed(2)}deg) rotateY(-7deg)`;
-        if (hintRef.current) hintRef.current.style.opacity = p < 0.04 ? "0.7" : "0";
-        // motion-blur the headline block based on scroll speed
-        const v = Math.abs(p - prevP.current); prevP.current = p;
-        const blur = Math.min(v * 340, 7);
-        if (textRef.current) {
-          textRef.current.style.filter = blur > 0.5 ? `blur(${blur.toFixed(1)}px)` : "none";
-          if (blurTimer.current) clearTimeout(blurTimer.current);
-          blurTimer.current = window.setTimeout(() => { if (textRef.current) textRef.current.style.filter = "none"; }, 90);
-        }
-        const s = Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)));
-        if (s !== stepRef.current) { stepRef.current = s; setStep(s); }
-      });
-    };
-    const onMove = (e: MouseEvent) => {
-      const el = ref.current; if (!el || !glowRef.current) return;
-      const r = el.getBoundingClientRect();
-      glowRef.current.style.transform = `translate(${(e.clientX - r.left - 320).toFixed(0)}px, ${(e.clientY - r.top - 320).toFixed(0)}px)`;
-      glowRef.current.style.opacity = "1";
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    const sec = ref.current;
-    if (sec) sec.addEventListener("mousemove", onMove);
-    return () => {
-      window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll);
-      if (sec) sec.removeEventListener("mousemove", onMove);
-      if (raf) cancelAnimationFrame(raf); if (blurTimer.current) clearTimeout(blurTimer.current);
-    };
-  }, []);
-  const cur = STEPS[step];
+  const n = STEPS.length;
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const s = Math.min(n - 1, Math.max(0, Math.floor(v * n + 0.0001)));
+    setStep((prev) => (prev === s ? prev : s));
+  });
+  const hintOpacity = useTransform(scrollYProgress, [0, 0.06], [0.7, 0]);
   return (
-    <section ref={ref} style={{ position: "relative", zIndex: 2, height: `${STEPS.length * 100}vh` }}>
+    <section ref={ref} style={{ position: "relative", zIndex: 2, height: `${n * 78}vh` }}>
       <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
-        {/* cursor-following glow */}
-        <div ref={glowRef} aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 640, height: 640, borderRadius: "50%", background: `radial-gradient(circle, ${C.indigo}22, transparent 60%)`, pointerEvents: "none", opacity: 0, transition: "opacity 0.5s ease", willChange: "transform", zIndex: 0 }} />
-        <div className="story-grid" style={{ position: "relative", zIndex: 1, display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 56px 0", alignItems: "center" }}>
-          <div ref={textRef} style={{ willChange: "filter" }}>
+        <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 56px 0", alignItems: "center" }}>
+          <div>
             <Pill>AI Study Mentor</Pill>
-            <div style={{ minHeight: 152, marginTop: 26 }}>
-              <h1 key={step} className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, animation: `blurIn 0.6s ${C.ease}` }}>{cur.t}</h1>
+            <div style={{ position: "relative", height: 236, marginTop: 26 }}>
+              {STEPS.map((s, i) => <TextSlide key={i} progress={scrollYProgress} i={i} n={n} t={s.t} b={s.b} />)}
             </div>
-            <p key={`b${step}`} style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460, minHeight: 56, animation: `blurIn 0.6s ${C.ease} 0.06s both` }}>{cur.b}</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "30px 0 34px" }}>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, color: C.cyan }}>0{step + 1}<span style={{ color: C.faint }}> / 0{STEPS.length}</span></span>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "6px 0 34px" }}>
+              <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, color: C.cyan }}>0{step + 1}<span style={{ color: C.faint }}> / 0{n}</span></span>
               <div style={{ display: "flex", gap: 8 }}>{STEPS.map((_, i) => <div key={i} style={{ height: 4, width: i === step ? 40 : 22, borderRadius: 999, background: i <= step ? `linear-gradient(90deg,${C.cyan},${C.violet})` : C.border, transition: "all 0.4s ease" }} />)}</div>
             </div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
@@ -953,17 +923,12 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
             </div>
             <p style={{ fontSize: 13, color: C.faint, marginTop: 16 }}>7-day free trial · No credit card · Cancel anytime</p>
           </div>
-          <div className="story-art" style={{ perspective: 1500 }}>
-            <div ref={artRef} style={{ transformStyle: "preserve-3d", willChange: "transform", transform: "translateY(27px) rotateX(8deg) rotateY(-7deg)" }}>
-              <StoryVisual step={step} />
-            </div>
-          </div>
+          <div className="story-art"><StoryVisual progress={scrollYProgress} /></div>
         </div>
-        {/* scroll hint */}
-        <div ref={hintRef} style={{ position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: 0.7, transition: "opacity 0.4s ease", pointerEvents: "none" }}>
+        <motion.div style={{ opacity: hintOpacity, position: "absolute", bottom: 30, left: "50%", x: "-50%", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, pointerEvents: "none" }}>
           <span style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: C.faint }}>Scroll</span>
           <div style={{ width: 22, height: 36, border: `2px solid ${C.border}`, borderRadius: 999, display: "flex", justifyContent: "center", paddingTop: 7 }}><div style={{ width: 4, height: 8, borderRadius: 999, background: C.cyan, animation: "scrollDot 1.8s ease-in-out infinite" }} /></div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -985,7 +950,7 @@ export default function Home() {
   const buy = useCallback(() => { window.location.href = CHECKOUT_URL; }, []);
   const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(40px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(6px)", transition: `opacity 0.9s ${C.ease} ${d}ms, transform 0.9s ${C.ease} ${d}ms, filter 0.9s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
   const HD = (e: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", ...e });
-  const sec = (extra: React.CSSProperties = {}): React.CSSProperties => ({ position: "relative", zIndex: 2, padding: "130px 48px", ...extra });
+  const sec = (extra: React.CSSProperties = {}): React.CSSProperties => ({ position: "relative", zIndex: 2, padding: "92px 48px", ...extra });
 
   return (
     <main style={{ background: C.void, minHeight: "100vh", color: C.fg, position: "relative", overflowX: "clip" }}>
