@@ -235,7 +235,7 @@ function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d
 /* ════════════ APP WORKSPACE ════════════ */
 function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void }) {
   const [tab, setTab] = useState(initial);
-  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "study", ic: "target", label: "Focus" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
+  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
       {!userName && <NameModal onSave={onSaveName} />}
@@ -244,7 +244,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
           <BrainLogo size={26} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</span>
           {lifetime && <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}44`, borderRadius: 999, padding: "3px 8px" }}>PRO</span>}
         </div>
-        <button onClick={() => setTab("study")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 18 }}><Icon name="plus" size={17} color="#fff" /> New session</button>
+        <button onClick={() => setTab("mentor")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 18 }}><Icon name="plus" size={17} color="#fff" /> New chat</button>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: C.faint, textTransform: "uppercase", padding: "0 8px 8px" }}>Workspace</div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {NAV.map((n) => { const on = tab === n.id; return <button key={n.id} onClick={() => setTab(n.id)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: on ? `linear-gradient(135deg,${C.indigo}2e,${C.cyan}11)` : "transparent", color: on ? C.fg : C.muted, fontSize: 14, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}`, position: "relative" }}>{on && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.violet})` }} />}<Icon name={n.ic} size={18} color={on ? C.fg : C.muted} />{n.label}</button>; })}
@@ -266,7 +266,6 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
           {tab === "dashboard" && <DashTab onGo={setTab} userName={userName} />}
-          {tab === "study" && <StudyTab onGo={setTab} />}
           {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={onAuth} userName={userName} />}
           {tab === "subjects" && <SubjectsTab />}
           {tab === "history" && <HistoryTab />}
@@ -289,20 +288,20 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
       <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}{userName ? `, ${userName}` : ""}. Ready to focus?</h3>
       <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>You have 2 reviews due and 1 session planned for today.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }} className="dash-grid">
-        <button onClick={() => onGo("study")} style={{ position: "relative", overflow: "hidden", textAlign: "left", cursor: "pointer", border: "none", padding: 28, borderRadius: 20, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, color: "#fff", boxShadow: `0 18px 50px ${C.indigo}44`, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
+        <button onClick={() => onGo("mentor")} style={{ position: "relative", overflow: "hidden", textAlign: "left", cursor: "pointer", border: "none", padding: 28, borderRadius: 20, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, color: "#fff", boxShadow: `0 18px 50px ${C.indigo}44`, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
           <div style={{ position: "absolute", right: -30, top: -30, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.12)", filter: "blur(10px)" }} />
           <div style={{ position: "relative" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: "rgba(255,255,255,0.18)", marginBottom: 18 }}><Icon name="play" size={24} color="#fff" /></div>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Start a focus session</div>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.82)", lineHeight: 1.6, maxWidth: 380 }}>Pick a technique and AIRA structures the whole session. One tap to deep work.</p>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600 }}>Open focus space <Icon name="arrow" size={16} color="#fff" /></span>
+            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: "rgba(255,255,255,0.18)", marginBottom: 18 }}><Icon name="bot" size={24} color="#fff" /></div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Talk to your AI Mentor</div>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.82)", lineHeight: 1.6, maxWidth: 380 }}>Summarize notes, score them, make tests, build study plans, get into flow — everything starts with a message.</p>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600 }}>Open mentor <Icon name="arrow" size={16} color="#fff" /></span>
           </div>
         </button>
-        <button onClick={() => onGo("mentor")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, marginBottom: 18 }}><Icon name="bot" size={24} color="#fff" /></div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>Ask your AI Mentor</div>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Summarize notes, make a test, or build a study program — just ask.</p>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Open mentor <Icon name="arrow" size={16} color={C.cyan} /></span>
+        <button onClick={() => onGo("subjects")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, marginBottom: 18 }}><Icon name="book" size={24} color="#fff" /></div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>Your subjects</div>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Track mastery across everything you&apos;re learning — tap one to dive in.</p>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Open subjects <Icon name="arrow" size={16} color={C.cyan} /></span>
         </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 24 }}>
@@ -525,6 +524,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
         </div>
       ) : (
         <>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>{["Review my notes & score them 1–10", "Make a test from a topic", "Explain a concept simply", "Build me a 7-day study plan"].map((s) => <button key={s} onClick={() => send(s)} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, cursor: loading ? "default" : "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 12.5, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><Icon name="spark" size={12} color={C.cyan} />{s}</button>)}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>{MODE_CHIPS.map((c) => { const on = mode === c.mode; return <button key={c.mode} onClick={() => pickMode(c.mode)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.blue},${C.violet})` : C.surface, border: `1px solid ${on ? "transparent" : C.border}`, color: on ? "#fff" : C.muted, fontSize: 13, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}` }}><Icon name={c.ic} size={14} color={on ? "#fff" : C.muted} />{c.label}</button>; })}</div>
           {usesNotes ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}` }}>
@@ -597,7 +597,7 @@ function HistoryTab() {
         <div style={{ padding: 48, borderRadius: 18, background: C.elev, border: `1px dashed ${C.border}`, textAlign: "center" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, color: C.faint }}><Icon name="clock" size={40} color={C.faint} /></div>
           <div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, marginBottom: 6 }}>No sessions yet</div>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, maxWidth: 360, margin: "0 auto" }}>Start a focus session in the Study tab — when the timer runs, AIRA logs it here so you can see your momentum build.</p>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, maxWidth: 360, margin: "0 auto" }}>Your activity will appear here as you study with AIRA — track your momentum over time.</p>
         </div>
       ) : (
         <>
@@ -836,8 +836,8 @@ function StoryVisual({ progress }: { progress: MotionValue<number> }) {
             <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: C.faint }}><BrainLogo size={15} /> AIRA Mentor</span>
           </div>
           <div style={{ position: "relative", height: 322 }}>
-            {/* 0 — notes */}
-            <PanelSlide progress={progress} i={0} n={4}>
+            {/* notes */}
+            <PanelSlide progress={progress} i={1} n={4}>
               <div style={{ padding: "24px 26px" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.cyan, marginBottom: 20 }}>Lecture notes · pasted</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
@@ -846,8 +846,8 @@ function StoryVisual({ progress }: { progress: MotionValue<number> }) {
                 </div>
               </div>
             </PanelSlide>
-            {/* 1 — summary + test */}
-            <PanelSlide progress={progress} i={1} n={4}>
+            {/* summary + test */}
+            <PanelSlide progress={progress} i={2} n={4}>
               <div style={{ padding: "24px 26px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}><span style={{ width: 28, height: 28, borderRadius: 9, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="spark" size={15} color="#fff" /></span><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>Summary</span></div>
                 {[88, 76, 66].map((w, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}><span style={{ width: 6, height: 6, borderRadius: 9, background: C.cyan, flexShrink: 0 }} /><div style={{ height: 8, width: `${w}%`, borderRadius: 4, background: "rgba(255,255,255,0.12)" }} /></div>)}
@@ -855,8 +855,8 @@ function StoryVisual({ progress }: { progress: MotionValue<number> }) {
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: `${C.green}15`, border: `1px solid ${C.green}40`, fontSize: 12.5, color: C.green, fontWeight: 600 }}><Icon name="check" size={13} color={C.green} /> Practice quiz ready · 6 questions</div>
               </div>
             </PanelSlide>
-            {/* 2 — focus */}
-            <PanelSlide progress={progress} i={2} n={4}>
+            {/* focus */}
+            <PanelSlide progress={progress} i={0} n={4}>
               <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
                 <div style={{ position: "relative", width: 150, height: 150 }}>
                   <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: `radial-gradient(circle,${C.cyan}26,transparent 70%)`, animation: "breathe 3s ease-in-out infinite" }} />
@@ -903,10 +903,10 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [step, setStep] = useState(0);
   const STEPS = [
+    { t: <>Enter flow state, <Grad>fast.</Grad></>, b: "AIRA structures the whole session so you hit deep focus in minutes — not after 30 minutes of warming up." },
     { t: <>Drop in your <Grad>notes.</Grad></>, b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
     { t: <>Get <Grad>summaries</Grad> &amp; tests.</>, b: "Clean summaries and practice quizzes, built from your own material." },
-    { t: <>Lock into <Grad>deep focus.</Grad></>, b: "Pick a technique and AIRA structures the whole session around your brain." },
-    { t: <>Actually <Grad>remember</Grad> it.</>, b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
+    { t: <>Remember it <Grad>for good.</Grad></>, b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
   ];
   const n = STEPS.length;
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -928,7 +928,7 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
               <div style={{ display: "flex", gap: 8 }}>{STEPS.map((_, i) => <div key={i} style={{ height: 4, width: i === step ? 40 : 22, borderRadius: 999, background: i <= step ? `linear-gradient(90deg,${C.cyan},${C.violet})` : C.border, transition: "all 0.4s ease" }} />)}</div>
             </div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-              <GBtn big onClick={() => onOpen("study")}>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn>
+              <GBtn big onClick={() => onOpen("mentor")}>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn>
               <GhostBtn onClick={() => onOpen("dashboard")}>Open Dashboard</GhostBtn>
             </div>
             <p style={{ fontSize: 13, color: C.faint, marginTop: 16 }}>7-day free trial · No credit card · Cancel anytime</p>
@@ -1013,7 +1013,7 @@ export default function Home() {
         <div className="nav-links" style={{ display: "flex", gap: 26, fontSize: 14, color: C.muted }}>{[["Features", "features"], ["Science", "science"], ["Guide", "guide"], ["Premium", "premium"], ["Pricing", "pricing"]].map(([l, h]) => <a key={l} href={`#${h}`} style={{ color: C.muted, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.fg)} onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}>{l}</a>)}</div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button>
-          <GBtn onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={16} color="#fff" /></GBtn>
+          <GBtn onClick={() => setWorkspace("mentor")}>Try the mentor <Icon name="arrow" size={16} color="#fff" /></GBtn>
         </div>
       </nav>
 
@@ -1127,7 +1127,7 @@ export default function Home() {
         <div style={{ position: "relative", zIndex: 1 }}>
           <h2 {...reveal("cta-h")} style={{ ...reveal("cta-h").style, ...HD({ fontSize: "clamp(40px,7vw,68px)", marginBottom: 26, lineHeight: 1.04 }) }}>Your mind is capable<br /><Grad>of more.</Grad></h2>
           <p style={{ fontSize: 18, color: C.muted, maxWidth: 490, margin: "0 auto 42px", lineHeight: 1.7 }}>Stop fighting for focus. Start building it. AIRA turns every study session into a structured path to mastery.</p>
-          <GBtn big onClick={() => setWorkspace("study")}>Go to Study <Icon name="arrow" size={18} color="#fff" /></GBtn>
+          <GBtn big onClick={() => setWorkspace("mentor")}>Try the AI mentor <Icon name="arrow" size={18} color="#fff" /></GBtn>
           <p style={{ marginTop: 16, fontSize: 13, color: C.faint }}>7 days free · No card · Cancel anytime</p>
         </div>
       </section>
