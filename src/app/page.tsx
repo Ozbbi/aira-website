@@ -763,33 +763,35 @@ function StatsBand({ seen }: { seen: { [k: string]: boolean } }) {
   const stats = [{ v: a, suf: "%", label: "retention with active recall vs 10% from re-reading", col: C.cyan }, { v: b, suf: "x", label: "stronger neural pathways via the Socratic method", col: C.violet }, { v: c, suf: "%", label: "more deep-focus time in structured sessions", col: C.blue }, { v: d, suf: "", label: "science-backed focus techniques to choose from", col: C.pink }];
   return <div data-k="stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 24 }}>{stats.map((s, i) => <div key={i} style={{ textAlign: "center", opacity: seen["stats"] ? 1 : 0, transform: seen["stats"] ? "translateY(0)" : "translateY(20px)", transition: `all 0.7s ${C.ease} ${i * 100}ms` }}><div style={{ fontFamily: "var(--font-display)", fontSize: 52, fontWeight: 700, color: s.col, lineHeight: 1, marginBottom: 12, textShadow: `0 0 30px ${s.col}44` }}>{Math.round(s.v)}{s.suf}</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 200, margin: "0 auto" }}>{s.label}</p></div>)}</div>;
 }
-function ComparisonGraphic({ seen }: { seen: { [k: string]: boolean } }) {
-  const on = !!seen["cmpg"];
-  const aira = "0,170 100,150 200,118 300,92 400,68 500,48 600,32";
-  const other = "0,170 100,186 200,206 300,226 400,246 500,262 600,276";
-  const days = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+function FlowStateGraph({ seen }: { seen: { [k: string]: boolean } }) {
+  const on = !!seen["fsg"];
+  const aira = "0,268 93,193 149,100 224,60 336,45 448,40 560,38";
+  const other = "0,273 112,250 224,210 336,168 429,125 485,105 560,95";
+  const ticks = ["0", "5", "10", "15", "20", "25", "30m"];
   return (
-    <div data-k="cmpg" style={{ opacity: on ? 1 : 0, transform: on ? "translateY(0)" : "translateY(30px)", transition: `all 0.8s ${C.ease}`, background: C.elev, border: `1px solid ${C.border}`, borderRadius: 24, padding: "32px 28px", maxWidth: 920, margin: "0 auto", willChange: "transform,opacity" }}>
+    <div data-k="fsg" style={{ opacity: on ? 1 : 0, transform: on ? "translateY(0)" : "translateY(30px)", transition: `all 0.8s ${C.ease}`, background: C.elev, border: `1px solid ${C.border}`, borderRadius: 24, padding: "32px 28px", maxWidth: 920, margin: "0 auto", willChange: "transform,opacity" }}>
       <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 22 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="brain" size={18} color="#fff" /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.fg }}>With AIRA</div><div style={{ fontSize: 12.5, color: C.muted }}>Active recall · spaced reviews · mentor</div></div></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: C.surface, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="play" size={16} color={C.faint} /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.muted }}>Videos & cramming</div><div style={{ fontSize: 12.5, color: C.faint }}>Passive watching · re-reading</div></div></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="bolt" size={18} color="#fff" /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.fg }}>With AIRA</div><div style={{ fontSize: 12.5, color: C.muted }}>In deep flow by ~7 minutes</div></div></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}><span style={{ width: 36, height: 36, borderRadius: 11, background: C.surface, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="user" size={16} color={C.faint} /></span><div><div style={{ fontSize: 15, fontWeight: 700, color: C.muted }}>On your own</div><div style={{ fontSize: 12.5, color: C.faint }}>Takes ~23 minutes — if at all</div></div></div>
       </div>
       <svg viewBox="0 0 600 300" style={{ width: "100%", height: "auto", display: "block" }}>
         <defs>
-          <linearGradient id="airaLine" x1="0" y1="0" x2="600" y2="0"><stop offset="0%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></linearGradient>
-          <linearGradient id="airaFill" x1="0" y1="0" x2="0" y2="300"><stop offset="0%" stopColor={C.indigo} stopOpacity="0.3" /><stop offset="100%" stopColor={C.indigo} stopOpacity="0" /></linearGradient>
+          <linearGradient id="fsLine" x1="0" y1="0" x2="600" y2="0"><stop offset="0%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></linearGradient>
+          <linearGradient id="fsFill" x1="0" y1="0" x2="0" y2="300"><stop offset="0%" stopColor={C.indigo} stopOpacity="0.28" /><stop offset="100%" stopColor={C.indigo} stopOpacity="0" /></linearGradient>
         </defs>
-        {[0, 1, 2, 3, 4].map((i) => <line key={i} x1="0" y1={i * 64 + 18} x2="600" y2={i * 64 + 18} stroke={C.border} strokeWidth="1" />)}
-        <polygon points={`${aira} 600,300 0,300`} fill="url(#airaFill)" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.5s" }} />
-        <polyline points={other} fill="none" stroke={C.faint} strokeWidth="3" strokeDasharray="6 7" strokeLinecap="round" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.5s" }} />
-        <polyline points={aira} fill="none" stroke="url(#airaLine)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength={100} strokeDasharray={100} strokeDashoffset={on ? 0 : 100} style={{ transition: "stroke-dashoffset 1.6s ease 0.2s", filter: `drop-shadow(0 0 6px ${C.indigo}88)` }} />
-        <circle cx="600" cy="32" r="6" fill={C.cyan} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.6s" }} />
-        <circle cx="600" cy="276" r="5" fill={C.faint} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.2s" }} />
-        <text x="592" y="20" fill={C.cyan} fontSize="22" fontWeight="700" textAnchor="end" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.7s" }}>94%</text>
-        <text x="592" y="268" fill={C.faint} fontSize="16" fontWeight="700" textAnchor="end" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.3s" }}>~20%</text>
+        {[0, 1, 2, 3].map((i) => <line key={i} x1="0" y1={40 + i * 70} x2="600" y2={40 + i * 70} stroke={C.border} strokeWidth="1" />)}
+        <line x1="0" y1="105" x2="600" y2="105" stroke={C.cyan} strokeOpacity="0.4" strokeWidth="1.5" strokeDasharray="2 6" />
+        <text x="8" y="98" fill={C.cyan} fontSize="11" fontWeight="700" fontFamily="var(--font-display)" letterSpacing="0.1em">FLOW STATE</text>
+        <polygon points={`${aira} 560,280 0,280`} fill="url(#fsFill)" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.5s" }} />
+        <polyline points={other} fill="none" stroke={C.faint} strokeWidth="3" strokeDasharray="6 7" strokeLinecap="round" strokeLinejoin="round" opacity={on ? 1 : 0} style={{ transition: "opacity 1s ease 0.6s" }} />
+        <polyline points={aira} fill="none" stroke="url(#fsLine)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" pathLength={100} strokeDasharray={100} strokeDashoffset={on ? 0 : 100} style={{ transition: "stroke-dashoffset 1.6s ease 0.2s", filter: `drop-shadow(0 0 6px ${C.indigo}88)` }} />
+        <circle cx="146" cy="105" r="6" fill={C.cyan} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.5s" }} />
+        <circle cx="485" cy="105" r="5" fill={C.faint} opacity={on ? 1 : 0} style={{ transition: "opacity 0.4s ease 1.3s" }} />
+        <text x="150" y="86" fill={C.cyan} fontSize="14" fontWeight="700" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.6s" }}>7 min</text>
+        <text x="489" y="128" fill={C.faint} fontSize="13" fontWeight="700" fontFamily="var(--font-display)" opacity={on ? 1 : 0} style={{ transition: "opacity 0.5s ease 1.4s" }}>23 min</text>
       </svg>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.faint, marginTop: 8, padding: "0 2px" }}>{days.map((d) => <span key={d}>{d}</span>)}</div>
-      <p style={{ textAlign: "center", fontSize: 14.5, color: C.muted, marginTop: 20, lineHeight: 1.7, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>Same week, same material. With AIRA&apos;s active recall and spaced reviews you <strong style={{ color: C.fg }}>retain up to 94%</strong> — passive video-watching forgets most of it within days.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: C.faint, marginTop: 8, padding: "0 2px" }}>{ticks.map((d) => <span key={d}>{d}</span>)}</div>
+      <p style={{ textAlign: "center", fontSize: 14.5, color: C.muted, marginTop: 20, lineHeight: 1.7, maxWidth: 600, marginLeft: "auto", marginRight: "auto" }}>AIRA structures your session so you hit deep focus <strong style={{ color: C.fg }}>3× faster</strong> — flow in minutes, not half an hour of warming up.</p>
     </div>
   );
 }
@@ -874,9 +876,12 @@ function StoryVisual({ step }: { step: number }) {
 function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
-  const fillRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef(0);
+  const prevP = useRef(0);
+  const blurTimer = useRef<number | null>(null);
   const [step, setStep] = useState(0);
   const STEPS = [
     { t: "Drop in your notes.", b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
@@ -894,34 +899,50 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
         const total = el.offsetHeight - window.innerHeight;
         const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), Math.max(total, 1));
         const p = total > 0 ? scrolled / total : 0;
-        // drive continuous motion via direct DOM writes — no per-frame React re-render
-        if (fillRef.current) fillRef.current.style.height = `${(p * 100).toFixed(2)}%`;
         if (artRef.current) artRef.current.style.transform = `translateY(${((0.5 - p) * 54).toFixed(1)}px) rotateX(${(8 - p * 6).toFixed(2)}deg) rotateY(-7deg)`;
         if (hintRef.current) hintRef.current.style.opacity = p < 0.04 ? "0.7" : "0";
+        // motion-blur the headline block based on scroll speed
+        const v = Math.abs(p - prevP.current); prevP.current = p;
+        const blur = Math.min(v * 340, 7);
+        if (textRef.current) {
+          textRef.current.style.filter = blur > 0.5 ? `blur(${blur.toFixed(1)}px)` : "none";
+          if (blurTimer.current) clearTimeout(blurTimer.current);
+          blurTimer.current = window.setTimeout(() => { if (textRef.current) textRef.current.style.filter = "none"; }, 90);
+        }
         const s = Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)));
         if (s !== stepRef.current) { stepRef.current = s; setStep(s); }
       });
     };
+    const onMove = (e: MouseEvent) => {
+      const el = ref.current; if (!el || !glowRef.current) return;
+      const r = el.getBoundingClientRect();
+      glowRef.current.style.transform = `translate(${(e.clientX - r.left - 320).toFixed(0)}px, ${(e.clientY - r.top - 320).toFixed(0)}px)`;
+      glowRef.current.style.opacity = "1";
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (raf) cancelAnimationFrame(raf); };
+    const sec = ref.current;
+    if (sec) sec.addEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll);
+      if (sec) sec.removeEventListener("mousemove", onMove);
+      if (raf) cancelAnimationFrame(raf); if (blurTimer.current) clearTimeout(blurTimer.current);
+    };
   }, []);
   const cur = STEPS[step];
   return (
     <section ref={ref} style={{ position: "relative", zIndex: 2, height: `${STEPS.length * 100}vh` }}>
       <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
-        {/* vertical scroll progress */}
-        <div style={{ position: "absolute", left: 26, top: "28%", bottom: "28%", width: 3, borderRadius: 999, background: C.border, overflow: "hidden" }}>
-          <div ref={fillRef} style={{ position: "absolute", top: 0, left: 0, right: 0, height: "0%", background: `linear-gradient(${C.cyan},${C.violet})`, boxShadow: `0 0 10px ${C.cyan}` }} />
-        </div>
-        <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 48px 0 64px", alignItems: "center" }}>
-          <div>
+        {/* cursor-following glow */}
+        <div ref={glowRef} aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 640, height: 640, borderRadius: "50%", background: `radial-gradient(circle, ${C.indigo}22, transparent 60%)`, pointerEvents: "none", opacity: 0, transition: "opacity 0.5s ease", willChange: "transform", zIndex: 0 }} />
+        <div className="story-grid" style={{ position: "relative", zIndex: 1, display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 56px 0", alignItems: "center" }}>
+          <div ref={textRef} style={{ willChange: "filter" }}>
             <Pill>AI Study Mentor</Pill>
             <div style={{ minHeight: 152, marginTop: 26 }}>
-              <h1 key={step} className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, animation: `blurIn 0.55s ${C.ease}` }}>{cur.t}</h1>
+              <h1 key={step} className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, animation: `blurIn 0.6s ${C.ease}` }}>{cur.t}</h1>
             </div>
-            <p key={`b${step}`} style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460, minHeight: 56, animation: `blurIn 0.55s ${C.ease} 0.05s both` }}>{cur.b}</p>
+            <p key={`b${step}`} style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460, minHeight: 56, animation: `blurIn 0.6s ${C.ease} 0.06s both` }}>{cur.b}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "30px 0 34px" }}>
               <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, color: C.cyan }}>0{step + 1}<span style={{ color: C.faint }}> / 0{STEPS.length}</span></span>
               <div style={{ display: "flex", gap: 8 }}>{STEPS.map((_, i) => <div key={i} style={{ height: 4, width: i === step ? 40 : 22, borderRadius: 999, background: i <= step ? `linear-gradient(90deg,${C.cyan},${C.violet})` : C.border, transition: "all 0.4s ease" }} />)}</div>
@@ -999,7 +1020,7 @@ export default function Home() {
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes auroraSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
         @keyframes shine{0%{transform:translateX(-130%)}60%,100%{transform:translateX(130%)}}
-        @keyframes blurIn{0%{opacity:0;transform:translateY(30px);filter:blur(12px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+        @keyframes blurIn{0%{opacity:0;transform:translateY(42px);filter:blur(16px)}55%{opacity:1}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
         @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%)}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
@@ -1027,6 +1048,12 @@ export default function Home() {
       {/* MARQUEE */}
       <div style={{ position: "relative", zIndex: 2, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "18px 0", overflow: "hidden", background: "rgba(0,0,4,0.4)" }}><div style={{ display: "flex", gap: 48, whiteSpace: "nowrap", animation: "marquee 26s linear infinite", width: "max-content" }}>{[...Array(2)].map((_, r) => <div key={r} style={{ display: "flex", gap: 48 }}>{["Neural Phase Locking", "Spaced Repetition", "Active Recall", "Socratic Method", "Timeboxing", "Ultradian Rhythm", "15 Subjects", "Focus Audio"].map((t) => <span key={t + r} style={{ fontSize: 14, color: C.muted, letterSpacing: "0.04em" }}>{t}</span>)}</div>)}</div></div>
 
+      {/* FLOW-STATE GRAPHIC */}
+      <section className="sec" style={sec({ maxWidth: 1000, margin: "0 auto", padding: "110px 48px" })}>
+        <div {...reveal("vs-h")} style={{ ...reveal("vs-h").style, textAlign: "center", marginBottom: 52 }}><Label>The difference</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Get into flow <Grad>3× faster.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 16, maxWidth: 560, margin: "18px auto 0", lineHeight: 1.7 }}>AIRA structures the session so you reach deep focus in minutes. On your own, most of a study session is just warming up.</p></div>
+        <FlowStateGraph seen={seen} />
+      </section>
+
       {/* BENTO */}
       <section id="features" className="sec" style={sec({ maxWidth: 1140, margin: "0 auto" })}>
         <div {...reveal("bn-h")} style={{ ...reveal("bn-h").style, textAlign: "center", marginBottom: 70 }}><Label>Everything you need</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>One system. <Grad>Total focus.</Grad></h2></div>
@@ -1051,12 +1078,6 @@ export default function Home() {
       <section className="sec" style={sec({ maxWidth: 1100, margin: "0 auto", padding: "100px 48px" })}>
         <div {...reveal("stats-h")} style={{ ...reveal("stats-h").style, textAlign: "center", marginBottom: 60 }}><Label>The numbers</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Methods that <Grad>actually work.</Grad></h2></div>
         <StatsBand seen={seen} />
-      </section>
-
-      {/* VS GRAPHIC */}
-      <section className="sec" style={sec({ maxWidth: 1000, margin: "0 auto" })}>
-        <div {...reveal("vs-h")} style={{ ...reveal("vs-h").style, textAlign: "center", marginBottom: 52 }}><Label>The difference</Label><h2 style={HD({ fontSize: "clamp(30px,4.6vw,44px)" })}>Two students, <Grad>one week.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 16, maxWidth: 540, margin: "18px auto 0", lineHeight: 1.7 }}>One studies with AIRA. The other watches videos and crams. Here&apos;s what they remember.</p></div>
-        <ComparisonGraphic seen={seen} />
       </section>
 
       {/* COMPARISON */}
