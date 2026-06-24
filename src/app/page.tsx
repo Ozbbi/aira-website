@@ -94,8 +94,8 @@ function LivingBackground({ p }: { p: number }) {
     let w = 0, h = 0;
     const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
     resize();
-    const stars = Array.from({ length: 55 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
-    const nodes = Array.from({ length: 13 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
+    const stars = Array.from({ length: 30 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
+    const nodes = Array.from({ length: 9 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
     let raf = 0, t = 0;
     const draw = () => {
       t += 0.008; ctx.clearRect(0, 0, w, h);
@@ -111,7 +111,7 @@ function LivingBackground({ p }: { p: number }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }} aria-hidden>
       <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "60vw", height: "60vw", borderRadius: "50%", background: tint.a, filter: "blur(140px)", opacity: 0.14, transition: "background 0.6s linear", animation: "drift 28s ease-in-out infinite", willChange: "transform" }} />
       <div style={{ position: "absolute", bottom: "-15%", right: "-5%", width: "65vw", height: "65vw", borderRadius: "50%", background: tint.b, filter: "blur(150px)", opacity: 0.13, transition: "background 0.6s linear", animation: "drift 34s ease-in-out infinite reverse", willChange: "transform" }} />
-      <div style={{ position: "absolute", top: "-30%", left: "50%", width: "120vw", height: "85vh", background: `conic-gradient(from 200deg at 50% 50%, ${C.cyan}00, ${C.indigo}24, ${C.violet}26, ${C.cyan}18, ${C.cyan}00)`, filter: "blur(80px)", opacity: 0.45, animation: "auroraSpin 48s linear infinite", willChange: "transform" }} />
+      <div style={{ position: "absolute", top: "-20%", left: "50%", width: "90vw", height: "55vh", background: `conic-gradient(from 200deg at 50% 50%, ${C.cyan}00, ${C.indigo}24, ${C.violet}26, ${C.cyan}18, ${C.cyan}00)`, filter: "blur(64px)", opacity: 0.4, animation: "auroraSpin 60s linear infinite", willChange: "transform" }} />
       <canvas ref={ref} style={{ position: "absolute", inset: 0, opacity: 0.55 }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "45vh", background: `linear-gradient(transparent, ${C.void})`, zIndex: 1 }} />
       <div style={{ position: "fixed", top: 0, left: 0, height: 2, width: `${p * 100}%`, background: `linear-gradient(90deg,${tint.a},${tint.b})`, zIndex: 300, transition: "width 0.1s linear", boxShadow: `0 0 10px ${tint.a}` }} />
@@ -265,7 +265,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
           {tab === "dashboard" && <DashTab onGo={setTab} userName={userName} />}
-          {tab === "study" && <StudyTab />}
+          {tab === "study" && <StudyTab onGo={setTab} />}
           {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={onAuth} userName={userName} />}
           {tab === "subjects" && <SubjectsTab />}
           {tab === "history" && <HistoryTab />}
@@ -324,7 +324,7 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
 }
 
 /* ░░ STUDY TAB ░░ */
-function StudyTab() {
+function StudyTab({ onGo }: { onGo: (t: string) => void }) {
   const [tech, setTech] = useState(TECHNIQUES[0]);
   const [secs, setSecs] = useState(TECHNIQUES[0].work * 60);
   const [running, setRunning] = useState(false); const [onBreak, setOnBreak] = useState(false);
@@ -366,6 +366,30 @@ function StudyTab() {
           {TECHNIQUES.map((t) => { const on = t.id === tech.id; return <button key={t.id} onClick={() => pick(t)} style={{ textAlign: "left", cursor: "pointer", padding: 18, borderRadius: 16, background: on ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${t.color},${C.violet}) border-box` : C.surface, border: on ? "1.5px solid transparent" : `1px solid ${C.border}`, transform: on ? "translateY(-3px)" : "none", boxShadow: on ? `0 14px 36px ${t.color}33` : "none", transition: `all 0.3s ${C.ease}` }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}><span style={{ color: t.color }}><Icon name={t.ic} size={22} color={t.color} /></span><span style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.tag}</span></div><div style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: on ? C.fg : C.muted, marginBottom: 4 }}>{t.name}</div><p style={{ fontSize: 12, color: C.faint, lineHeight: 1.5 }}>{t.best}</p></button>; })}
         </div>
         <div style={{ marginTop: 16, padding: 18, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}><p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.7 }}>{tech.desc}</p></div>
+
+        {/* AI-generated plan */}
+        <div style={{ marginTop: 16, padding: 20, borderRadius: 16, background: `linear-gradient(135deg,${C.indigo}16,${C.violet}0a)`, border: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", right: -20, top: -20, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle,${C.violet}33,transparent 70%)`, filter: "blur(20px)", pointerEvents: "none" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={18} color="#fff" /></span>
+                <div><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15 }}>AIRA&apos;s plan for you</div><div style={{ fontSize: 12, color: C.faint }}>Generated from your goals & sessions</div></div>
+              </div>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.cyan, background: `${C.cyan}14`, border: `1px solid ${C.cyan}33`, borderRadius: 999, padding: "4px 9px" }}><Icon name="spark" size={11} color={C.cyan} /> AI-generated</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {[{ d: "Day 1", t: "Deep Work · core concepts", m: "90m", c: C.pink }, { d: "Day 2", t: "Active-recall quiz from your notes", m: "30m", c: C.cyan }, { d: "Day 3", t: "Spaced review of Day 1", m: "20m", c: C.green }].map((r) => (
+                <div key={r.d} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, background: C.elev, border: `1px solid ${C.border}` }}>
+                  <span style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 700, color: r.c, width: 42, flexShrink: 0 }}>{r.d}</span>
+                  <span style={{ flex: 1, fontSize: 13.5, color: C.fg }}>{r.t}</span>
+                  <span style={{ fontSize: 12.5, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{r.m}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => onGo("mentor")} style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13.5, fontWeight: 600 }}>Generate my full plan <Icon name="arrow" size={15} color="#fff" /></button>
+          </div>
+        </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "fit-content" }}>
         <div style={{ padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${tech.color}55,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", textAlign: "center" }}>
@@ -780,27 +804,24 @@ function WelcomeModal({ onClose, onEnter }: { onClose: () => void; onEnter: () =
 }
 
 /* ════════════ FLOATING STORY VISUAL (premium glass panel, changes per step) ════════════ */
-function StoryVisual({ step, p }: { step: number; p: number }) {
-  const drift = (0.5 - p) * 60;
-  const rot = 8 - p * 6;
+function StoryVisual({ step }: { step: number }) {
   const panel = (i: number): React.CSSProperties => ({
     position: "absolute", inset: 0, opacity: step === i ? 1 : 0,
-    transform: step === i ? "translateY(0) scale(1)" : "translateY(18px) scale(0.98)",
-    filter: step === i ? "blur(0)" : "blur(8px)",
-    transition: "opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease",
-    pointerEvents: "none",
+    transform: step === i ? "translateZ(0) scale(1)" : "translateZ(-90px) scale(0.9)",
+    transition: "opacity 0.5s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1)",
+    pointerEvents: "none", backfaceVisibility: "hidden",
   });
   const R = 68, CIRC = 2 * Math.PI * R;
   return (
-    <div style={{ perspective: 1500, width: "100%", maxWidth: 460, margin: "0 auto" }}>
-      <div style={{ position: "relative", transform: `translateY(${drift}px) rotateX(${rot}deg) rotateY(-7deg)`, transformStyle: "preserve-3d", transition: "transform 0.12s linear", willChange: "transform" }}>
+    <div style={{ position: "relative", width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ position: "relative" }}>
         <div style={{ position: "absolute", inset: "-55px -30px 25px", background: `radial-gradient(60% 60% at 50% 28%, ${C.indigo}48, transparent 70%)`, filter: "blur(50px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", borderRadius: 22, overflow: "hidden", border: `1px solid ${C.border}`, background: "linear-gradient(160deg, rgba(20,20,42,0.97), rgba(8,8,18,0.98))", boxShadow: "0 50px 130px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 18px", borderBottom: `1px solid ${C.border}` }}>
             {[C.pink, C.amber, C.green].map((c) => <span key={c} style={{ width: 10, height: 10, borderRadius: 9, background: c, opacity: 0.65 }} />)}
             <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: C.faint }}><BrainLogo size={15} /> AIRA Mentor</span>
           </div>
-          <div style={{ position: "relative", height: 322 }}>
+          <div style={{ position: "relative", height: 322, perspective: "760px" }}>
             {/* 0 — notes */}
             <div style={panel(0)}>
               <div style={{ padding: "24px 26px" }}>
@@ -852,8 +873,11 @@ function StoryVisual({ step, p }: { step: number; p: number }) {
 
 function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
+  const artRef = useRef<HTMLDivElement>(null);
+  const fillRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
+  const stepRef = useRef(0);
   const [step, setStep] = useState(0);
-  const [prog, setProg] = useState(0);
   const STEPS = [
     { t: "Drop in your notes.", b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
     { t: "Get summaries & tests.", b: "Clean summaries and practice quizzes, built from your own material." },
@@ -870,8 +894,12 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
         const total = el.offsetHeight - window.innerHeight;
         const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), Math.max(total, 1));
         const p = total > 0 ? scrolled / total : 0;
-        setProg(p);
-        setStep(Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length))));
+        // drive continuous motion via direct DOM writes — no per-frame React re-render
+        if (fillRef.current) fillRef.current.style.height = `${(p * 100).toFixed(2)}%`;
+        if (artRef.current) artRef.current.style.transform = `translateY(${((0.5 - p) * 54).toFixed(1)}px) rotateX(${(8 - p * 6).toFixed(2)}deg) rotateY(-7deg)`;
+        if (hintRef.current) hintRef.current.style.opacity = p < 0.04 ? "0.7" : "0";
+        const s = Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)));
+        if (s !== stepRef.current) { stepRef.current = s; setStep(s); }
       });
     };
     onScroll();
@@ -885,7 +913,7 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
       <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
         {/* vertical scroll progress */}
         <div style={{ position: "absolute", left: 26, top: "28%", bottom: "28%", width: 3, borderRadius: 999, background: C.border, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: `${prog * 100}%`, background: `linear-gradient(${C.cyan},${C.violet})`, boxShadow: `0 0 10px ${C.cyan}`, transition: "height 0.12s linear" }} />
+          <div ref={fillRef} style={{ position: "absolute", top: 0, left: 0, right: 0, height: "0%", background: `linear-gradient(${C.cyan},${C.violet})`, boxShadow: `0 0 10px ${C.cyan}` }} />
         </div>
         <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 48px 0 64px", alignItems: "center" }}>
           <div>
@@ -904,10 +932,14 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
             </div>
             <p style={{ fontSize: 13, color: C.faint, marginTop: 16 }}>7-day free trial · No credit card · Cancel anytime</p>
           </div>
-          <div className="story-art"><StoryVisual step={step} p={prog} /></div>
+          <div className="story-art" style={{ perspective: 1500 }}>
+            <div ref={artRef} style={{ transformStyle: "preserve-3d", willChange: "transform", transform: "translateY(27px) rotateX(8deg) rotateY(-7deg)" }}>
+              <StoryVisual step={step} />
+            </div>
+          </div>
         </div>
         {/* scroll hint */}
-        <div style={{ position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: prog < 0.04 ? 0.7 : 0, transition: "opacity 0.4s ease", pointerEvents: "none" }}>
+        <div ref={hintRef} style={{ position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: 0.7, transition: "opacity 0.4s ease", pointerEvents: "none" }}>
           <span style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: C.faint }}>Scroll</span>
           <div style={{ width: 22, height: 36, border: `2px solid ${C.border}`, borderRadius: 999, display: "flex", justifyContent: "center", paddingTop: 7 }}><div style={{ width: 4, height: 8, borderRadius: 999, background: C.cyan, animation: "scrollDot 1.8s ease-in-out infinite" }} /></div>
         </div>
@@ -975,7 +1007,6 @@ export default function Home() {
       ` }} />
 
       <LivingBackground p={p} />
-      <div aria-hidden style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", opacity: 0.05, mixBlendMode: "overlay", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
       {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} />}
