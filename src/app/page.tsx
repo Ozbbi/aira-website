@@ -336,12 +336,22 @@ function StudyTab({ onGo }: { onGo: (t: string) => void }) {
   useEffect(() => { setSessions(getSessions()); }, []);
   useEffect(() => { if (!running) return; const id = setInterval(() => setSecs((s) => { if (s <= 1) { if (!onBreak) { logSession({ tech: tech.name, color: tech.color, mins: tech.work }); setSessions(getSessions()); } setOnBreak((b) => !b); return (!onBreak ? tech.brk : tech.work) * 60; } return s - 1; }), 1000); return () => clearInterval(id); }, [running, onBreak, tech]);
   const topTech = (() => { const counts: Record<string, number> = {}; sessions.forEach((s) => { counts[s.tech] = (counts[s.tech] || 0) + 1; }); return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]; })();
+  const todayMins = sessions.filter((s) => new Date(s.ts).toDateString() === new Date().toDateString()).reduce((a, s) => a + s.mins, 0);
+  const weekCount = sessions.filter((s) => Date.now() - s.ts < 7 * 864e5).length;
+  const statCards = [
+    { l: "Focus today", v: todayMins >= 60 ? `${Math.floor(todayMins / 60)}h ${todayMins % 60}m` : `${todayMins}m`, c: C.cyan, ic: "clock" },
+    { l: "Sessions this week", v: String(weekCount), c: C.violet, ic: "target" },
+    { l: "Total sessions", v: String(sessions.length), c: C.green, ic: "layers" },
+  ];
   const pick = (t: typeof TECHNIQUES[0]) => { setTech(t); setSecs(t.work * 60); setOnBreak(false); setRunning(false); };
   const total = (onBreak ? tech.brk : tech.work) * 60;
   const mm = String(Math.floor(secs / 60)).padStart(2, "0"), ss = String(secs % 60).padStart(2, "0");
   const R = 120, CIRC = 2 * Math.PI * R, pct = 1 - secs / total;
   return (
     <div style={{ animation: "tabIn 0.4s ease", display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }} className="study-grid">
+      <div style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }} className="dash-grid">
+        {statCards.map((s, i) => <div key={s.l} style={{ padding: "16px 18px", borderRadius: 14, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent", display: "flex", alignItems: "center", gap: 12, animation: `tabIn 0.5s ease ${i * 70}ms both` }}><span style={{ width: 38, height: 38, borderRadius: 11, background: `${s.c}1f`, display: "flex", alignItems: "center", justifyContent: "center", color: s.c, flexShrink: 0 }}><Icon name={s.ic} size={18} color={s.c} /></span><div><div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: s.c, lineHeight: 1 }}>{s.v}</div><div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{s.l}</div></div></div>)}
+      </div>
       {focusMode && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1400, background: "rgba(2,2,8,0.96)", backdropFilter: "blur(8px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 28, animation: "fadeIn 0.3s ease" }}>
           <div style={{ fontSize: 13, color: onBreak ? C.green : tech.color, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600 }}>{onBreak ? "Break" : "Focus"} · {tech.name}</div>
@@ -875,7 +885,7 @@ function StoryVisual({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
-function TextSlide({ progress, i, n, t, b }: { progress: MotionValue<number>; i: number; n: number; t: string; b: string }) {
+function TextSlide({ progress, i, n, t, b }: { progress: MotionValue<number>; i: number; n: number; t: React.ReactNode; b: string }) {
   const seg = 1 / n, band = 0.05;
   const lo = i * seg, hi = (i + 1) * seg;
   const opacity = useTransform(progress, [lo - band, lo + band, hi - band, hi + band], [i === 0 ? 1 : 0, 1, 1, i === n - 1 ? 1 : 0]);
@@ -893,10 +903,10 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [step, setStep] = useState(0);
   const STEPS = [
-    { t: "Drop in your notes.", b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
-    { t: "Get summaries & tests.", b: "Clean summaries and practice quizzes, built from your own material." },
-    { t: "Lock into deep focus.", b: "Pick a technique and AIRA structures the whole session around your brain." },
-    { t: "Actually remember it.", b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
+    { t: <>Drop in your <Grad>notes.</Grad></>, b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
+    { t: <>Get <Grad>summaries</Grad> &amp; tests.</>, b: "Clean summaries and practice quizzes, built from your own material." },
+    { t: <>Lock into <Grad>deep focus.</Grad></>, b: "Pick a technique and AIRA structures the whole session around your brain." },
+    { t: <>Actually <Grad>remember</Grad> it.</>, b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
   ];
   const n = STEPS.length;
   useMotionValueEvent(scrollYProgress, "change", (v) => {
