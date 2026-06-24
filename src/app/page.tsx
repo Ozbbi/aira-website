@@ -779,83 +779,73 @@ function WelcomeModal({ onClose, onEnter }: { onClose: () => void; onEnter: () =
   return <div style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.88)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}><div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 48, maxWidth: 460, width: "100%", textAlign: "center", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.5s ${C.spring}` }}><div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: C.cyan }}><Icon name={s.ic} size={48} color={C.cyan} /></div><h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 16, letterSpacing: "-0.02em" }}>{s.title}</h2><p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 32 }}>{s.body}</p><div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28 }}>{steps.map((_, i) => <div key={i} style={{ width: i === step ? 28 : 8, height: 8, borderRadius: 999, background: i === step ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : C.border, transition: `all 0.4s ${C.ease}` }} />)}</div><GBtn full onClick={() => (last ? onEnter() : setStep(step + 1))}>{s.cta}</GBtn>{!last && <button onClick={onClose} style={{ marginTop: 16, background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer" }}>Skip intro</button>}</div></div>;
 }
 
-/* ════════════ ANIMATED DESK SCENE (changes per scroll step) ════════════ */
-function DeskScene({ step }: { step: number }) {
-  const acc = (i: number): React.CSSProperties => ({ opacity: step === i ? 1 : 0, transition: "opacity 0.55s ease" });
+/* ════════════ FLOATING STORY VISUAL (premium glass panel, changes per step) ════════════ */
+function StoryVisual({ step, p }: { step: number; p: number }) {
+  const drift = (0.5 - p) * 60;
+  const rot = 8 - p * 6;
+  const panel = (i: number): React.CSSProperties => ({
+    position: "absolute", inset: 0, opacity: step === i ? 1 : 0,
+    transform: step === i ? "translateY(0) scale(1)" : "translateY(18px) scale(0.98)",
+    filter: step === i ? "blur(0)" : "blur(8px)",
+    transition: "opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease",
+    pointerEvents: "none",
+  });
+  const R = 68, CIRC = 2 * Math.PI * R;
   return (
-    <div style={{ position: "relative", width: "100%", maxWidth: 540, margin: "0 auto" }}>
-      <div style={{ position: "absolute", inset: "4% 8% 6%", borderRadius: "50%", background: `radial-gradient(circle, ${C.indigo}33, transparent 65%)`, filter: "blur(46px)" }} />
-      <svg viewBox="0 0 440 420" style={{ position: "relative", width: "100%", height: "auto" }}>
-        <defs>
-          <linearGradient id="ds-shirt" x1="0" y1="220" x2="0" y2="310"><stop offset="0%" stopColor={C.blue} /><stop offset="100%" stopColor={C.indigo} /></linearGradient>
-          <linearGradient id="ds-screen" x1="0" y1="0" x2="42" y2="34" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></linearGradient>
-          <radialGradient id="ds-core" cx="40%" cy="35%" r="70%"><stop offset="0%" stopColor="#fff" /><stop offset="40%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></radialGradient>
-        </defs>
-
-        {/* soft platform */}
-        <ellipse cx="220" cy="392" rx="150" ry="16" fill="#000" opacity="0.4" />
-
-        {/* chair back */}
-        <rect x="184" y="158" width="72" height="170" rx="22" fill="#16162B" />
-
-        {/* kid (gentle bob) */}
-        <g style={{ animation: "floaty 5s ease-in-out infinite", transformOrigin: "220px 240px" }}>
-          <path d="M188 308 C188 242 200 222 220 222 C240 222 252 242 252 308 Z" fill="url(#ds-shirt)" />
-          <path d="M196 250 Q176 280 198 300" stroke="#F4C2A0" strokeWidth="15" strokeLinecap="round" fill="none" />
-          <path d="M244 250 Q264 280 242 300" stroke="#F4C2A0" strokeWidth="15" strokeLinecap="round" fill="none" />
-          <rect x="213" y="200" width="14" height="22" rx="6" fill="#EBB893" />
-          <circle cx="220" cy="178" r="39" fill="#F4C2A0" />
-          <path d="M182 178 C180 148 200 134 220 134 C240 134 260 148 258 178 C258 159 244 150 220 150 C196 150 182 159 182 178 Z" fill="#33283F" />
-          <circle cx="208" cy="180" r="3.4" fill="#33283F" />
-          <circle cx="232" cy="180" r="3.4" fill="#33283F" />
-          <path d="M210 194 Q220 203 230 194" stroke="#B5765A" strokeWidth="3" strokeLinecap="round" fill="none" />
-        </g>
-
-        {/* desk + laptop */}
-        <rect x="52" y="300" width="336" height="14" rx="7" fill="#20203A" />
-        <rect x="52" y="314" width="336" height="74" rx="6" fill="#13132480" />
-        <rect x="196" y="292" width="48" height="9" rx="2.5" fill="#2C2C46" />
-        <rect x="199" y="258" width="42" height="35" rx="4" fill="url(#ds-screen)" />
-        <rect x="199" y="258" width="42" height="35" rx="4" fill="#000" opacity="0.12" />
-
-        {/* ── ACCENTS ── */}
-        {/* 0: notes */}
-        <g style={acc(0)}>
-          <g transform="rotate(-9 110 120)">
-            <rect x="70" y="78" width="92" height="78" rx="11" fill={C.elev} stroke={C.border} />
-            {[0, 1, 2, 3].map((r) => <rect key={r} x="84" y={96 + r * 13} width={r === 3 ? 36 : 64} height="6" rx="3" fill={r === 0 ? C.cyan : "#3A3A55"} />)}
-          </g>
-          <rect x="96" y="64" width="92" height="20" rx="10" fill={C.elev} stroke={C.border} />
-          <text x="142" y="78" textAnchor="middle" fill={C.muted} fontSize="11" fontFamily="var(--font-display)" fontWeight="700">Your notes</text>
-        </g>
-        {/* 1: AI summarizes + tests */}
-        <g style={acc(1)}>
-          <circle cx="350" cy="96" r="40" fill="none" stroke={C.cyan} strokeOpacity="0.25" strokeWidth="2" />
-          <circle cx="350" cy="96" r="28" fill="url(#ds-core)" />
-          <circle cx="343" cy="89" r="6" fill="#fff" opacity="0.85" />
-          <g>
-            <rect x="250" y="150" width="150" height="46" rx="13" fill={C.elev} stroke={C.border} />
-            <circle cx="272" cy="173" r="11" fill={C.green} opacity="0.18" />
-            <path d="M267 173 l4 4 l7 -8" stroke={C.green} strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            <rect x="290" y="166" width="92" height="6" rx="3" fill="#3A3A55" />
-            <rect x="290" y="178" width="64" height="6" rx="3" fill="#3A3A55" />
-          </g>
-        </g>
-        {/* 2: focus */}
-        <g style={acc(2)}>
-          <circle cx="350" cy="104" r="38" fill="none" stroke={C.border} strokeWidth="7" />
-          <circle cx="350" cy="104" r="38" fill="none" stroke={C.cyan} strokeWidth="7" strokeLinecap="round" strokeDasharray="239" strokeDashoffset="80" transform="rotate(-90 350 104)" style={{ filter: `drop-shadow(0 0 6px ${C.cyan})` }} />
-          <text x="350" y="109" textAnchor="middle" fill={C.fg} fontSize="18" fontFamily="var(--font-display)" fontWeight="700">25:00</text>
-          {[0, 1, 2, 3, 4].map((i) => <rect key={i} x={250 + i * 11} y={170 - (i % 2) * 8} width="5" height={20 + (i % 2) * 14} rx="2.5" fill={C.indigo} opacity="0.8" />)}
-        </g>
-        {/* 3: remember (chart) */}
-        <g style={acc(3)}>
-          {[44, 70, 92, 120].map((h, i) => <rect key={i} x={278 + i * 28} y={170 - h} width="18" height={h} rx="5" fill={i === 3 ? C.cyan : "#2E2E48"} />)}
-          <path d="M286 128 L370 60" stroke={C.violet} strokeWidth="3" strokeDasharray="5 6" strokeLinecap="round" />
-          <path d="M360 52 l6 4 l1 -7 l6 4 l1 -7" stroke={C.amber} strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <text x="318" y="44" textAnchor="middle" fill={C.cyan} fontSize="20" fontFamily="var(--font-display)" fontWeight="700">94%</text>
-        </g>
-      </svg>
+    <div style={{ perspective: 1500, width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ position: "relative", transform: `translateY(${drift}px) rotateX(${rot}deg) rotateY(-7deg)`, transformStyle: "preserve-3d", transition: "transform 0.12s linear", willChange: "transform" }}>
+        <div style={{ position: "absolute", inset: "-55px -30px 25px", background: `radial-gradient(60% 60% at 50% 28%, ${C.indigo}48, transparent 70%)`, filter: "blur(50px)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", borderRadius: 22, overflow: "hidden", border: `1px solid ${C.border}`, background: "linear-gradient(160deg, rgba(20,20,42,0.97), rgba(8,8,18,0.98))", boxShadow: "0 50px 130px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 18px", borderBottom: `1px solid ${C.border}` }}>
+            {[C.pink, C.amber, C.green].map((c) => <span key={c} style={{ width: 10, height: 10, borderRadius: 9, background: c, opacity: 0.65 }} />)}
+            <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: C.faint }}><BrainLogo size={15} /> AIRA Mentor</span>
+          </div>
+          <div style={{ position: "relative", height: 322 }}>
+            {/* 0 — notes */}
+            <div style={panel(0)}>
+              <div style={{ padding: "24px 26px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.cyan, marginBottom: 20 }}>Lecture notes · pasted</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+                  {[94, 82, 66, 90, 74].map((w, i) => <div key={i} style={{ height: 9, width: `${w}%`, borderRadius: 5, background: i === 0 ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : "rgba(255,255,255,0.10)" }} />)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ height: 9, width: "40%", borderRadius: 5, background: "rgba(255,255,255,0.10)" }} /><span style={{ width: 2, height: 16, background: C.cyan, animation: "blink 1s step-end infinite" }} /></div>
+                </div>
+              </div>
+            </div>
+            {/* 1 — summary + test */}
+            <div style={panel(1)}>
+              <div style={{ padding: "24px 26px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16 }}><span style={{ width: 28, height: 28, borderRadius: 9, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="spark" size={15} color="#fff" /></span><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>Summary</span></div>
+                {[88, 76, 66].map((w, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}><span style={{ width: 6, height: 6, borderRadius: 9, background: C.cyan, flexShrink: 0 }} /><div style={{ height: 8, width: `${w}%`, borderRadius: 4, background: "rgba(255,255,255,0.12)" }} /></div>)}
+                <div style={{ height: 1, background: C.border, margin: "18px 0" }} />
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: `${C.green}15`, border: `1px solid ${C.green}40`, fontSize: 12.5, color: C.green, fontWeight: 600 }}><Icon name="check" size={13} color={C.green} /> Practice quiz ready · 6 questions</div>
+              </div>
+            </div>
+            {/* 2 — focus */}
+            <div style={panel(2)}>
+              <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
+                <div style={{ position: "relative", width: 150, height: 150 }}>
+                  <div style={{ position: "absolute", inset: -12, borderRadius: "50%", background: `radial-gradient(circle,${C.cyan}26,transparent 70%)`, animation: "breathe 3s ease-in-out infinite" }} />
+                  <svg viewBox="0 0 160 160" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+                    <defs><linearGradient id="sv-ring" x1="0" y1="0" x2="160" y2="160"><stop offset="0%" stopColor={C.cyan} /><stop offset="100%" stopColor={C.violet} /></linearGradient></defs>
+                    <circle cx="80" cy="80" r={R} fill="none" stroke={C.border} strokeWidth="8" />
+                    <circle cx="80" cy="80" r={R} fill="none" stroke="url(#sv-ring)" strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * 0.34} style={{ filter: `drop-shadow(0 0 8px ${C.cyan}99)` }} />
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: 34, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>25:00</div>
+                </div>
+                <div style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: C.cyan, fontWeight: 600 }}>Deep Work · Focus</div>
+              </div>
+            </div>
+            {/* 3 — retention chart */}
+            <div style={panel(3)}>
+              <div style={{ padding: "24px 26px", height: "100%", display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>Retention</span><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 26, color: C.cyan }}>94%</span></div>
+                <div style={{ flex: 1, display: "flex", alignItems: "flex-end", gap: 12, paddingTop: 16 }}>{[32, 48, 60, 78, 100].map((h, i) => <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "6px 6px 0 0", background: i === 4 ? `linear-gradient(${C.cyan},${C.violet})` : "rgba(255,255,255,0.10)" }} />)}</div>
+                <div style={{ fontSize: 12, color: C.faint, marginTop: 14 }}>vs ~10% from passive re-reading</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -863,6 +853,7 @@ function DeskScene({ step }: { step: number }) {
 function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
+  const [prog, setProg] = useState(0);
   const STEPS = [
     { t: "Drop in your notes.", b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
     { t: "Get summaries & tests.", b: "Clean summaries and practice quizzes, built from your own material." },
@@ -870,37 +861,55 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
     { t: "Actually remember it.", b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
   ];
   useEffect(() => {
+    let raf = 0;
     const onScroll = () => {
-      const el = ref.current; if (!el) return;
-      const total = el.offsetHeight - window.innerHeight;
-      const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), Math.max(total, 1));
-      const p = total > 0 ? scrolled / total : 0;
-      setStep(Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length))));
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = ref.current; if (!el) return;
+        const total = el.offsetHeight - window.innerHeight;
+        const scrolled = Math.min(Math.max(-el.getBoundingClientRect().top, 0), Math.max(total, 1));
+        const p = total > 0 ? scrolled / total : 0;
+        setProg(p);
+        setStep(Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length))));
+      });
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (raf) cancelAnimationFrame(raf); };
   }, []);
   const cur = STEPS[step];
   return (
     <section ref={ref} style={{ position: "relative", zIndex: 2, height: `${STEPS.length * 100}vh` }}>
       <div style={{ position: "sticky", top: 0, height: "100vh", display: "flex", alignItems: "center", overflow: "hidden" }}>
-        <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1200, width: "100%", margin: "0 auto", padding: "90px 48px 0", alignItems: "center" }}>
+        {/* vertical scroll progress */}
+        <div style={{ position: "absolute", left: 26, top: "28%", bottom: "28%", width: 3, borderRadius: 999, background: C.border, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: `${prog * 100}%`, background: `linear-gradient(${C.cyan},${C.violet})`, boxShadow: `0 0 10px ${C.cyan}`, transition: "height 0.12s linear" }} />
+        </div>
+        <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 48px 0 64px", alignItems: "center" }}>
           <div>
             <Pill>AI Study Mentor</Pill>
-            <div style={{ minHeight: 150, marginTop: 26 }}>
-              <h1 key={step} className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, animation: `tabIn 0.5s ${C.ease}` }}>{cur.t}</h1>
+            <div style={{ minHeight: 152, marginTop: 26 }}>
+              <h1 key={step} className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", fontSize: "clamp(38px,5vw,66px)", lineHeight: 1.04, animation: `blurIn 0.55s ${C.ease}` }}>{cur.t}</h1>
             </div>
-            <p key={`b${step}`} style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460, minHeight: 56, animation: `tabIn 0.5s ${C.ease}` }}>{cur.b}</p>
-            <div style={{ display: "flex", gap: 9, margin: "30px 0 34px" }}>{STEPS.map((_, i) => <div key={i} style={{ height: 4, width: 44, borderRadius: 999, background: i <= step ? `linear-gradient(90deg,${C.cyan},${C.violet})` : C.border, transition: "background 0.4s ease" }} />)}</div>
+            <p key={`b${step}`} style={{ fontSize: "clamp(16px,2vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 460, minHeight: 56, animation: `blurIn 0.55s ${C.ease} 0.05s both` }}>{cur.b}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "30px 0 34px" }}>
+              <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, color: C.cyan }}>0{step + 1}<span style={{ color: C.faint }}> / 0{STEPS.length}</span></span>
+              <div style={{ display: "flex", gap: 8 }}>{STEPS.map((_, i) => <div key={i} style={{ height: 4, width: i === step ? 40 : 22, borderRadius: 999, background: i <= step ? `linear-gradient(90deg,${C.cyan},${C.violet})` : C.border, transition: "all 0.4s ease" }} />)}</div>
+            </div>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
               <GBtn big onClick={() => onOpen("study")}>Get Started Free <Icon name="arrow" size={18} color="#fff" /></GBtn>
               <GhostBtn onClick={() => onOpen("dashboard")}>Open Dashboard</GhostBtn>
             </div>
             <p style={{ fontSize: 13, color: C.faint, marginTop: 16 }}>7-day free trial · No credit card · Cancel anytime</p>
           </div>
-          <div className="story-art"><DeskScene step={step} /></div>
+          <div className="story-art"><StoryVisual step={step} p={prog} /></div>
+        </div>
+        {/* scroll hint */}
+        <div style={{ position: "absolute", bottom: 30, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: prog < 0.04 ? 0.7 : 0, transition: "opacity 0.4s ease", pointerEvents: "none" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: C.faint }}>Scroll</span>
+          <div style={{ width: 22, height: 36, border: `2px solid ${C.border}`, borderRadius: 999, display: "flex", justifyContent: "center", paddingTop: 7 }}><div style={{ width: 4, height: 8, borderRadius: 999, background: C.cyan, animation: "scrollDot 1.8s ease-in-out infinite" }} /></div>
         </div>
       </div>
     </section>
@@ -958,6 +967,8 @@ export default function Home() {
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes auroraSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
         @keyframes shine{0%{transform:translateX(-130%)}60%,100%{transform:translateX(130%)}}
+        @keyframes blurIn{0%{opacity:0;transform:translateY(30px);filter:blur(12px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+        @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%)}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
         @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:20px!important}.story-art{display:none!important}}
