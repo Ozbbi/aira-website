@@ -95,8 +95,8 @@ function LivingBackground({ p }: { p: number }) {
     let w = 0, h = 0;
     const resize = () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; };
     resize();
-    const stars = Array.from({ length: 30 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
-    const nodes = Array.from({ length: 9 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
+    const stars = Array.from({ length: 18 }, () => ({ x: Math.random() * w, y: Math.random() * h, z: Math.random() * 0.8 + 0.2, tw: Math.random() * Math.PI * 2 }));
+    const nodes = Array.from({ length: 6 }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15, r: Math.random() * 1.5 + 0.6 }));
     let raf = 0, t = 0;
     const draw = () => {
       t += 0.008; ctx.clearRect(0, 0, w, h);
@@ -903,10 +903,10 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [step, setStep] = useState(0);
   const STEPS = [
-    { t: <>Enter flow state, <Grad>fast.</Grad></>, b: "AIRA structures the whole session so you hit deep focus in minutes — not after 30 minutes of warming up." },
-    { t: <>Drop in your <Grad>notes.</Grad></>, b: "Paste a wall of lecture notes — AIRA reads all of it in seconds." },
-    { t: <>Get <Grad>summaries</Grad> &amp; tests.</>, b: "Clean summaries and practice quizzes, built from your own material." },
-    { t: <>Remember it <Grad>for good.</Grad></>, b: "Spaced reviews lock it in — up to 94% retention, not 10%." },
+    { t: <>Enter flow state, <Grad>fast.</Grad></>, b: "Deep focus in minutes — not 30 minutes of warming up." },
+    { t: <>Drop in your <Grad>notes.</Grad></>, b: "Paste your lecture notes. AIRA reads all of it in seconds." },
+    { t: <>Get <Grad>summaries</Grad> &amp; tests.</>, b: "Clean summaries and quizzes, from your own material." },
+    { t: <>Remember it <Grad>for good.</Grad></>, b: "Spaced reviews lock it in — up to 94% retention." },
   ];
   const n = STEPS.length;
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -920,7 +920,7 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
         <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr", gap: 48, maxWidth: 1180, width: "100%", margin: "0 auto", padding: "90px 56px 0", alignItems: "center" }}>
           <div>
             <Pill>AI Study Mentor</Pill>
-            <div style={{ position: "relative", height: 236, marginTop: 26 }}>
+            <div style={{ position: "relative", height: 248, marginTop: 26, overflow: "hidden" }}>
               {STEPS.map((s, i) => <TextSlide key={i} progress={scrollYProgress} i={i} n={n} t={s.t} b={s.b} />)}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "6px 0 34px" }}>
