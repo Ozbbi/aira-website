@@ -659,23 +659,31 @@ function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => vo
 }
 
 /* ════════════ AUTH MODAL ════════════ */
-function AuthModal({ mode, onClose, onSwitch }: { mode: "in" | "up"; onClose: () => void; onSwitch: (m: "in" | "up") => void }) {
+function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; onClose: () => void; onSwitch: (m: "in" | "up") => void; onSuccess: (email?: string) => void }) {
   const isUp = mode === "up";
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const submit = () => {
+    if (!email.trim() || !email.includes("@")) { setErr("Enter a valid email address."); return; }
+    onSuccess(email.trim());
+  };
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 1500, background: "rgba(0,0,4,0.9)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
-      <div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1500, background: "rgba(0,0,4,0.9)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
         <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "none", border: "none", color: C.faint, fontSize: 24, cursor: "pointer", lineHeight: 1 }}>×</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{isUp ? "Create your account" : "Welcome back"}</h2>
-        <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>{isUp ? "Start your 7-day free trial. No card required." : "Sign in to continue your flow."}</p>
-        <button data-clerk={isUp ? "sign-up-google" : "sign-in-google"} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 12 }}>Continue with Google</button>
-        <button data-clerk={isUp ? "sign-up-apple" : "sign-in-apple"} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#000", color: "#fff", border: `1px solid ${C.border}`, fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>Continue with Apple</button>
+        <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>{isUp ? "Start free — 3 AI mentor sessions a day, no card." : "Sign in to continue your flow."}</p>
+        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 12 }}>Continue with Google</button>
+        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#000", color: "#fff", border: `1px solid ${C.border}`, fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>Continue with Apple</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}><div style={{ flex: 1, height: 1, background: C.border }} /><span style={{ fontSize: 12, color: C.faint }}>or</span><div style={{ flex: 1, height: 1, background: C.border }} /></div>
-        <input data-clerk="email" type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 15, marginBottom: 12, outline: "none" }} />
-        <input data-clerk="password" type="password" placeholder="Password" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 15, marginBottom: 20, outline: "none" }} />
-        <GBtn full onClick={() => {}}>{isUp ? "Create account" : "Sign in"}</GBtn>
+        <input value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 15, marginBottom: 12, outline: "none" }} />
+        <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} type="password" placeholder="Password" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 15, marginBottom: err ? 8 : 20, outline: "none" }} />
+        {err && <p style={{ fontSize: 12.5, color: "#FB7185", marginBottom: 14 }}>{err}</p>}
+        <GBtn full onClick={submit}>{isUp ? "Create account" : "Sign in"}</GBtn>
         <p style={{ textAlign: "center", fontSize: 13, color: C.muted, marginTop: 20 }}>{isUp ? "Already have an account? " : "New to AIRA? "}<button onClick={() => onSwitch(isUp ? "in" : "up")} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{isUp ? "Sign in" : "Sign up"}</button></p>
-        <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16, lineHeight: 1.6 }}>By continuing you agree to AIRA's Terms & Privacy.</p>
+        <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16, lineHeight: 1.6 }}>By continuing you agree to AIRA&apos;s Terms &amp; Privacy.</p>
       </div>
     </div>
   );
@@ -1028,15 +1036,15 @@ export default function Home() {
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
-      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { if (email) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("mentor"); }} />}
 
       {/* NAV */}
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "gradShift 6s ease infinite" }}>AIRA</span></div>
         <div className="nav-links" style={{ display: "flex", gap: 26, fontSize: 14, color: C.muted }}>{[["Features", "features"], ["Science", "science"], ["Guide", "guide"], ["Premium", "premium"], ["Pricing", "pricing"]].map(([l, h]) => <a key={l} href={`#${h}`} style={{ color: C.muted, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.fg)} onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}>{l}</a>)}</div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <button className="nav-auth-extra" onClick={() => setWorkspace("dashboard")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Dashboard</button>
-          <GBtn onClick={() => setWorkspace("mentor")}>Try the mentor <Icon name="arrow" size={16} color="#fff" /></GBtn>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <button className="nav-auth-extra" onClick={() => setAuth("in")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button>
+          <GBtn onClick={() => setAuth("up")}>Sign up free <Icon name="arrow" size={16} color="#fff" /></GBtn>
         </div>
       </nav>
 
