@@ -79,6 +79,7 @@ function Icon({ name, size = 22, color = "currentColor", stroke = 1.6 }: { name:
     spark: <path d="M12 2l2.2 6.5L21 11l-6.8 2.5L12 20l-2.2-6.5L3 11l6.8-2.5z" />,
     layers: <><path d="M12 2l9 5-9 5-9-5z" /><path d="M3 12l9 5 9-5M3 17l9 5 9-5" /></>,
     send: <path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" />,
+    image: <><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="9" r="1.8" /><path d="M21 16l-5-5L5 21" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{p[name]}</svg>;
 }
@@ -454,9 +455,9 @@ function MarkdownLite({ text }: { text: string }) {
 }
 
 /* ░░ AI MENTOR TAB ░░ */
-type MMsg = { role: "ai" | "user"; text: string; local?: boolean };
+type MMsg = { role: "ai" | "user"; text: string; local?: boolean; image?: string };
 type MMode = "chat" | "summary" | "test" | "program";
-const FREE_MENTOR = 5;
+const FREE_MENTOR = 3;
 const MODE_CHIPS: { mode: MMode; ic: string; label: string; guide: string }[] = [
   { mode: "summary", ic: "pencil", label: "Summarize notes", guide: "**Summary mode.** Paste your lecture notes or reading below and I'll turn them into a clean, structured summary." },
   { mode: "test", ic: "cards", label: "Make me a test", guide: "**Test mode.** Paste your material below and I'll generate a practice quiz with a full answer key." },
@@ -471,14 +472,25 @@ const CAPS: { mode: MMode; ic: string; title: string; desc: string; c: string }[
 ];
 
 function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpgrade: () => void; userName: string }) {
-  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: `Hi${userName ? ` ${userName}` : ""}, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, and **mentor you Socratically**. Pick an action below or just tell me what you need.` }]);
+  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: `Hi${userName ? ` ${userName}` : ""}, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, **read a photo** of your notes or a textbook page, and **mentor you Socratically**. Pick an action below, snap a photo, or just tell me what you need.` }]);
   const [input, setInput] = useState("");
   const [notes, setNotes] = useState("");
   const [mode, setMode] = useState<MMode>("chat");
   const [loading, setLoading] = useState(false);
   const [used, setUsed] = useState(0);
+  const [imgData, setImgData] = useState<string | null>(null);
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
+  const [imgMime, setImgMime] = useState("image/jpeg");
   const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { try { const u = parseInt(window.localStorage.getItem("aira_free_used") || "0", 10); if (!Number.isNaN(u)) setUsed(u); } catch {} }, []);
+  const fileRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { try { const raw = JSON.parse(window.localStorage.getItem("aira_free_day") || "{}"); if (raw && raw.date === new Date().toDateString() && typeof raw.count === "number") setUsed(raw.count); else setUsed(0); } catch {} }, []);
+  const onPickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f || !f.type.startsWith("image/")) return;
+    if (f.size > 3 * 1024 * 1024) { alert("Image is too large (max 3MB)."); return; }
+    const reader = new FileReader();
+    reader.onload = () => { const url = String(reader.result); setImgPreview(url); setImgMime(f.type); setImgData(url.split(",")[1] || ""); };
+    reader.readAsDataURL(f); e.target.value = "";
+  };
   const usesNotes = mode === "summary" || mode === "test";
   const gated = !lifetime && used >= FREE_MENTOR;
   const scroll = () => setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 60);
@@ -486,25 +498,28 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
   const pickMode = (m: MMode) => { const chip = MODE_CHIPS.find((c) => c.mode === m)!; setMode(m); setMsgs((x) => [...x, { role: "ai", local: true, text: chip.guide }]); scroll(); };
 
   const send = async (text: string) => {
-    const t = text.trim(); if (!t || loading) return;
-    if (gated) return;
-    const convo: MMsg[] = [...msgs, { role: "user", text: t }];
+    const t = text.trim();
+    if ((!t && !imgData) || loading || gated) return;
+    const userText = t || "Read this image and help me study it.";
+    const convo: MMsg[] = [...msgs, { role: "user", text: userText, image: imgPreview || undefined }];
     setMsgs(convo); setInput(""); setNotes(""); setLoading(true); scroll();
-    if (!lifetime) { const u = used + 1; setUsed(u); try { window.localStorage.setItem("aira_free_used", String(u)); } catch {} }
+    const sentImg = imgData ? { mime: imgMime, data: imgData } : undefined;
+    setImgData(null); setImgPreview(null);
+    if (!lifetime) { const u = used + 1; setUsed(u); try { window.localStorage.setItem("aira_free_day", JSON.stringify({ date: new Date().toDateString(), count: u })); } catch {} }
     const apiMessages = convo.filter((m) => !m.local).map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
     try {
-      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName }) });
+      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg }) });
       const d = await r.json();
       if (r.ok && d.text) setMsgs((m) => [...m, { role: "ai", text: d.text }]);
-      else setMsgs((m) => [...m, { role: "ai", text: mockReply(t) }]); // graceful fallback (e.g. key not set)
-    } catch { setMsgs((m) => [...m, { role: "ai", text: mockReply(t) }]); }
+      else setMsgs((m) => [...m, { role: "ai", text: mockReply(userText) }]); // graceful fallback (e.g. key not set)
+    } catch { setMsgs((m) => [...m, { role: "ai", text: mockReply(userText) }]); }
     finally { setLoading(false); scroll(); }
   };
 
   return (
     <div style={{ animation: "tabIn 0.4s ease", display: "flex", flexDirection: "column", height: "calc(100vh - 200px)", minHeight: 460 }}>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, paddingBottom: 16 }}>
-        {msgs.map((m, i) => <div key={i} style={{ display: "flex", gap: 12, flexDirection: m.role === "user" ? "row-reverse" : "row", animation: "tabIn 0.4s ease" }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: m.role === "ai" ? `linear-gradient(135deg,${C.cyan},${C.violet})` : C.surface, border: m.role === "user" ? `1px solid ${C.border}` : "none" }}><Icon name={m.role === "ai" ? "bot" : "user"} size={17} color={m.role === "ai" ? "#fff" : C.muted} /></div><div style={{ maxWidth: "78%", padding: "13px 17px", borderRadius: 16, fontSize: 14.5, lineHeight: 1.65, background: m.role === "ai" ? C.elev : `linear-gradient(135deg,${C.blue},${C.violet})`, color: m.role === "ai" ? C.fg : "#fff", border: m.role === "ai" ? `1px solid ${C.border}` : "none" }}>{m.role === "ai" ? <MarkdownLite text={m.text} /> : m.text}</div></div>)}
+        {msgs.map((m, i) => <div key={i} style={{ display: "flex", gap: 12, flexDirection: m.role === "user" ? "row-reverse" : "row", animation: "tabIn 0.4s ease" }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: m.role === "ai" ? `linear-gradient(135deg,${C.cyan},${C.violet})` : C.surface, border: m.role === "user" ? `1px solid ${C.border}` : "none" }}><Icon name={m.role === "ai" ? "bot" : "user"} size={17} color={m.role === "ai" ? "#fff" : C.muted} /></div><div style={{ maxWidth: "78%", padding: "13px 17px", borderRadius: 16, fontSize: 14.5, lineHeight: 1.65, background: m.role === "ai" ? C.elev : `linear-gradient(135deg,${C.blue},${C.violet})`, color: m.role === "ai" ? C.fg : "#fff", border: m.role === "ai" ? `1px solid ${C.border}` : "none" }}>{m.role === "ai" ? <MarkdownLite text={m.text} /> : <>{m.image && <img src={m.image} alt="upload" style={{ maxWidth: 200, borderRadius: 10, marginBottom: 8, display: "block" }} />}{m.text}</>}</div></div>)}
         {loading && <div style={{ display: "flex", gap: 12 }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${C.cyan},${C.violet})` }}><Icon name="bot" size={17} color="#fff" /></div><div style={{ padding: "16px 18px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: C.cyan, animation: "eq 0.6s ease-in-out infinite alternate", animationDelay: `${d * 0.15}s` }} />)}</div></div>}
         {msgs.length <= 1 && !loading && (
           <div>
@@ -519,7 +534,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
 
       {gated ? (
         <div style={{ padding: 20, borderRadius: 16, background: `linear-gradient(135deg,${C.indigo}22,${C.violet}11)`, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 200 }}><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>You've used your free messages</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>Go Pro for unlimited mentoring, summaries, tests, and study programs.</p></div>
+          <div style={{ flex: 1, minWidth: 200 }}><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, marginBottom: 4 }}>That&apos;s your {FREE_MENTOR} free messages for today</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>Resets tomorrow — or go Pro for unlimited mentoring, tests, study plans, and photo reading.</p></div>
           <button onClick={onUpgrade} style={{ padding: "12px 24px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, whiteSpace: "nowrap" }}>Unlock AIRA Pro</button>
         </div>
       ) : (
@@ -532,9 +547,17 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingLeft: 12 }}><span style={{ fontSize: 11, color: C.faint }}>Ctrl / ⌘ + Enter to send</span><button onClick={() => send(notes)} disabled={loading || !notes.trim()} style={{ padding: "10px 20px", borderRadius: 12, border: "none", cursor: loading || !notes.trim() ? "default" : "pointer", opacity: loading || !notes.trim() ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600 }}>{mode === "summary" ? "Summarize" : "Generate test"}</button></div>
             </div>
           ) : (
-            <div style={{ display: "flex", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}` }}><input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} placeholder={mode === "program" ? "e.g. Master calculus derivatives in 5 days…" : "Ask AIRA anything…"} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.fg, fontSize: 15, padding: "8px 12px" }} /><button onClick={() => send(input)} disabled={loading || !input.trim()} style={{ width: 42, height: 42, borderRadius: 12, border: "none", cursor: loading || !input.trim() ? "default" : "pointer", opacity: loading || !input.trim() ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="send" size={17} color="#fff" /></button></div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {imgPreview && <div style={{ position: "relative", width: 88, height: 88, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.border}` }}><img src={imgPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} /><button onClick={() => { setImgData(null); setImgPreview(null); }} style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.65)", color: "#fff", cursor: "pointer", fontSize: 13, lineHeight: 1 }}>×</button></div>}
+              <div style={{ display: "flex", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}` }}>
+                <button onClick={() => (lifetime ? fileRef.current?.click() : onUpgrade())} title={lifetime ? "Add a photo of your notes" : "Photo reading is a Pro feature"} style={{ position: "relative", width: 42, height: 42, borderRadius: 12, border: `1px solid ${C.border}`, cursor: "pointer", background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="image" size={18} color={lifetime ? C.cyan : C.faint} />{!lifetime && <span style={{ position: "absolute", top: -7, right: -7, fontSize: 8, fontWeight: 700, letterSpacing: "0.04em", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", borderRadius: 999, padding: "1px 5px" }}>PRO</span>}</button>
+                <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} placeholder={mode === "program" ? "e.g. Master calculus derivatives in 5 days…" : imgPreview ? "Ask about this photo…" : "Ask AIRA anything…"} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.fg, fontSize: 15, padding: "8px 12px" }} />
+                <button onClick={() => send(input)} disabled={loading || (!input.trim() && !imgData)} style={{ width: 42, height: 42, borderRadius: 12, border: "none", cursor: loading || (!input.trim() && !imgData) ? "default" : "pointer", opacity: loading || (!input.trim() && !imgData) ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="send" size={17} color="#fff" /></button>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: "none" }} />
+            </div>
           )}
-          <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 12 }}>{lifetime ? "AIRA Pro · unlimited mentoring" : `Free preview · ${Math.max(0, FREE_MENTOR - used)} of ${FREE_MENTOR} messages left`}</p>
+          <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 12 }}>{lifetime ? "AIRA Pro · unlimited mentoring + photo reading" : `Free · ${Math.max(0, FREE_MENTOR - used)} of ${FREE_MENTOR} messages left today · photos are Pro`}</p>
         </>
       )}
     </div>

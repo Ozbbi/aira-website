@@ -55,10 +55,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { messages, mode, name } = (body ?? {}) as {
+  const { messages, mode, name, image } = (body ?? {}) as {
     messages?: Array<{ role?: string; content?: unknown }>;
     mode?: unknown;
     name?: unknown;
+    image?: { mime?: unknown; data?: unknown };
   };
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -82,7 +83,12 @@ export async function POST(req: Request) {
   while (cleaned.length && cleaned[0].role === "model") cleaned.shift();
   if (cleaned.length === 0) return Response.json({ error: "Nothing to send." }, { status: 400 });
 
-  const contents = cleaned.map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
+  const contents: Array<{ role: string; parts: Array<Record<string, unknown>> }> = cleaned.map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
+  // attach an uploaded image to the latest user turn (Gemini vision)
+  if (image && typeof image.data === "string" && image.data.length > 0 && contents.length > 0) {
+    const mime = typeof image.mime === "string" && image.mime.startsWith("image/") ? image.mime : "image/jpeg";
+    contents[contents.length - 1].parts.push({ inline_data: { mime_type: mime, data: image.data } });
+  }
   const learner = typeof name === "string" && name.trim() ? `\n\nThe learner's name is ${name.trim()}. Address them by name naturally and personalize your guidance to them.` : "";
   const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${learner}`;
 
