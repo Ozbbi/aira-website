@@ -80,6 +80,7 @@ function Icon({ name, size = 22, color = "currentColor", stroke = 1.6 }: { name:
     layers: <><path d="M12 2l9 5-9 5-9-5z" /><path d="M3 12l9 5 9-5M3 17l9 5 9-5" /></>,
     send: <path d="M22 2L11 13M22 2l-7 20-4-9-9-4z" />,
     image: <><rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="9" r="1.8" /><path d="M21 16l-5-5L5 21" /></>,
+    menu: <><path d="M3 6h18M3 12h18M3 18h18" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{p[name]}</svg>;
 }
@@ -236,19 +237,22 @@ function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d
 /* ════════════ APP WORKSPACE ════════════ */
 function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void }) {
   const [tab, setTab] = useState(initial);
+  const [sideOpen, setSideOpen] = useState(false);
   const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
+  const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
       {!userName && <NameModal onSave={onSaveName} />}
-      <aside className="app-side" style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
+      {sideOpen && <div className="app-scrim" onClick={() => setSideOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19, background: "rgba(0,0,4,0.6)", backdropFilter: "blur(4px)" }} />}
+      <aside className={`app-side${sideOpen ? " open" : ""}`} style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px 18px" }}>
           <BrainLogo size={26} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</span>
           {lifetime && <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}44`, borderRadius: 999, padding: "3px 8px" }}>PRO</span>}
         </div>
-        <button onClick={() => setTab("mentor")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 18 }}><Icon name="plus" size={17} color="#fff" /> New chat</button>
+        <button onClick={() => go("mentor")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 18 }}><Icon name="plus" size={17} color="#fff" /> New chat</button>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: C.faint, textTransform: "uppercase", padding: "0 8px 8px" }}>Workspace</div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {NAV.map((n) => { const on = tab === n.id; return <button key={n.id} onClick={() => setTab(n.id)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: on ? `linear-gradient(135deg,${C.indigo}2e,${C.cyan}11)` : "transparent", color: on ? C.fg : C.muted, fontSize: 14, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}`, position: "relative" }}>{on && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.violet})` }} />}<Icon name={n.ic} size={18} color={on ? C.fg : C.muted} />{n.label}</button>; })}
+          {NAV.map((n) => { const on = tab === n.id; return <button key={n.id} onClick={() => go(n.id)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: on ? `linear-gradient(135deg,${C.indigo}2e,${C.cyan}11)` : "transparent", color: on ? C.fg : C.muted, fontSize: 14, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}`, position: "relative" }}>{on && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.violet})` }} />}<Icon name={n.ic} size={18} color={on ? C.fg : C.muted} />{n.label}</button>; })}
         </nav>
         <div style={{ margin: "18px 0", padding: 16, borderRadius: 14, background: `linear-gradient(135deg,${C.amber}1a,${C.amber}0d)`, border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: C.muted, marginBottom: 6 }}><Icon name="flame" size={14} color={C.amber} /> Current streak</div>
@@ -262,7 +266,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
       </aside>
       <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
         <div style={{ position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px", borderBottom: `1px solid ${C.border}`, background: "rgba(3,3,10,0.8)", backdropFilter: "blur(20px)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow" size={16} color={C.muted} /></button><h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, textTransform: "capitalize" }}>{NAV.find((n) => n.id === tab)?.label || tab}</h2></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button className="app-burger" onClick={() => setSideOpen(true)} aria-label="Open menu" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.fg, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "none", alignItems: "center", justifyContent: "center" }}><Icon name="menu" size={18} color={C.fg} /></button><button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow" size={16} color={C.muted} /></button><h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, textTransform: "capitalize" }}>{NAV.find((n) => n.id === tab)?.label || tab}</h2></div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button onClick={onAuth} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Upgrade to Pro</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
@@ -511,8 +515,8 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
       const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg }) });
       const d = await r.json();
       if (r.ok && d.text) setMsgs((m) => [...m, { role: "ai", text: d.text }]);
-      else setMsgs((m) => [...m, { role: "ai", text: mockReply(userText) }]); // graceful fallback (e.g. key not set)
-    } catch { setMsgs((m) => [...m, { role: "ai", text: mockReply(userText) }]); }
+      else setMsgs((m) => [...m, { role: "ai", text: offlineReply(mode, userText, userName) }]); // graceful fallback (e.g. key not set)
+    } catch { setMsgs((m) => [...m, { role: "ai", text: offlineReply(mode, userText, userName) }]); }
     finally { setLoading(false); scroll(); }
   };
 
@@ -563,13 +567,61 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
     </div>
   );
 }
-function mockReply(q: string) {
-  const l = q.toLowerCase();
-  if (l.includes("neural") || l.includes("network")) return "Let's start Socratically: a neural network learns by adjusting weights. Before I explain how — what do you think a 'weight' might represent? Take a guess and I'll build on it.";
-  if (l.includes("quiz") || l.includes("photosynthesis")) return "Recall test, no notes. Question 1: photosynthesis converts light into chemical energy. What two raw inputs does a plant need for it? Think, then I'll check you.";
-  if (l.includes("focus") || l.includes("concentrate")) return "Let's fix your focus. How long can you currently work before getting distracted? Based on that I'll pick a technique — Pomodoro if short, Deep Work if you can go longer. Open the Study tab and I'll run it with you.";
-  if (l.includes("flashcard")) return "I can turn anything you study into spaced-repetition flashcards automatically. Tell me the topic and I'll generate a set scheduled at the perfect review intervals.";
-  return "Good question. In the full version I'd guide you through this with the Socratic method, then schedule spaced reviews so it sticks. Want to start a focused session? Open the Study tab.";
+/* Offline mentor engine — runs fully in the browser when the live AI key
+   isn't connected yet. It reorganizes the learner's OWN text (no invented
+   facts), so summaries / tests / plans are real and useful out of the box. */
+const STOP = new Set("the a an and or but of to in on at for with is are was were be been being it its this that these those as by from into your you i we they he she them his her our about over more most than then so if can will just not no yes".split(" "));
+function offlineSentences(t: string) { return t.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter((s) => s.split(" ").length >= 3); }
+function offlineKeyword(s: string) { const cap = s.match(/\b([A-Z][a-zA-Z]{3,})\b/); if (cap) return cap[1]; const w = s.split(/\s+/).map((x) => x.replace(/[^a-zA-Z]/g, "")).filter((x) => x.length > 4 && !STOP.has(x.toLowerCase())).sort((a, b) => b.length - a.length); return w[0] || ""; }
+function offlineTopic(t: string) { const first = t.replace(/\s+/g, " ").trim().split(/[.!?]/)[0].split(" ").slice(0, 8).join(" "); return first || "your topic"; }
+
+function offlineReply(mode: MMode, raw: string, name: string): string {
+  const text = (raw || "").trim();
+  const who = name || "there";
+  const sents = offlineSentences(text);
+  const wc = text.split(/\s+/).filter(Boolean).length;
+
+  if (mode === "summary") {
+    if (wc < 14) return `Paste a paragraph or more of your notes, ${who}, and I'll turn it into a clean **Overview → Key concepts → Remember-this** summary. The more you give me, the sharper it gets.`;
+    const overview = sents.slice(0, 2).join(" ");
+    const ranked = [...sents].sort((a, b) => b.length - a.length).slice(0, Math.min(6, Math.max(3, Math.ceil(sents.length / 2))));
+    const concepts = ranked.map((s) => { const k = offlineKeyword(s); return `- ${k ? `**${k}** — ` : ""}${s.replace(/^[-*]\s*/, "")}`; }).join("\n");
+    const remember = ranked.slice(0, 3).map((s, i) => `${i + 1}. ${s.split(" ").slice(0, 16).join(" ")}${s.split(" ").length > 16 ? "…" : ""}`).join("\n");
+    return `## Overview\n${overview}\n\n## Key concepts\n${concepts}\n\n## Remember this\n${remember}\n\n*Want me to turn this into a quiz? Switch to **Make me a test** and paste the same notes.*`;
+  }
+
+  if (mode === "test") {
+    if (wc < 14) return `Paste the material you want to be tested on, ${who}, and I'll generate a practice quiz with an answer key from it.`;
+    const pool = [...sents].sort((a, b) => b.length - a.length).slice(0, 8);
+    const qs: string[] = [], keys: string[] = [];
+    pool.forEach((s, i) => {
+      const k = offlineKeyword(s);
+      const at = k ? s.indexOf(k) : -1;
+      if (at >= 0) { qs.push(`${i + 1}. ${s.slice(0, at)}______${s.slice(at + k.length)}`); keys.push(`${i + 1}. **${k}**`); }
+      else { qs.push(`${i + 1}. In your own words, explain: "${s.split(" ").slice(0, 12).join(" ")}…"`); keys.push(`${i + 1}. Open answer — check it covers the idea above.`); }
+    });
+    return `## Quiz\nFill the blank or answer in your own words — no peeking.\n\n${qs.join("\n")}\n\n## Answer key\n${keys.join("\n")}\n\n*Score yourself, then bring me the ones you missed and I'll explain them.*`;
+  }
+
+  if (mode === "program") {
+    const topic = offlineTopic(text);
+    const days = [
+      { d: "Day 1", f: `Map ${topic}`, t: ["Skim the whole topic, write 5 questions you can't yet answer", "Build a one-page outline of the core ideas"] },
+      { d: "Day 2", f: "Core concepts", t: ["Deep-read the 3 hardest ideas", "Explain each out loud without looking (active recall)"] },
+      { d: "Day 3", f: "Practice", t: ["Do problems / make a test from your notes", "Mark every gap you find"] },
+      { d: "Day 4", f: "Fill the gaps", t: ["Re-study only what you missed on Day 3", "Spaced review of Day 1–2 (15 min)"] },
+      { d: "Day 5", f: "Lock it in", t: ["Full self-test under time pressure", "Teach the topic to an imaginary student"] },
+    ];
+    const body = days.map((x) => `## ${x.d} · ${x.f}\n- ${x.t.join("\n- ")}\n- **Active-recall check:** close everything and write what you remember`).join("\n\n");
+    return `Here's a 5-day plan to master **${topic}**, ${who}:\n\n${body}\n\n## How to use this plan\nDo one day per sitting. Never re-read passively — always close the page and retrieve from memory. Each day starts by recalling the day before, so it compounds.`;
+  }
+
+  // chat / mentor — Socratic
+  const l = text.toLowerCase();
+  if (l.includes("focus") || l.includes("concentrate") || l.includes("distract")) return `Let's fix your focus, ${who}. First: how long can you currently work before your attention drifts? If it's under 20 min, we start with **Pomodoro** (25/5). If longer, **Deep Work** blocks. Open the **Study** tab and I'll run the timer with you. What's your honest focus span right now?`;
+  if (l.includes("flashcard") || l.includes("memor") || l.includes("remember") || l.includes("forget")) return `Memory is a retrieval game, not a re-reading game, ${who}. Tell me the topic and I'll show you how to build spaced-repetition flashcards from it. Quick check first: when you "study", do you re-read, or do you close the page and test yourself? Be honest — that's the whole difference.`;
+  if (l.includes("how") || l.includes("why") || l.includes("what") || l.includes("explain")) return `Good question. Before I explain — what's your current best guess? Even a rough one. I learn the most about how to help you from where your intuition lands, and you'll remember it far better if you reason toward it first. Take a shot and I'll build on it.`;
+  return `I'm with you, ${who}. To mentor you well I work Socratically — I'll ask, you reason, then I confirm and we lock it in with a quick recall check. Tell me the exact topic or paste your notes, and pick a mode: **Summarize**, **Make a test**, or **Study program**. Where do you want to start?`;
 }
 
 /* ░░ SUBJECTS TAB ░░ */
@@ -1029,7 +1081,7 @@ export default function Home() {
         @keyframes blurIn{0%{opacity:0;transform:translateY(42px);filter:blur(16px)}55%{opacity:1}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
         @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-        @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%)}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
+        @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%);transition:transform 0.3s ${C.ease};box-shadow:0 0 60px rgba(0,0,0,0.6)}.app-side.open{transform:translateX(0)}.app-burger{display:flex!important}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
         @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:20px!important}.story-art{display:none!important}}
       ` }} />
 
@@ -1168,7 +1220,7 @@ export default function Home() {
         <div style={{ maxWidth: 1140, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 40, marginBottom: 48 }}>
             <div style={{ maxWidth: 280 }}><div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}><BrainLogo size={26} /><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 23, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</div></div><p style={{ fontSize: 14, color: C.faint, lineHeight: 1.7 }}>Your AI study mentor. Get into flow. Stay there.</p></div>
-            {[{ t: "Product", l: ["Features", "Dashboard", "Premium", "Pricing"] }, { t: "Study", l: ["Study Space", "Study Guide", "Techniques", "Device-free"] }, { t: "Company", l: ["About", "Contact", "Privacy", "Terms"] }].map((col) => <div key={col.t}><h4 style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, marginBottom: 16 }}>{col.t}</h4><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{col.l.map((l) => <a key={l} href="#" style={{ fontSize: 14, color: C.faint, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.muted)} onMouseLeave={(e) => (e.currentTarget.style.color = C.faint)}>{l}</a>)}</div></div>)}
+            {[{ t: "Product", l: [["Features", "#features"], ["Science", "#science"], ["Premium", "#premium"], ["Pricing", "#pricing"]] }, { t: "Study", l: [["Study Guide", "#guide"], ["Techniques", "#features"], ["Focus Audio", "#premium"], ["Compare", "#features"]] }, { t: "Company", l: [["How it works", "#features"], ["Get a gift code", "#pricing"], ["Privacy", "/privacy"], ["Terms", "/terms"]] }].map((col) => <div key={col.t}><h4 style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, marginBottom: 16 }}>{col.t}</h4><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{col.l.map(([l, href]) => <a key={l} href={href} style={{ fontSize: 14, color: C.faint, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.muted)} onMouseLeave={(e) => (e.currentTarget.style.color = C.faint)}>{l}</a>)}</div></div>)}
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}><p style={{ fontSize: 13, color: C.faint }}>© 2026 AIRA Mentor. airamentor.com</p><p style={{ fontSize: 13, color: C.faint }}>Made in Turkey</p></div>
         </div>
