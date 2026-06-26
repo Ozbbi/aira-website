@@ -769,16 +769,67 @@ function GiftCode({ onUnlock }: { onUnlock: () => void }) {
 
 /* ════════════ SOUND PLAYER ════════════ */
 const SOUNDS = [{ id: "8d", name: "8D Ambient", note: "Spatial audio that moves around you" }, { id: "binaural", name: "Binaural Beats", note: "40Hz gamma tones for deep concentration" }, { id: "rain", name: "Rainfall", note: "Steady rain to mask distractions" }, { id: "forest", name: "Forest", note: "Birdsong and wind for calm focus" }, { id: "cafe", name: "Cafe Hum", note: "Gentle background chatter" }, { id: "silence", name: "Pure Silence", note: "No audio, just you and the work" }];
-function SoundPlayer({ seen }: { seen: { [k: string]: boolean } }) {
-  const [active, setActive] = useState("8d"); const [playing, setPlaying] = useState(false);
+function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boolean }; lifetime: boolean; onUpgrade: () => void }) {
+  const [active, setActive] = useState("8d");
+  const [playing, setPlaying] = useState(false);
+  const [previewEnded, setPreviewEnded] = useState(false);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const nodesRef = useRef<{ stop: () => void } | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  const teardown = () => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    if (nodesRef.current) { try { nodesRef.current.stop(); } catch {} nodesRef.current = null; }
+  };
+  const start = (id: string) => {
+    teardown();
+    if (id === "silence") return;
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = ctxRef.current || (ctxRef.current = new AC());
+    if (ctx.state === "suspended") ctx.resume();
+    const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+    master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 0.7);
+    const cleanup: Array<() => void> = [];
+    const noise = () => { const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; return s; };
+    if (id === "binaural") {
+      const merger = ctx.createChannelMerger(2);
+      const oL = ctx.createOscillator(); oL.type = "sine"; oL.frequency.value = 200;
+      const oR = ctx.createOscillator(); oR.type = "sine"; oR.frequency.value = 240;
+      const gL = ctx.createGain(); const gR = ctx.createGain(); gL.gain.value = gR.gain.value = 0.5;
+      oL.connect(gL).connect(merger, 0, 0); oR.connect(gR).connect(merger, 0, 1); merger.connect(master);
+      oL.start(); oR.start(); cleanup.push(() => { oL.stop(); oR.stop(); });
+    } else if (id === "8d") {
+      const o1 = ctx.createOscillator(); o1.type = "sine"; o1.frequency.value = 110;
+      const o2 = ctx.createOscillator(); o2.type = "sine"; o2.frequency.value = 164.81;
+      const pan = ctx.createStereoPanner();
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.12; const lg = ctx.createGain(); lg.gain.value = 0.95;
+      lfo.connect(lg).connect(pan.pan);
+      const g = ctx.createGain(); g.gain.value = 0.55; o1.connect(g); o2.connect(g); g.connect(pan).connect(master);
+      o1.start(); o2.start(); lfo.start(); cleanup.push(() => { o1.stop(); o2.stop(); lfo.stop(); });
+    } else {
+      const n = noise(); const f = ctx.createBiquadFilter(); f.type = "lowpass";
+      f.frequency.value = id === "cafe" ? 480 : id === "forest" ? 2400 : 5000;
+      const g = ctx.createGain(); g.gain.value = id === "cafe" ? 0.7 : 0.4; n.connect(f).connect(g).connect(master); n.start(); cleanup.push(() => n.stop());
+      if (id === "forest") { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = 660; const og = ctx.createGain(); og.gain.value = 0.03; o.connect(og).connect(master); o.start(); cleanup.push(() => o.stop()); }
+    }
+    nodesRef.current = { stop: () => { try { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); } catch {} setTimeout(() => cleanup.forEach((c) => { try { c(); } catch {} }), 280); } };
+    if (!lifetime) { timerRef.current = window.setTimeout(() => { teardown(); setPlaying(false); setPreviewEnded(true); }, 18000); }
+  };
+  const toggle = () => { if (playing) { teardown(); setPlaying(false); } else { setPreviewEnded(false); start(active); setPlaying(true); } };
+  useEffect(() => { if (playing) start(active); /* restart on sound change */ }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { teardown(); try { ctxRef.current?.close(); } catch {} }, []);
   return (
     <div data-k="snd" style={{ opacity: seen["snd"] ? 1 : 0, transform: seen["snd"] ? "translateY(0)" : "translateY(32px)", transition: `all 0.8s ${C.ease}`, willChange: "transform,opacity" }}>
       <div style={{ background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,rgba(34,211,238,0.4),rgba(123,92,255,0.25)) border-box`, border: "1px solid transparent", borderRadius: 24, padding: 36, backdropFilter: "blur(20px)" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 5, height: 70, marginBottom: 28 }}>{Array.from({ length: 34 }).map((_, i) => <div key={i} style={{ width: 4, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.indigo})`, height: playing ? `${20 + Math.abs(Math.sin(i * 0.9)) * 50}px` : "8px", animation: playing ? `eq 0.${6 + (i % 5)}s ease-in-out infinite alternate` : "none", animationDelay: `${i * 0.04}s`, transition: "height 0.4s ease", willChange: "transform", transformOrigin: "bottom" }} />)}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>{SOUNDS.map((s) => { const on = s.id === active; return <button key={s.id} onClick={() => setActive(s.id)} style={{ padding: "10px 18px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.cyan}22,${C.indigo}22)` : "transparent", border: `1px solid ${on ? "rgba(34,211,238,0.5)" : C.border}`, color: on ? C.fg : C.muted, fontSize: 13, transition: `all 0.25s ${C.ease}` }}>{s.name}</button>; })}</div>
         <p style={{ textAlign: "center", fontSize: 13, color: C.faint, marginBottom: 24 }}>{SOUNDS.find((s) => s.id === active)?.note}</p>
-        <div style={{ display: "flex", justifyContent: "center" }}><button onClick={() => setPlaying(!playing)} style={{ width: 64, height: 64, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${C.indigo}55` }}><Icon name={playing ? "pause" : "play"} size={22} color="#fff" /></button></div>
-        <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16 }}>Royalty-free focus audio · 6 soundscapes on AIRA Pro</p>
+        <div style={{ display: "flex", justifyContent: "center" }}><button onClick={toggle} style={{ width: 64, height: 64, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${C.indigo}55` }}><Icon name={playing ? "pause" : "play"} size={22} color="#fff" /></button></div>
+        {previewEnded && !lifetime ? (
+          <p style={{ textAlign: "center", fontSize: 12.5, color: C.amber, marginTop: 16 }}>Preview ended. <button onClick={onUpgrade} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>Go Pro for unlimited focus audio →</button></p>
+        ) : (
+          <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16 }}>{lifetime ? "Real generated focus audio · Pro · unlimited" : "Live focus audio · 18-second free preview · unlimited on Pro"}</p>
+        )}
       </div>
     </div>
   );
@@ -1158,7 +1209,7 @@ export default function Home() {
         <div style={{ maxWidth: 1140, margin: "0 auto" }}>
           <div {...reveal("fm-h")} style={{ ...reveal("fm-h").style, textAlign: "center", marginBottom: 70 }}><Label>Distraction-free by design</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>Phone away. <Grad>Mind present.</Grad></h2></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 22, marginBottom: 48 }}>{FOCUS_MODES.map((m, i) => <Tilt key={m.t} k={`fm-${i}`} seen={seen} delay={i * 90}><IconBadge name={m.ic} color={C.cyan} /><h3 style={HD({ fontSize: 18, marginBottom: 10 })}>{m.t}</h3><p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.7 }}>{m.b}</p></Tilt>)}</div>
-          <SoundPlayer seen={seen} />
+          <SoundPlayer seen={seen} lifetime={lifetime} onUpgrade={() => setAuth("up")} />
         </div>
       </section>
 
