@@ -465,18 +465,18 @@ const FREE_MENTOR = 3;
 const MODE_CHIPS: { mode: MMode; ic: string; label: string; guide: string }[] = [
   { mode: "summary", ic: "pencil", label: "Summarize notes", guide: "**Summary mode.** Paste your lecture notes or reading below and I'll turn them into a clean, structured summary." },
   { mode: "test", ic: "cards", label: "Make me a test", guide: "**Test mode.** Paste your material below and I'll generate a practice quiz with a full answer key." },
-  { mode: "program", ic: "map", label: "Study program", guide: "**Study-program mode.** Tell me your topic, your goal, and how many days you have — I'll build a day-by-day plan." },
+  { mode: "program", ic: "map", label: "Make a plan", guide: "**Plan mode.** Tell me your goal — study, gym/sport, a language, a skill — and your timeframe. I'll research what's needed and build a real day-by-day plan." },
   { mode: "chat", ic: "bot", label: "Mentor me", guide: "**Mentor mode.** Ask me anything about your subject and I'll guide you Socratically." },
 ];
 const CAPS: { mode: MMode; ic: string; title: string; desc: string; c: string }[] = [
   { mode: "summary", ic: "pencil", title: "Summarize my notes", desc: "Paste lecture notes — get a clean, structured summary of the key concepts.", c: C.cyan },
   { mode: "test", ic: "cards", title: "Make me a test", desc: "Turn any material into a practice quiz with a full answer key.", c: C.violet },
-  { mode: "program", ic: "map", title: "Build a study program", desc: "A personalized, day-by-day plan built around your goal and deadline.", c: C.blue },
+  { mode: "program", ic: "map", title: "Build any plan", desc: "Study, gym, sport, or language — a real day-by-day plan, researched for you.", c: C.blue },
   { mode: "chat", ic: "bot", title: "Mentor me Socratically", desc: "Get guided to the answer with questions — not just handed it.", c: C.pink },
 ];
 
 function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpgrade: () => void; userName: string }) {
-  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: `Hi${userName ? ` ${userName}` : ""}, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make a test** from your own material, **build a study program**, **read a photo** of your notes or a textbook page, and **mentor you Socratically**. Pick an action below, snap a photo, or just tell me what you need.` }]);
+  const [msgs, setMsgs] = useState<MMsg[]>([{ role: "ai", local: true, text: `Hi${userName ? ` ${userName}` : ""}, I'm **AIRA** — your study mentor.\n\nI can **summarize your notes**, **make tests**, **build any plan** (study, gym, sport, language), **research anything on the web**, **read a photo** of your notes, and **mentor you**. Pick an action, snap a photo, or just tell me your goal.` }]);
   const [input, setInput] = useState("");
   const [notes, setNotes] = useState("");
   const [mode, setMode] = useState<MMode>("chat");
@@ -543,7 +543,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
         </div>
       ) : (
         <>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>{["Review my notes & score them 1–10", "Make a test from a topic", "Explain a concept simply", "Build me a 7-day study plan"].map((s) => <button key={s} onClick={() => send(s)} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, cursor: loading ? "default" : "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 12.5, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><Icon name="spark" size={12} color={C.cyan} />{s}</button>)}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>{["Review my notes & score them 1–10", "Research a topic and explain it", "Build me a gym / sport training plan", "Plan my study week"].map((s) => <button key={s} onClick={() => send(s)} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, cursor: loading ? "default" : "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 12.5, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><Icon name="spark" size={12} color={C.cyan} />{s}</button>)}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>{MODE_CHIPS.map((c) => { const on = mode === c.mode; return <button key={c.mode} onClick={() => pickMode(c.mode)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.blue},${C.violet})` : C.surface, border: `1px solid ${on ? "transparent" : C.border}`, color: on ? "#fff" : C.muted, fontSize: 13, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}` }}><Icon name={c.ic} size={14} color={on ? "#fff" : C.muted} />{c.label}</button>; })}</div>
           {usesNotes ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}` }}>
@@ -722,7 +722,7 @@ function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; 
   };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1500, background: "rgba(0,0,4,0.9)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
+      <div className="auth-card" onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
         <button onClick={onClose} style={{ position: "absolute", top: 20, right: 20, background: "none", border: "none", color: C.faint, fontSize: 24, cursor: "pointer", lineHeight: 1 }}>×</button>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{isUp ? "Create your account" : "Welcome back"}</h2>
@@ -1133,7 +1133,7 @@ export default function Home() {
         @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%);transition:transform 0.3s ${C.ease};box-shadow:0 0 60px rgba(0,0,0,0.6)}.app-side.open{transform:translateX(0)}.app-burger{display:flex!important}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
-        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 20px!important}.sec{padding:80px 20px!important}.hero-h1{font-size:46px!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:20px!important}.story-art{display:none!important}}
+        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 18px!important}.sec{padding:72px 18px!important}.hero-h1{font-size:40px!important;line-height:1.05!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:18px!important;padding:96px 20px 48px!important}.story-art{display:none!important}.auth-card{padding:26px 22px!important;border-radius:22px!important}}
       ` }} />
 
       <LivingBackground p={p} />
