@@ -300,6 +300,10 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
       default: return `Today's move: one focused block on ${g}. Small, steady reps compound faster than you'd think.`;
     }
   })();
+  const [reflect, setReflect] = useState<string | null>(null);
+  useEffect(() => { try { const r = JSON.parse(window.localStorage.getItem("aira_reflect") || "{}"); if (r && r.date === new Date().toDateString()) setReflect(r.mood); } catch {} }, []);
+  const doReflect = (mood: string) => { setReflect(mood); try { window.localStorage.setItem("aira_reflect", JSON.stringify({ mood, date: new Date().toDateString() })); const x = parseInt(window.localStorage.getItem("aira_xp") || "1240", 10) + 50; window.localStorage.setItem("aira_xp", String(x)); } catch {} };
+  const reflectMsg: Record<string, string> = { Great: "Love it. I'll push today's block a little harder — you're ready for it.", Okay: "Solid. Steady beats perfect — one small win at a time, same plan tomorrow.", Tough: "Thanks for being honest. I'll lighten tomorrow: shorter block, easier entry point. Rest counts too." };
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
       <div style={{ fontSize: 12.5, color: C.faint, marginBottom: 5, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>{today}</div>
@@ -336,6 +340,21 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
         <div style={{ display: "flex", gap: 14, padding: 20, borderRadius: 18, background: `linear-gradient(135deg,${C.violet}14,${C.cyan}0d)`, border: `1px solid ${C.border}`, marginBottom: 24 }}>
           <span style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="brain" size={20} color="#fff" /></span>
           <div><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.violet, marginBottom: 4 }}>AI Coach</div><p style={{ fontSize: 14, color: C.fg, lineHeight: 1.6 }}>{coachMsg}</p></div>
+        </div>
+      )}
+      {goal && (
+        <div style={{ padding: 20, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 24 }}>
+          {!reflect ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 170 }}><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.cyan, marginBottom: 4 }}>Daily reflection</div><div style={{ fontSize: 15, fontWeight: 600 }}>How did today go?</div></div>
+              <div style={{ display: "flex", gap: 8 }}>{[{ m: "Great", c: C.green }, { m: "Okay", c: C.amber }, { m: "Tough", c: C.pink }].map((o) => <button key={o.m} onClick={() => doReflect(o.m)} style={{ padding: "10px 18px", borderRadius: 999, cursor: "pointer", background: "transparent", border: `1px solid ${o.c}55`, color: o.c, fontSize: 13.5, fontWeight: 600, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.background = `${o.c}1a`; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>{o.m}</button>)}</div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 14, animation: "tabIn 0.4s ease" }}>
+              <span style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={20} color="#fff" stroke={3} /></span>
+              <div><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.cyan, marginBottom: 4 }}>Plan adapted · +50 XP</div><p style={{ fontSize: 14, color: C.fg, lineHeight: 1.6 }}>{reflectMsg[reflect]}</p></div>
+            </div>
+          )}
         </div>
       )}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16 }} className="dash-grid">
@@ -514,6 +533,8 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
   const [notes, setNotes] = useState("");
   const [mode, setMode] = useState<MMode>("chat");
   const [persona, setPersona] = useState("balanced");
+  const [profile, setProfile] = useState<Record<string, string> | null>(null);
+  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); } catch {} }, []);
   const [loading, setLoading] = useState(false);
   const [used, setUsed] = useState(0);
   const [imgData, setImgData] = useState<string | null>(null);
@@ -546,7 +567,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
     if (!lifetime) { const u = used + 1; setUsed(u); try { window.localStorage.setItem("aira_free_day", JSON.stringify({ date: new Date().toDateString(), count: u })); } catch {} }
     const apiMessages = convo.filter((m) => !m.local).map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
     try {
-      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg, persona }) });
+      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg, persona, profile: profile ? { goal: profile.goal, level: profile.level, when: profile.when, weakness: profile.weakness, deadline: profile.deadline } : undefined }) });
       const d = await r.json();
       if (r.ok && d.text) setMsgs((m) => [...m, { role: "ai", text: d.text }]);
       else setMsgs((m) => [...m, { role: "ai", text: offlineReply(mode, userText, userName) }]); // graceful fallback (e.g. key not set)
@@ -676,17 +697,51 @@ function SubjectsTab() {
   );
 }
 
-/* ░░ PROGRESS TAB ░░ */
+/* ░░ PROGRESS TAB — XP · Knowledge Graph · Adaptive Roadmap ░░ */
 function ProgressTab() {
+  const [profile, setProfile] = useState<Record<string, string> | null>(null);
+  const [xp, setXp] = useState(1240);
+  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); const x = parseInt(window.localStorage.getItem("aira_xp") || "1240", 10); if (!Number.isNaN(x)) setXp(x); } catch {} }, []);
+  const goal = profile?.goal || "your goal";
+  const level = Math.floor(xp / 500) + 1;
+  const intoLevel = Math.round(((xp % 500) / 500) * 100);
+  const base = profile?.level === "Advanced" ? 55 : profile?.level === "Intermediate" ? 38 : profile?.level === "Some basics" ? 22 : 10;
+  const areas = [
+    { n: "Fundamentals", p: Math.min(96, base + 34), c: C.cyan },
+    { n: "Core concepts", p: Math.min(92, base + 14), c: C.indigo },
+    { n: "Hands-on practice", p: Math.max(6, base - 2), c: C.violet },
+    { n: "Advanced topics", p: Math.max(4, base - 12), c: C.pink },
+    { n: "Real projects", p: Math.max(3, base - 6), c: C.green },
+  ];
+  const phases = [
+    { t: "Foundations", d: `Lock in the basics of ${goal}.`, st: "done" },
+    { t: "Core skills", d: "Main concepts, patterns and vocabulary.", st: "now" },
+    { t: "Deliberate practice", d: "Active recall and drills on your weak spots.", st: "next" },
+    { t: "Build something real", d: "Apply everything in a project.", st: "next" },
+    { t: "Mastery & review", d: "Spaced review so it actually sticks.", st: "next" },
+  ];
+  const stats = [{ l: "Level", v: String(level), c: C.amber }, { l: "Total XP", v: xp.toLocaleString(), c: C.cyan }, { l: "Day streak", v: "12", c: C.pink }, { l: "Avg retention", v: "94%", c: C.green }];
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Your progress</h3>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>AIRA learns your patterns and schedules hard topics when you're sharpest.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14, marginBottom: 20 }}>{[{ l: "Total focus hours", v: "84", c: C.cyan }, { l: "Day streak", v: "12", c: C.amber }, { l: "Concepts mastered", v: "47", c: C.green }, { l: "Avg retention", v: "94%", c: C.pink }].map((s) => <div key={s.l} style={{ padding: 18, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, textAlign: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 700, color: s.c, marginBottom: 4 }}>{s.v}</div><div style={{ fontSize: 12, color: C.muted }}>{s.l}</div></div>)}</div>
-      <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
-        <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, marginBottom: 18 }}>Focus by hour of day</h4>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 4, height: 120 }}>{[20, 35, 55, 80, 95, 70, 40, 30, 50, 75, 90, 60].map((h, i) => <div key={i} style={{ flex: 1, height: `${h}%`, borderRadius: "5px 5px 0 0", background: h > 80 ? `linear-gradient(${C.cyan},${C.violet})` : "rgba(255,255,255,0.1)", animation: `growBar 0.6s ${C.spring} ${i * 50}ms both`, transformOrigin: "bottom" }} />)}</div>
-        <p style={{ fontSize: 13, color: C.muted, marginTop: 14, textAlign: "center" }}>Your peak focus is <span style={{ color: C.cyan, fontWeight: 600 }}>11am–12pm</span>. AIRA schedules your hardest topics then.</p>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Your path to {goal}</h3>
+      <p style={{ fontSize: 14, color: C.muted, marginBottom: 22 }}>AIRA tracks what you know, what&apos;s next, and adapts the plan as you go.</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 18, padding: 22, borderRadius: 18, marginBottom: 18, background: `linear-gradient(135deg,${C.amber}16,${C.violet}10)`, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 220 }}>
+          <span style={{ flexShrink: 0, width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.amber},#FB923C)`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800, color: "#fff" }}>{level}</span>
+          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Level {level} · {500 - (xp % 500)} XP to level {level + 1}</div><div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}><div style={{ height: "100%", width: `${intoLevel}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.amber},#FB923C)`, animation: "growW 1s ease both" }} /></div></div>
+        </div>
+        <div style={{ display: "flex", gap: 22 }}>{stats.slice(1).map((s) => <div key={s.l} style={{ textAlign: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, color: s.c }}>{s.v}</div><div style={{ fontSize: 11, color: C.muted }}>{s.l}</div></div>)}</div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="dash-grid">
+        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Icon name="brain" size={18} color={C.cyan} /><h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Knowledge graph</h4></div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>{areas.map((a, i) => <div key={a.n}><div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ fontSize: 13.5, color: C.fg }}>{a.n}</span><span style={{ fontSize: 12.5, fontWeight: 600, color: a.c }}>{a.p}%</span></div><div style={{ height: 7, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", width: `${a.p}%`, borderRadius: 999, background: `linear-gradient(90deg,${a.c},${C.violet})`, animation: `growW 1s ease ${i * 80}ms both` }} /></div></div>)}</div>
+          <p style={{ fontSize: 12, color: C.faint, marginTop: 16, lineHeight: 1.5 }}>AIRA spots your weakest area — <span style={{ color: C.fg }}>{areas.slice().sort((a, b) => a.p - b.p)[0].n}</span> — and aims you there next.</p>
+        </div>
+        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Icon name="map" size={18} color={C.violet} /><h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Adaptive roadmap</h4></div>
+          <div style={{ display: "flex", flexDirection: "column" }}>{phases.map((ph, i) => { const done = ph.st === "done"; const now = ph.st === "now"; const col = done ? C.green : now ? C.cyan : C.faint; return <div key={ph.t} style={{ display: "flex", gap: 13, paddingBottom: i < phases.length - 1 ? 18 : 0 }}><div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", border: `2px solid ${col}`, background: done ? C.green : now ? `${C.cyan}22` : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{done ? <Icon name="check" size={13} color="#fff" stroke={3} /> : <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{i + 1}</span>}</span>{i < phases.length - 1 && <span style={{ width: 2, flex: 1, minHeight: 18, background: done ? C.green : C.border, marginTop: 2 }} />}</div><div style={{ paddingTop: 2 }}><div style={{ fontSize: 14, fontWeight: 600, color: now ? C.fg : done ? C.muted : C.muted }}>{ph.t}{now && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: C.cyan, background: `${C.cyan}1a`, border: `1px solid ${C.cyan}44`, borderRadius: 999, padding: "2px 7px" }}>NOW</span>}</div><div style={{ fontSize: 12.5, color: C.faint, marginTop: 2, lineHeight: 1.5 }}>{ph.d}</div></div></div>; })}</div>
+        </div>
       </div>
     </div>
   );

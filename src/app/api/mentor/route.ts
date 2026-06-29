@@ -55,12 +55,13 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { messages, mode, name, image, persona } = (body ?? {}) as {
+  const { messages, mode, name, image, persona, profile } = (body ?? {}) as {
     messages?: Array<{ role?: string; content?: unknown }>;
     mode?: unknown;
     name?: unknown;
     image?: { mime?: unknown; data?: unknown };
     persona?: unknown;
+    profile?: { goal?: unknown; level?: unknown; when?: unknown; weakness?: unknown; deadline?: unknown };
   };
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -99,7 +100,17 @@ export async function POST(req: Request) {
   };
   const personaPrompt = typeof persona === "string" && PERSONAS[persona] ? PERSONAS[persona] : "";
   const learner = typeof name === "string" && name.trim() ? `\n\nThe learner's name is ${name.trim()}. Address them by name naturally and personalize your guidance to them.` : "";
-  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${personaPrompt}${learner}`;
+  let memory = "";
+  if (profile && typeof profile === "object") {
+    const bits: string[] = [];
+    if (typeof profile.goal === "string" && profile.goal.trim()) bits.push(`is working toward: ${profile.goal.trim()}`);
+    if (typeof profile.level === "string" && profile.level.trim()) bits.push(`current level: ${profile.level.trim()}`);
+    if (typeof profile.deadline === "string" && profile.deadline.trim()) bits.push(`timeframe: ${profile.deadline.trim()}`);
+    if (typeof profile.when === "string" && profile.when.trim()) bits.push(`focuses best in the ${profile.when.trim().toLowerCase()}`);
+    if (typeof profile.weakness === "string" && profile.weakness.trim()) bits.push(`struggles most with: ${profile.weakness.trim()}`);
+    if (bits.length) memory = `\n\nWhat you remember about this learner — ${bits.join("; ")}. Use this to keep advice relevant and reference it naturally; don't re-ask what you already know.`;
+  }
+  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${personaPrompt}${learner}${memory}`;
 
   try {
     const res = await fetch(
