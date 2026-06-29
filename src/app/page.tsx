@@ -1053,7 +1053,7 @@ function StatsBand({ seen }: { seen: { [k: string]: boolean } }) {
   const run = !!seen["stats"];
   const a = useCountUp(94, run), b = useCountUp(2, run), c = useCountUp(40, run), d = useCountUp(6, run);
   const stats = [{ v: a, suf: "%", label: "retention with active recall vs 10% from re-reading", col: C.cyan }, { v: b, suf: "x", label: "stronger neural pathways via the Socratic method", col: C.violet }, { v: c, suf: "%", label: "more deep-focus time in structured sessions", col: C.blue }, { v: d, suf: "", label: "science-backed focus techniques to choose from", col: C.pink }];
-  return <div data-k="stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 24 }}>{stats.map((s, i) => <div key={i} style={{ textAlign: "center", opacity: seen["stats"] ? 1 : 0, transform: seen["stats"] ? "translateY(0)" : "translateY(20px)", transition: `all 0.7s ${C.ease} ${i * 100}ms` }}><div style={{ fontFamily: "var(--font-display)", fontSize: 52, fontWeight: 700, color: s.col, lineHeight: 1, marginBottom: 12, textShadow: `0 0 30px ${s.col}44` }}>{Math.round(s.v)}{s.suf}</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 200, margin: "0 auto" }}>{s.label}</p></div>)}</div>;
+  return <div data-k="stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 24 }}>{stats.map((s, i) => <div key={i} style={{ textAlign: "center", opacity: seen["stats"] ? 1 : 0, transform: seen["stats"] ? "translateY(0)" : "translateY(20px)", transition: `all 0.7s ${C.ease} ${i * 100}ms` }}><div style={{ fontFamily: "var(--font-display)", fontSize: 68, fontWeight: 800, color: s.col, lineHeight: 0.95, marginBottom: 14, textShadow: `0 0 40px ${s.col}55`, letterSpacing: "-0.03em" }}>{Math.round(s.v)}{s.suf}</div><p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, maxWidth: 200, margin: "0 auto" }}>{s.label}</p></div>)}</div>;
 }
 function FlowStateGraph({ seen }: { seen: { [k: string]: boolean } }) {
   const on = !!seen["fsg"];
@@ -1225,6 +1225,78 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   );
 }
 
+/* ════════════ HERO SECTION ════════════ */
+function HeroSection({ onOpen }: { onOpen: (t: string) => void }) {
+  return (
+    <section style={{ position: "relative", zIndex: 2, minHeight: "100vh", display: "flex", alignItems: "center", padding: "120px 48px 80px", overflow: "hidden" }} className="hero-sec">
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <div style={{ position: "absolute", top: "5%", left: "50%", transform: "translateX(-50%)", width: "90vw", height: "55vh", background: `radial-gradient(ellipse at center, ${C.indigo}1e 0%, transparent 65%)`, filter: "blur(50px)" }} />
+        <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "50vw", height: "50vw", background: `radial-gradient(ellipse at center, ${C.cyan}0e, transparent 60%)`, filter: "blur(70px)" }} />
+      </div>
+      <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: 64, maxWidth: 1200, margin: "0 auto", width: "100%", alignItems: "center" }}>
+        {/* Left */}
+        <div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.glass, backdropFilter: "blur(12px)", fontSize: 12.5, color: C.muted, marginBottom: 36, fontWeight: 500 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, boxShadow: `0 0 7px ${C.green}` }} />
+            AI Study Mentor
+          </div>
+          <h1 className="hero-h1" style={{ fontFamily: "var(--font-display)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 0.93, marginBottom: 30, fontSize: "clamp(52px,8.5vw,96px)" }}>
+            Stop reading.<br />
+            <span style={{ background: `linear-gradient(130deg,${C.cyan} 10%,${C.indigo} 55%,${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Start&nbsp;learning.</span>
+          </h1>
+          <p style={{ fontSize: "clamp(16px,1.8vw,19px)", color: C.muted, lineHeight: 1.7, maxWidth: 450, marginBottom: 44 }}>AIRA is an AI mentor that knows your goals, builds your plan, and gets you into deep focus — all in one conversation.</p>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 28 }}>
+            <GBtn big onClick={() => onOpen("mentor")}>Talk to AIRA <Icon name="arrow" size={18} color="#fff" /></GBtn>
+            <GhostBtn onClick={() => onOpen("dashboard")}>Open dashboard</GhostBtn>
+          </div>
+          <p style={{ fontSize: 13, color: C.faint }}>3 free messages/day · No card required · Upgrade for unlimited</p>
+        </div>
+        {/* Right — product preview */}
+        <div className="hero-art" style={{ perspective: 1400 }}>
+          <div style={{ transform: "rotateX(3deg) rotateY(-6deg)", animation: "floaty 8s ease-in-out infinite", willChange: "transform" }}>
+            <div style={{ position: "relative" }}>
+              <div style={{ position: "absolute", inset: "-50px -20px 20px", background: `radial-gradient(60% 60% at 50% 20%, ${C.indigo}38, transparent 70%)`, filter: "blur(50px)", pointerEvents: "none" }} />
+              <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", border: `1px solid ${C.border}`, background: `linear-gradient(160deg,rgba(16,16,34,0.98),rgba(6,6,15,0.99))`, boxShadow: "0 60px 160px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 18px", borderBottom: `1px solid ${C.border}`, background: "rgba(255,255,255,0.015)" }}>
+                  {[C.pink, C.amber, C.green].map((c) => <span key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: 0.7 }} />)}
+                  <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: C.faint }}><BrainLogo size={14} /> AIRA · AI Mentor</span>
+                </div>
+                <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 11 }}>
+                  <div style={{ display: "flex", gap: 9 }}>
+                    <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={14} color="#fff" /></span>
+                    <div style={{ maxWidth: 290, padding: "10px 13px", borderRadius: 13, background: C.surface, border: `1px solid ${C.border}`, fontSize: 13, color: C.fg, lineHeight: 1.6 }}>
+                      Your <strong style={{ color: C.cyan }}>60-day React plan</strong> is ready. Week 1 fits your evening schedule — 45 min/day.
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 9, justifyContent: "flex-end" }}>
+                    <div style={{ maxWidth: 200, padding: "10px 13px", borderRadius: 13, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, lineHeight: 1.6 }}>Show me week 1</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 9 }}>
+                    <span style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={14} color="#fff" /></span>
+                    <div style={{ maxWidth: 310, padding: "10px 13px", borderRadius: 13, background: C.surface, border: `1px solid ${C.border}`, fontSize: 13, color: C.fg, lineHeight: 1.6 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 7, fontSize: 13.5 }}>Week 1 — Foundations</div>
+                      {[{ d: "Day 1–2", t: "React core & JSX · 2h", c: C.cyan }, { d: "Day 3–4", t: "State & hooks · 2h", c: C.violet }, { d: "Day 5", t: "Build a mini-project · 45m", c: C.green }].map((r) => (
+                        <div key={r.d} style={{ display: "flex", gap: 8, padding: "5px 0", borderTop: `1px solid ${C.border}` }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: r.c, width: 50, flexShrink: 0, paddingTop: 1 }}>{r.d}</span>
+                          <span style={{ fontSize: 12, color: C.muted }}>{r.t}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 7, padding: "7px 10px", borderRadius: 12, background: C.elev, border: `1px solid ${C.border}` }}>
+                    <span style={{ flex: 1, fontSize: 13, color: C.faint, lineHeight: "32px" }}>Ask AIRA anything…</span>
+                    <span style={{ width: 32, height: 32, borderRadius: 9, background: `linear-gradient(135deg,${C.blue},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="send" size={14} color="#fff" /></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════ MAIN */
 export default function Home() {
   const seen = useReveal();
@@ -1246,12 +1318,12 @@ export default function Home() {
   return (
     <main style={{ background: C.void, minHeight: "100vh", color: C.fg, position: "relative", overflowX: "clip" }}>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       <meta name="theme-color" content="#03030A" />
       <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
         *{box-sizing:border-box;margin:0;padding:0}
-        :root{--font-display:'Space Grotesk',sans-serif}
+        :root{--font-display:'Bricolage Grotesque',sans-serif}
         html{scroll-behavior:smooth}
         body{font-family:'Inter',sans-serif;background:${C.void};-webkit-font-smoothing:antialiased}
         ::selection{background:rgba(123,92,255,0.35)}
@@ -1280,7 +1352,7 @@ export default function Home() {
         @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
         @media(max-width:900px){.app-side{position:fixed;left:0;top:0;bottom:0;z-index:20;transform:translateX(-100%);transition:transform 0.3s ${C.ease};box-shadow:0 0 60px rgba(0,0,0,0.6)}.app-side.open{transform:translateX(0)}.app-burger{display:flex!important}.dash-grid,.study-grid{grid-template-columns:1fr!important}}
-        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 18px!important}.sec{padding:72px 18px!important}.hero-h1{font-size:40px!important;line-height:1.05!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:18px!important;padding:96px 20px 48px!important}.story-art{display:none!important}.auth-card{padding:26px 22px!important;border-radius:22px!important}}
+        @media(max-width:768px){.nav-links,.nav-auth-extra{display:none!important}.nav-wrap{padding:0 18px!important}.sec{padding:72px 18px!important}.hero-h1{font-size:44px!important;line-height:0.95!important}.hero-sec{padding:100px 22px 64px!important}.hero-grid{grid-template-columns:1fr!important;gap:40px!important}.hero-art{display:none!important}.bento{grid-template-columns:1fr!important}.bento>*{grid-column:span 1!important}.bento-hero{grid-template-columns:1fr!important}.bento-hero>*:last-child{display:none!important}.hp-caps{grid-template-columns:repeat(2,1fr)!important}.story-grid{grid-template-columns:1fr!important;gap:18px!important;padding:96px 20px 48px!important}.story-art{display:none!important}.auth-card{padding:26px 22px!important;border-radius:22px!important}}
       ` }} />
 
       <LivingBackground p={p} />
@@ -1298,8 +1370,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* HERO — scroll story */}
-      <StoryScroll onOpen={(t) => setWorkspace(t)} />
+      {/* HERO */}
+      <HeroSection onOpen={(t) => setWorkspace(t)} />
 
       {/* MARQUEE */}
       <div style={{ position: "relative", zIndex: 2, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "18px 0", overflow: "hidden", background: "rgba(0,0,4,0.4)" }}><div style={{ display: "flex", gap: 48, whiteSpace: "nowrap", animation: "marquee 26s linear infinite", width: "max-content" }}>{[...Array(2)].map((_, r) => <div key={r} style={{ display: "flex", gap: 48 }}>{["Neural Phase Locking", "Spaced Repetition", "Active Recall", "Socratic Method", "Timeboxing", "Ultradian Rhythm", "15 Subjects", "Focus Audio"].map((t) => <span key={t + r} style={{ fontSize: 14, color: C.muted, letterSpacing: "0.04em" }}>{t}</span>)}</div>)}</div></div>
@@ -1312,7 +1384,34 @@ export default function Home() {
 
       {/* BENTO */}
       <section id="features" className="sec" style={sec({ maxWidth: 1140, margin: "0 auto" })}>
-        <div {...reveal("bn-h")} style={{ ...reveal("bn-h").style, textAlign: "center", marginBottom: 70 }}><Label>Everything you need</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>One system. <Grad>Total focus.</Grad></h2></div>
+        <div {...reveal("bn-h")} style={{ ...reveal("bn-h").style, textAlign: "center", marginBottom: 70 }}><Label>Everything you need</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>One system. Total focus.</h2></div>
+        {/* Featured hero card */}
+        <div data-k="bn-hero" style={{ marginBottom: 20, opacity: seen["bn-hero"] ? 1 : 0, transform: seen["bn-hero"] ? "translateY(0)" : "translateY(44px)", transition: `all 1s ${C.ease}`, borderRadius: 22, overflow: "hidden", border: `1px solid ${C.border}`, background: `linear-gradient(135deg,${C.elev},${C.base})`, display: "grid", gridTemplateColumns: "1fr 1.1fr", minHeight: 260 }} className="bento-hero">
+          <div style={{ padding: "40px 44px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.cyan, marginBottom: 18 }}><Icon name="bot" size={14} color={C.cyan} /> AI Mentor</div>
+            <h3 style={HD({ fontSize: "clamp(22px,3vw,30px)", marginBottom: 14, lineHeight: 1.15 })}>The AI that learns <span style={{ color: C.cyan }}>you.</span></h3>
+            <p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.75, marginBottom: 22, maxWidth: 320 }}>AIRA remembers your goal, your level, and your schedule. Every session builds on the last — no re-explaining yourself.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              {["Personalized roadmap from day 1", "Socratic guidance — not just answers", "Persistent memory across sessions"].map((f) => (
+                <div key={f} style={{ display: "flex", gap: 9, alignItems: "center", fontSize: 13.5, color: C.fg }}>
+                  <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 6, background: `${C.cyan}18`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={11} color={C.cyan} stroke={2.5} /></span>{f}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ background: `linear-gradient(135deg,${C.deep},${C.base})`, borderLeft: `1px solid ${C.border}`, padding: "32px 28px", display: "flex", flexDirection: "column", gap: 10, justifyContent: "center" }}>
+            {[
+              { role: "ai", text: "Based on your goal, I mapped a 60-day React plan. Week 1 starts with JSX fundamentals — fits your evenings." },
+              { role: "user", text: "Show me day 1" },
+              { role: "ai", text: "Day 1: 45 min. Read the React docs intro (link attached), then build Hello World from scratch. No tutorials — just you and the code." },
+            ].map((m, i) => (
+              <div key={i} style={{ display: "flex", gap: 8, justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                {m.role === "ai" && <span style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={12} color="#fff" /></span>}
+                <div style={{ maxWidth: "80%", padding: "9px 12px", borderRadius: 12, fontSize: 13, lineHeight: 1.6, background: m.role === "ai" ? C.elev : `linear-gradient(135deg,${C.blue},${C.violet})`, border: m.role === "ai" ? `1px solid ${C.border}` : "none", color: m.role === "ai" ? C.fg : "#fff" }}>{m.text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="bento" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>{BENTO.map((b, i) => <Tilt key={b.t} k={`bn-${i}`} seen={seen} delay={i * 100} span={b.span} style={{ padding: 36 }}><IconBadge name={b.ic} color={b.c} /><h3 style={HD({ fontSize: 22, marginBottom: 10, color: b.c })}>{b.t}</h3><p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.7 }}>{b.b}</p></Tilt>)}</div>
       </section>
 
@@ -1395,10 +1494,10 @@ export default function Home() {
         <div style={{ maxWidth: 920, margin: "0 auto" }}>
           <div {...reveal("p-h")} style={{ ...reveal("p-h").style, textAlign: "center", marginBottom: 20 }}><Label>Pricing</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,56px)" })}>You've seen everything. <Grad>Here's the price.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 17, maxWidth: 480, margin: "18px auto 0", lineHeight: 1.6 }}>One simple plan. Everything unlocked. Less than a single hour with a private tutor.</p></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 22, marginTop: 60 }}>
-            <Tilt k="pf" seen={seen} style={{ padding: 40 }}><h3 style={HD({ fontSize: 22, marginBottom: 8 })}>Free</h3><div style={{ fontSize: 44, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 4 }}>$0</div><p style={{ fontSize: 13, color: C.muted, marginBottom: 26 }}>7-day full access trial</p>{["AI mentor (trial period)", "All 6 focus techniques", "Study space + dashboard", "Basic progress tracking", "No credit card required"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.muted, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GhostBtn full onClick={() => setWorkspace("dashboard")}>Try the dashboard</GhostBtn></div></Tilt>
-            <Tilt k="pp" seen={seen} delay={100} style={{ padding: 40, animation: "pulseGlow 4s ease-in-out infinite" }}><div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg,${C.blue},${C.violet})`, padding: "6px 22px", borderRadius: "0 0 12px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", zIndex: 2 }}>MOST POPULAR</div><h3 style={HD({ fontSize: 22, marginBottom: 8, marginTop: 10 })}>AIRA Pro</h3><div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}><span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-display)" }}>$9.99</span><span style={{ color: C.muted }}>/month</span></div><p style={{ fontSize: 13, color: C.cyan, marginBottom: 26 }}>Billed monthly · Cancel anytime</p>{["Unlimited AI mentor sessions", "All 6 focus techniques", "All 15 subject categories", "Full dashboard + analytics", "6 royalty-free soundscapes", "Spaced repetition + flashcards", "Streaks + certificates", "Export + offline mode", "Cancel anytime"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.fg, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GBtn full onClick={buy}>Start 7-day free trial</GBtn></div></Tilt>
+            <Tilt k="pf" seen={seen} style={{ padding: 40 }}><h3 style={HD({ fontSize: 22, marginBottom: 8 })}>Free</h3><div style={{ fontSize: 44, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 4 }}>$0</div><p style={{ fontSize: 13, color: C.muted, marginBottom: 26 }}>3 free messages/day, forever</p>{["3 AI mentor messages/day", "All 6 focus techniques", "Study space + dashboard", "Basic progress tracking", "No credit card required"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.muted, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GhostBtn full onClick={() => setWorkspace("dashboard")}>Try the dashboard</GhostBtn></div></Tilt>
+            <Tilt k="pp" seen={seen} delay={100} style={{ padding: 40, animation: "pulseGlow 4s ease-in-out infinite" }}><div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg,${C.blue},${C.violet})`, padding: "6px 22px", borderRadius: "0 0 12px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", zIndex: 2 }}>MOST POPULAR</div><h3 style={HD({ fontSize: 22, marginBottom: 8, marginTop: 10 })}>AIRA Pro</h3><div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}><span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-display)" }}>$9.99</span><span style={{ color: C.muted }}>/month</span></div><p style={{ fontSize: 13, color: C.cyan, marginBottom: 26 }}>Billed monthly · Cancel anytime</p>{["Unlimited AI mentor sessions", "All 6 focus techniques", "All 15 subject categories", "Full dashboard + analytics", "6 royalty-free soundscapes", "Spaced repetition + flashcards", "Streaks + certificates", "Export + offline mode", "Cancel anytime"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.fg, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GBtn full onClick={buy}>Unlock AIRA Pro</GBtn></div></Tilt>
           </div>
-          <p style={{ textAlign: "center", marginTop: 26, fontSize: 13, color: C.faint }}>Secure checkout via Lemon Squeezy · A private tutor costs $50-200/hour. AIRA is $9.99/month, unlimited.</p>
+          <p style={{ textAlign: "center", marginTop: 26, fontSize: 13, color: C.faint }}>3 free messages/day with no card · Pro unlocks unlimited mentoring, plans, photo reading, and audio · $9.99/month, cancel anytime.</p>
         </div>
       </section>
 
@@ -1409,7 +1508,7 @@ export default function Home() {
           <h2 {...reveal("cta-h")} style={{ ...reveal("cta-h").style, ...HD({ fontSize: "clamp(40px,7vw,68px)", marginBottom: 26, lineHeight: 1.04 }) }}>Your mind is capable<br /><Grad>of more.</Grad></h2>
           <p style={{ fontSize: 18, color: C.muted, maxWidth: 490, margin: "0 auto 42px", lineHeight: 1.7 }}>Stop fighting for focus. Start building it. AIRA turns every study session into a structured path to mastery.</p>
           <GBtn big onClick={() => setWorkspace("mentor")}>Try the AI mentor <Icon name="arrow" size={18} color="#fff" /></GBtn>
-          <p style={{ marginTop: 16, fontSize: 13, color: C.faint }}>7 days free · No card · Cancel anytime</p>
+          <p style={{ marginTop: 16, fontSize: 13, color: C.faint }}>3 free messages/day · No card · Pro unlocks unlimited</p>
         </div>
       </section>
 
