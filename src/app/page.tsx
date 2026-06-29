@@ -1310,6 +1310,8 @@ export default function Home() {
   const [userName, setUserName] = useState("");
   useEffect(() => { const params = new URLSearchParams(window.location.search); if (params.get("success") === "true" || params.get("checkout") === "success") setShowWelcome(true); try { if (window.localStorage.getItem("aira_lifetime") === "true") setLifetime(true); const n = window.localStorage.getItem("aira_name"); if (n) setUserName(n); } catch {} }, []);
   const saveName = useCallback((n: string, remember: boolean) => { const name = n.trim(); if (!name) return; setUserName(name); if (remember) { try { window.localStorage.setItem("aira_name", name); } catch {} } }, []);
+  const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} }, []);
+  const signedIn = !!userName;
   const buy = useCallback(() => { window.location.href = CHECKOUT_URL; }, []);
   const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(40px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(6px)", transition: `opacity 0.9s ${C.ease} ${d}ms, transform 0.9s ${C.ease} ${d}ms, filter 0.9s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
   const HD = (e: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", ...e });
@@ -1357,7 +1359,7 @@ export default function Home() {
 
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
-      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={() => setAuth("up")} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
+      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
       {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { if (email) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("mentor"); }} />}
 
       {/* NAV */}
@@ -1365,8 +1367,17 @@ export default function Home() {
         <div style={{ display: "flex", alignItems: "center", gap: 11 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 22, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", animation: "gradShift 6s ease infinite" }}>AIRA</span></div>
         <div className="nav-links" style={{ display: "flex", gap: 26, fontSize: 14, color: C.muted }}>{[["Features", "features"], ["Science", "science"], ["Guide", "guide"], ["Premium", "premium"], ["Pricing", "pricing"]].map(([l, h]) => <a key={l} href={`#${h}`} style={{ color: C.muted, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.fg)} onMouseLeave={(e) => (e.currentTarget.style.color = C.muted)}>{l}</a>)}</div>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <button className="nav-auth-extra" onClick={() => setAuth("in")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button>
-          <GBtn onClick={() => setAuth("up")}>Sign up free <Icon name="arrow" size={16} color="#fff" /></GBtn>
+          {signedIn ? (
+            <>
+              <button className="nav-auth-extra" onClick={logout} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign out</button>
+              <button onClick={() => setWorkspace("dashboard")} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "7px 8px 7px 16px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.glass, color: C.fg, fontSize: 14, fontWeight: 600, cursor: "pointer", backdropFilter: "blur(10px)" }}>Open app <span style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName.trim()[0]}</span></button>
+            </>
+          ) : (
+            <>
+              <button className="nav-auth-extra" onClick={() => setAuth("in")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button>
+              <GBtn onClick={() => setWorkspace("mentor")}>Get started free <Icon name="arrow" size={16} color="#fff" /></GBtn>
+            </>
+          )}
         </div>
       </nav>
 
@@ -1455,7 +1466,7 @@ export default function Home() {
         <div style={{ maxWidth: 1140, margin: "0 auto" }}>
           <div {...reveal("fm-h")} style={{ ...reveal("fm-h").style, textAlign: "center", marginBottom: 70 }}><Label>Distraction-free by design</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,52px)" })}>Phone away. <Grad>Mind present.</Grad></h2></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 22, marginBottom: 48 }}>{FOCUS_MODES.map((m, i) => <Tilt key={m.t} k={`fm-${i}`} seen={seen} delay={i * 90}><IconBadge name={m.ic} color={C.cyan} /><h3 style={HD({ fontSize: 18, marginBottom: 10 })}>{m.t}</h3><p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.7 }}>{m.b}</p></Tilt>)}</div>
-          <SoundPlayer seen={seen} lifetime={lifetime} onUpgrade={() => setAuth("up")} />
+          <SoundPlayer seen={seen} lifetime={lifetime} onUpgrade={buy} />
         </div>
       </section>
 
