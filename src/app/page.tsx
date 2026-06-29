@@ -287,11 +287,21 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const hr = new Date().getHours();
   const greet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+  const [profile, setProfile] = useState<Record<string, string> | null>(null);
+  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); } catch {} }, []);
+  const goal = profile?.goal;
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
       <div style={{ fontSize: 12.5, color: C.faint, marginBottom: 5, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>{today}</div>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}{userName ? `, ${userName}` : ""}. Ready to focus?</h3>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>You have 2 reviews due and 1 session planned for today.</p>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}{userName ? `, ${userName}` : ""}.{goal ? ` Let's move the needle on ${goal}.` : " Ready to focus?"}</h3>
+      <p style={{ fontSize: 14, color: C.muted, marginBottom: 20 }}>{goal ? `Your next move toward ${goal} is ready — one tap and AIRA walks you through it.` : "You have 2 reviews due and 1 session planned for today."}</p>
+      {goal && (
+        <button onClick={() => onGo("mentor")} style={{ width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, padding: "18px 22px", borderRadius: 18, marginBottom: 24, background: `linear-gradient(135deg,${C.cyan}1f,${C.violet}1a)`, border: `1px solid ${C.border}`, transition: `transform 0.25s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
+        <span style={{ flexShrink: 0, width: 46, height: 46, borderRadius: 13, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bolt" size={22} color="#fff" /></span>
+        <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.cyan, marginBottom: 3 }}>Today&apos;s mission</div><div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: C.fg }}>Start your next {goal} session</div><div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{profile?.when ? `${profile.when} focus` : "Focused block"} · {profile?.hours || "short"} this week</div></div>
+        <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 999, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Start <Icon name="arrow" size={15} color="#fff" /></span>
+      </button>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 24 }} className="dash-grid">
         <button onClick={() => onGo("mentor")} style={{ position: "relative", overflow: "hidden", textAlign: "left", cursor: "pointer", border: "none", padding: 28, borderRadius: 20, background: `linear-gradient(135deg,${C.blue},${C.indigo},${C.violet})`, color: "#fff", boxShadow: `0 18px 50px ${C.indigo}44`, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
           <div style={{ position: "absolute", right: -30, top: -30, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.12)", filter: "blur(10px)" }} />
@@ -689,22 +699,76 @@ function HistoryTab() {
 }
 
 /* ════════════ NAME ONBOARDING ════════════ */
+const ONB_Q: Array<{ key: string; ai: string; type: "text" | "chips"; ph?: string; opts?: string[] }> = [
+  { key: "name", ai: "Hey — I'm AIRA, your AI mentor. Give me 40 seconds and I'll build a plan made just for you. First: what should I call you?", type: "text", ph: "Your name" },
+  { key: "goal", ai: "What do you want to learn or get better at?", type: "text", ph: "e.g. React, Calculus, Spanish, the guitar…" },
+  { key: "level", ai: "Where are you starting from?", type: "chips", opts: ["Total beginner", "Some basics", "Intermediate", "Advanced"] },
+  { key: "deadline", ai: "By when do you want to get there?", type: "chips", opts: ["30 days", "60 days", "90 days", "No deadline"] },
+  { key: "hours", ai: "How many hours a week can you realistically commit?", type: "chips", opts: ["1–3h", "4–7h", "8–14h", "15h+"] },
+  { key: "when", ai: "When do you focus best?", type: "chips", opts: ["Morning", "Afternoon", "Evening", "Late night"] },
+  { key: "weakness", ai: "Last one — what gets in your way the most?", type: "chips", opts: ["Procrastination", "Staying focused", "The hard concepts", "Staying consistent"] },
+];
 function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => void }) {
-  const [name, setName] = useState("");
-  const [remember, setRemember] = useState(true);
-  const submit = () => { if (name.trim()) onSave(name, remember); };
+  const [step, setStep] = useState(0);
+  const [ans, setAns] = useState<Record<string, string>>({});
+  const [text, setText] = useState("");
+  const [done, setDone] = useState(false);
+  const cur = ONB_Q[step];
+  const answer = (val: string) => {
+    const v = val.trim(); if (!v) return;
+    const next = { ...ans, [cur.key]: v }; setAns(next); setText("");
+    if (step < ONB_Q.length - 1) setStep(step + 1);
+    else {
+      const hoursIdx = ["1–3h", "4–7h", "8–14h", "15h+"].indexOf(next.hours);
+      const levelIdx = ["Total beginner", "Some basics", "Intermediate", "Advanced"].indexOf(next.level);
+      const confidence = Math.min(95, 72 + (hoursIdx >= 0 ? hoursIdx * 4 : 6) + (levelIdx >= 0 ? levelIdx * 3 : 0));
+      const profile = { ...next, confidence, created: Date.now() };
+      try { window.localStorage.setItem("aira_profile", JSON.stringify(profile)); } catch {}
+      setAns({ ...next, confidence: String(confidence) });
+      setDone(true);
+    }
+  };
+  const Row = ({ label, value }: { label: string; value: string }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${C.border}` }}><span style={{ fontSize: 12.5, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span><span style={{ fontSize: 14, fontWeight: 600, color: C.fg, textAlign: "right", maxWidth: "60%" }}>{value}</span></div>
+  );
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1700, background: "rgba(0,0,4,0.92)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
-      <div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 44, maxWidth: 420, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}><BrainLogo size={30} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 25, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>Welcome — what should we call you?</h2>
-        <p style={{ fontSize: 14, color: C.muted, marginBottom: 24, lineHeight: 1.6 }}>AIRA personalizes your mentoring, goals, and study plan around you.</p>
-        <input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} autoFocus placeholder="Your name" style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 16, marginBottom: 18, outline: "none" }} />
-        <div onClick={() => setRemember((r) => !r)} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: C.muted, cursor: "pointer", marginBottom: 24, userSelect: "none" }}>
-          <span style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: `1px solid ${remember ? "transparent" : C.border}`, background: remember ? `linear-gradient(135deg,${C.cyan},${C.violet})` : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{remember && <Icon name="check" size={14} color="#fff" stroke={3} />}</span>
-          Keep me signed in on this device
-        </div>
-        <GBtn full onClick={submit}>Continue <Icon name="arrow" size={18} color="#fff" /></GBtn>
+      <div className="auth-card" style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 40, maxWidth: 460, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 19 }}>AIRA</span>{!done && <span style={{ marginLeft: "auto", fontSize: 12, color: C.faint }}>{step + 1} / {ONB_Q.length}</span>}</div>
+        {!done ? (
+          <>
+            <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.07)", marginBottom: 24, overflow: "hidden" }}><div style={{ height: "100%", width: `${((step + 1) / ONB_Q.length) * 100}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.cyan},${C.violet})`, transition: `width 0.4s ${C.ease}` }} /></div>
+            <div style={{ display: "flex", gap: 12, marginBottom: 26 }}>
+              <span style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={18} color="#fff" /></span>
+              <p key={step} style={{ fontSize: 16.5, lineHeight: 1.5, color: C.fg, paddingTop: 4, animation: "tabIn 0.4s ease" }}>{cur.ai}</p>
+            </div>
+            {cur.type === "text" ? (
+              <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && answer(text)} autoFocus placeholder={cur.ph} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 16, marginBottom: 16, outline: "none" }} />
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>{cur.opts!.map((o) => <button key={o} onClick={() => answer(o)} style={{ padding: "13px 14px", borderRadius: 12, cursor: "pointer", background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 14, fontWeight: 500, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(123,92,255,0.6)"; e.currentTarget.style.background = `${C.indigo}1a`; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>{o}</button>)}</div>
+            )}
+            {cur.type === "text" && <GBtn full onClick={() => answer(text)}>Continue <Icon name="arrow" size={18} color="#fff" /></GBtn>}
+            {step > 0 && <button onClick={() => setStep(step - 1)} style={{ background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer", marginTop: 14, display: "block" }}>← Back</button>}
+          </>
+        ) : (
+          <div style={{ animation: "tabIn 0.4s ease" }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" }}>Your Learning Profile</h2>
+            <p style={{ fontSize: 13.5, color: C.muted, marginBottom: 20 }}>Got it, {ans.name}. Here&apos;s the plan I&apos;ll mentor you on.</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: 18, borderRadius: 16, background: `linear-gradient(135deg,${C.indigo}1f,${C.cyan}11)`, border: `1px solid ${C.border}`, marginBottom: 18 }}>
+              <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}><svg viewBox="0 0 36 36" style={{ width: 64, height: 64, transform: "rotate(-90deg)" }}><circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" /><circle cx="18" cy="18" r="15.5" fill="none" stroke={C.cyan} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(parseInt(String(ans.confidence ?? 80)) / 100) * 97.4} 97.4`} /></svg><span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: C.fg }}>{ans.confidence ?? 80}%</span></div>
+              <div><div style={{ fontSize: 12, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Confidence</div><div style={{ fontSize: 14, color: C.muted, lineHeight: 1.5 }}>You&apos;re set up to hit <strong style={{ color: C.fg }}>{ans.goal}</strong>. Let&apos;s start.</div></div>
+            </div>
+            <div style={{ marginBottom: 22 }}>
+              <Row label="Goal" value={ans.goal || "—"} />
+              <Row label="Level" value={ans.level || "—"} />
+              <Row label="Deadline" value={ans.deadline || "—"} />
+              <Row label="Weekly time" value={ans.hours || "—"} />
+              <Row label="Focus window" value={ans.when || "—"} />
+              <Row label="Watch out for" value={ans.weakness || "—"} />
+            </div>
+            <GBtn full onClick={() => onSave(ans.name || "there", true)}>Start with AIRA <Icon name="arrow" size={18} color="#fff" /></GBtn>
+          </div>
+        )}
       </div>
     </div>
   );
