@@ -32,7 +32,22 @@ function mix(h1: string, h2: string, t: number) { const [r1, g1, b1] = hexToRgb(
 function useTint(p: number) { let i = 0; for (let k = 0; k < TINTS.length - 1; k++) if (p >= TINTS[k].at) i = k; const cur = TINTS[i], nxt = TINTS[Math.min(i + 1, TINTS.length - 1)]; const span = nxt.at - cur.at || 1; const t = Math.max(0, Math.min(1, (p - cur.at) / span)); return { a: mix(cur.a, nxt.a, t), b: mix(cur.b, nxt.b, t) }; }
 function useReveal() {
   const [seen, setSeen] = useState<{ [k: string]: boolean }>({});
-  useEffect(() => { const ob = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && setSeen((p) => ({ ...p, [(e.target as HTMLElement).dataset.k as string]: true }))), { threshold: 0.1 }); document.querySelectorAll("[data-k]").forEach((el) => ob.observe(el)); return () => ob.disconnect(); }, []);
+  useEffect(() => {
+    const reveal = (k?: string | null) => { if (!k) return; setSeen((p) => (p[k] ? p : { ...p, [k]: true })); };
+    const tracked: HTMLElement[] = [];
+    const observed = new WeakSet<Element>();
+    // 1) Anything already in or just below the first screen is shown immediately — no blank first paint.
+    const showNearViewport = () => { const vh = window.innerHeight; tracked.forEach((el) => { if (el.getBoundingClientRect().top < vh * 1.15) reveal(el.dataset.k); }); };
+    // 2) Pre-trigger ~160px before an element scrolls into view so the animation is done by the time it's seen.
+    const ob = new IntersectionObserver((entries) => entries.forEach((e) => { if (e.isIntersecting) { reveal((e.target as HTMLElement).dataset.k); ob.unobserve(e.target); } }), { threshold: 0, rootMargin: "0px 0px 160px 0px" });
+    const scan = () => { document.querySelectorAll<HTMLElement>("[data-k]").forEach((el) => { if (!observed.has(el)) { observed.add(el); tracked.push(el); ob.observe(el); } }); showNearViewport(); };
+    scan();
+    // 3) Catch sections that mount later (tabs, modals, lazy content).
+    const mo = new MutationObserver(scan); mo.observe(document.body, { childList: true, subtree: true });
+    // 4) Absolute safety net: nothing is allowed to stay invisible.
+    const safety = window.setTimeout(() => tracked.forEach((el) => reveal(el.dataset.k)), 3000);
+    return () => { ob.disconnect(); mo.disconnect(); clearTimeout(safety); };
+  }, []);
   return seen;
 }
 function useScrollProgress() {
@@ -205,9 +220,12 @@ function IconBadge({ name, color }: { name: string; color: string }) {
 }
 function Tilt({ children, k, seen, delay = 0, style = {}, span = 1 }: { children: React.ReactNode; k: string; seen: { [k: string]: boolean }; delay?: number; style?: React.CSSProperties; span?: number }) {
   const [tf, setTf] = useState(""); const [glow, setGlow] = useState({ x: 50, y: 50, on: false });
+  // Varied entrance: derive a direction from the key so neighbouring cards slide in from different sides.
+  const dir = (k.charCodeAt(0) + k.charCodeAt(k.length - 1)) % 4;
+  const hidden = dir === 0 ? "translateY(48px) scale(0.94)" : dir === 1 ? "translateX(-46px) translateY(16px) scale(0.95)" : dir === 2 ? "translateX(46px) translateY(16px) scale(0.95)" : "translateY(20px) scale(0.9) rotate(-2deg)";
   const onMove = (e: React.MouseEvent) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height; setTf(`perspective(900px) rotateX(${(py - 0.5) * -7}deg) rotateY(${(px - 0.5) * 7}deg) translateY(-5px)`); setGlow({ x: px * 100, y: py * 100, on: true }); };
   const reset = () => { setTf(""); setGlow((g) => ({ ...g, on: false })); };
-  return <div data-k={k} onMouseMove={onMove} onMouseLeave={reset} style={{ gridColumn: span > 1 ? `span ${span}` : undefined, position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${glow.on ? "rgba(123,92,255,0.5)" : "rgba(255,255,255,0.09)"},${glow.on ? "rgba(34,211,238,0.3)" : "rgba(255,255,255,0.02)"}) border-box`, border: "1px solid transparent", borderRadius: 22, padding: 30, overflow: "hidden", backdropFilter: "blur(20px)", boxShadow: glow.on ? "0 24px 70px rgba(123,92,255,0.2)" : "0 8px 24px rgba(0,0,0,0.4)", opacity: seen[k] ? 1 : 0, transform: seen[k] ? (tf || "translateY(0) scale(1)") : "translateY(44px) scale(0.95)", filter: seen[k] ? "blur(0)" : "blur(8px)", transition: `opacity 0.9s ${C.ease} ${delay}ms, transform 0.3s ${C.ease}, filter 0.9s ${C.ease} ${delay}ms, box-shadow 0.4s, background 0.4s`, transformStyle: "preserve-3d", willChange: "transform,filter", ...style }}>
+  return <div data-k={k} onMouseMove={onMove} onMouseLeave={reset} style={{ gridColumn: span > 1 ? `span ${span}` : undefined, position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${glow.on ? "rgba(123,92,255,0.5)" : "rgba(255,255,255,0.09)"},${glow.on ? "rgba(34,211,238,0.3)" : "rgba(255,255,255,0.02)"}) border-box`, border: "1px solid transparent", borderRadius: 22, padding: 30, overflow: "hidden", backdropFilter: "blur(20px)", boxShadow: glow.on ? "0 24px 70px rgba(123,92,255,0.2)" : "0 8px 24px rgba(0,0,0,0.4)", opacity: seen[k] ? 1 : 0, transform: seen[k] ? (tf || "translateY(0) scale(1)") : hidden, filter: seen[k] ? "blur(0)" : "blur(7px)", transition: `opacity 0.7s ${C.ease} ${delay}ms, transform ${tf ? "0.3s" : "0.75s"} ${C.spring} ${delay}ms, filter 0.7s ${C.ease} ${delay}ms, box-shadow 0.4s, background 0.4s`, transformStyle: "preserve-3d", willChange: "transform,filter", ...style }}>
     <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at ${glow.x}% ${glow.y}%, rgba(123,92,255,0.1), transparent 50%)`, opacity: glow.on ? 1 : 0, transition: "opacity 0.3s", pointerEvents: "none" }} />
     <div style={{ position: "relative", zIndex: 1, transform: "translateZ(16px)" }}>{children}</div>
   </div>;
@@ -233,11 +251,17 @@ type SessionLog = { id: string; tech: string; color: string; mins: number; ts: n
 function getSessions(): SessionLog[] { try { return JSON.parse(window.localStorage.getItem("aira_sessions") || "[]") as SessionLog[]; } catch { return []; } }
 function logSession(s: Omit<SessionLog, "id" | "ts">) { try { const list = getSessions(); list.unshift({ ...s, id: Math.random().toString(36).slice(2), ts: Date.now() }); window.localStorage.setItem("aira_sessions", JSON.stringify(list.slice(0, 60))); } catch {} }
 function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d / 60000); if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); return days === 1 ? "yesterday" : `${days}d ago`; }
+/* ── real streak: a day counts when the learner shows up (opens the app / reflects) ── */
+function recordActivity() { try { const today = new Date().toDateString(); const days: string[] = JSON.parse(window.localStorage.getItem("aira_activity") || "[]"); if (!days.includes(today)) { days.push(today); window.localStorage.setItem("aira_activity", JSON.stringify(days.slice(-180))); } } catch {} }
+function computeStreak(): number { try { const days = new Set<string>(JSON.parse(window.localStorage.getItem("aira_activity") || "[]")); const d = new Date(); if (!days.has(d.toDateString())) { d.setDate(d.getDate() - 1); if (!days.has(d.toDateString())) return 0; } let streak = 0; while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); } return streak; } catch { return 0; } }
+function getXp(): number { try { const x = parseInt(window.localStorage.getItem("aira_xp") || "0", 10); return Number.isNaN(x) ? 0 : x; } catch { return 0; } }
 
 /* ════════════ APP WORKSPACE ════════════ */
-function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void }) {
+function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName, onLogout }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void; onLogout: () => void }) {
   const [tab, setTab] = useState(initial);
   const [sideOpen, setSideOpen] = useState(false);
+  const [streak, setStreak] = useState(0);
+  useEffect(() => { recordActivity(); setStreak(computeStreak()); }, []);
   const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
   const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
@@ -256,12 +280,13 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
         </nav>
         <div style={{ margin: "18px 0", padding: 16, borderRadius: 14, background: `linear-gradient(135deg,${C.amber}1a,${C.amber}0d)`, border: `1px solid ${C.border}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: C.muted, marginBottom: 6 }}><Icon name="flame" size={14} color={C.amber} /> Current streak</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, color: C.amber }}>12 days</div>
-          <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.06)", marginTop: 10, overflow: "hidden" }}><div style={{ height: "100%", width: "70%", borderRadius: 999, background: `linear-gradient(90deg,${C.amber},#FB923C)` }} /></div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, color: C.amber }}>{streak} day{streak === 1 ? "" : "s"}</div>
+          <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.06)", marginTop: 10, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.min(100, (streak % 7) / 7 * 100 || (streak > 0 ? 100 : 8))}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.amber},#FB923C)`, transition: "width 0.6s ease" }} /></div>
+          <div style={{ fontSize: 10.5, color: C.faint, marginTop: 7 }}>{streak === 0 ? "Show up today to start it" : streak < 7 ? `${7 - (streak % 7)} days to a full week` : "On fire — keep it alive"}</div>
         </div>
         <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 3 }}>
-          <button style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: "transparent", color: C.muted, fontSize: 14 }}><Icon name="settings" size={18} color={C.muted} /> Settings</button>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 14px", borderRadius: 11, border: `1px solid ${C.border}`, textAlign: "left", background: C.surface, color: C.fg, fontSize: 14, fontWeight: 600 }}><span style={{ width: 28, height: 28, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName ? userName.trim()[0] : <Icon name="user" size={14} color="#fff" />}</span><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName || "Guest"}</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 11, border: `1px solid ${C.border}`, textAlign: "left", background: C.surface, color: C.fg, fontSize: 14, fontWeight: 600, marginBottom: 3 }}><span style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName ? userName.trim()[0] : <Icon name="user" size={14} color="#fff" />}</span><div style={{ minWidth: 0, flex: 1 }}><div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName || "Guest"}</div><div style={{ fontSize: 11, fontWeight: 500, color: lifetime ? C.green : C.faint }}>{lifetime ? "Mastermind" : "Free plan"}</div></div></div>
+          <button onClick={onLogout} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: "transparent", color: C.muted, fontSize: 14, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.background = C.surface; e.currentTarget.style.color = C.fg; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.muted; }}><Icon name="arrow" size={18} color={C.muted} /> Sign out</button>
         </div>
       </aside>
       <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
@@ -283,7 +308,14 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
 
 /* ░░ DASHBOARD TAB ░░ */
 function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: string }) {
-  const cards = [{ l: "Focus time today", v: "2h 15m", c: C.cyan, ic: "clock" }, { l: "Sessions this week", v: "9", c: C.violet, ic: "target" }, { l: "Concepts mastered", v: "47", c: C.green, ic: "brain" }, { l: "Retention rate", v: "94%", c: C.pink, ic: "chart" }];
+  const [stats, setStats] = useState({ xp: 0, level: 1, streak: 0, sessions: 0 });
+  useEffect(() => { const xp = getXp(); setStats({ xp, level: Math.floor(xp / 500) + 1, streak: computeStreak(), sessions: getSessions().length }); }, []);
+  const cards = [
+    { l: "Total XP earned", v: String(stats.xp), c: C.cyan, ic: "spark" },
+    { l: "Current level", v: String(stats.level), c: C.violet, ic: "layers" },
+    { l: "Day streak", v: String(stats.streak), c: C.amber, ic: "flame" },
+    { l: "Sessions logged", v: String(stats.sessions), c: C.green, ic: "target" },
+  ];
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   const hr = new Date().getHours();
   const greet = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
@@ -302,7 +334,7 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
   })();
   const [reflect, setReflect] = useState<string | null>(null);
   useEffect(() => { try { const r = JSON.parse(window.localStorage.getItem("aira_reflect") || "{}"); if (r && r.date === new Date().toDateString()) setReflect(r.mood); } catch {} }, []);
-  const doReflect = (mood: string) => { setReflect(mood); try { window.localStorage.setItem("aira_reflect", JSON.stringify({ mood, date: new Date().toDateString() })); const x = parseInt(window.localStorage.getItem("aira_xp") || "1240", 10) + 50; window.localStorage.setItem("aira_xp", String(x)); } catch {} };
+  const doReflect = (mood: string) => { setReflect(mood); try { window.localStorage.setItem("aira_reflect", JSON.stringify({ mood, date: new Date().toDateString() })); const x = getXp() + 50; window.localStorage.setItem("aira_xp", String(x)); recordActivity(); setStats((s) => ({ ...s, xp: x, level: Math.floor(x / 500) + 1, streak: computeStreak() })); } catch {} };
   const reflectMsg: Record<string, string> = { Great: "Love it. I'll push today's block a little harder — you're ready for it.", Okay: "Solid. Steady beats perfect — one small win at a time, same plan tomorrow.", Tough: "Thanks for being honest. I'll lighten tomorrow: shorter block, easier entry point. Rest counts too." };
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
@@ -579,7 +611,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
     <div style={{ animation: "tabIn 0.4s ease", display: "flex", flexDirection: "column", height: "calc(100vh - 200px)", minHeight: 460 }}>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, paddingBottom: 16 }}>
         {msgs.map((m, i) => <div key={i} style={{ display: "flex", gap: 12, flexDirection: m.role === "user" ? "row-reverse" : "row", animation: "tabIn 0.4s ease" }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: m.role === "ai" ? `linear-gradient(135deg,${C.cyan},${C.violet})` : C.surface, border: m.role === "user" ? `1px solid ${C.border}` : "none" }}><Icon name={m.role === "ai" ? "bot" : "user"} size={17} color={m.role === "ai" ? "#fff" : C.muted} /></div><div style={{ maxWidth: "78%", padding: "13px 17px", borderRadius: 16, fontSize: 14.5, lineHeight: 1.65, background: m.role === "ai" ? C.elev : `linear-gradient(135deg,${C.blue},${C.violet})`, color: m.role === "ai" ? C.fg : "#fff", border: m.role === "ai" ? `1px solid ${C.border}` : "none" }}>{m.role === "ai" ? <MarkdownLite text={m.text} /> : <>{m.image && <img src={m.image} alt="upload" style={{ maxWidth: 200, borderRadius: 10, marginBottom: 8, display: "block" }} />}{m.text}</>}</div></div>)}
-        {loading && <div style={{ display: "flex", gap: 12 }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${C.cyan},${C.violet})` }}><Icon name="bot" size={17} color="#fff" /></div><div style={{ padding: "16px 18px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: C.cyan, animation: "eq 0.6s ease-in-out infinite alternate", animationDelay: `${d * 0.15}s` }} />)}</div></div>}
+        {loading && <div style={{ display: "flex", gap: 12 }}><div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${C.cyan},${C.violet})` }}><Icon name="bot" size={17} color="#fff" /></div><div style={{ padding: "16px 18px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 7, height: 7, borderRadius: 9, background: C.cyan, animation: `eq 0.6s ease-in-out ${d * 0.15}s infinite alternate` }} />)}</div></div>}
         {msgs.length <= 1 && !loading && (
           <div>
             <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.faint, margin: "6px 2px 12px" }}>Here&apos;s what I can do — tap one</div>
@@ -700,8 +732,8 @@ function SubjectsTab() {
 /* ░░ PROGRESS TAB — XP · Knowledge Graph · Adaptive Roadmap ░░ */
 function ProgressTab() {
   const [profile, setProfile] = useState<Record<string, string> | null>(null);
-  const [xp, setXp] = useState(1240);
-  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); const x = parseInt(window.localStorage.getItem("aira_xp") || "1240", 10); if (!Number.isNaN(x)) setXp(x); } catch {} }, []);
+  const [xp, setXp] = useState(0);
+  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); setXp(getXp()); } catch {} }, []);
   const goal = profile?.goal || "your goal";
   const level = Math.floor(xp / 500) + 1;
   const intoLevel = Math.round(((xp % 500) / 500) * 100);
@@ -935,24 +967,26 @@ function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boole
     const ctx = ctxRef.current || (ctxRef.current = new AC());
     if (ctx.state === "suspended") ctx.resume();
     const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-    master.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 0.7);
+    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 0.7);
     const cleanup: Array<() => void> = [];
     const noise = () => { const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; return s; };
     if (id === "binaural") {
       const merger = ctx.createChannelMerger(2);
-      const oL = ctx.createOscillator(); oL.type = "sine"; oL.frequency.value = 200;
-      const oR = ctx.createOscillator(); oR.type = "sine"; oR.frequency.value = 240;
+      const oL = ctx.createOscillator(); oL.type = "sine"; oL.frequency.value = 240;
+      const oR = ctx.createOscillator(); oR.type = "sine"; oR.frequency.value = 280;
       const gL = ctx.createGain(); const gR = ctx.createGain(); gL.gain.value = gR.gain.value = 0.5;
       oL.connect(gL).connect(merger, 0, 0); oR.connect(gR).connect(merger, 0, 1); merger.connect(master);
       oL.start(); oR.start(); cleanup.push(() => { oL.stop(); oR.stop(); });
     } else if (id === "8d") {
-      const o1 = ctx.createOscillator(); o1.type = "sine"; o1.frequency.value = 110;
-      const o2 = ctx.createOscillator(); o2.type = "sine"; o2.frequency.value = 164.81;
+      // Audible calm A-major pad (220/277/330 Hz) so it plays clearly on laptop speakers,
+      // with a slow stereo LFO that swirls it around your head — the "8D" effect.
+      const freqs = [220, 277.18, 329.63];
+      const oscs = freqs.map((f, i) => { const o = ctx.createOscillator(); o.type = i === 2 ? "triangle" : "sine"; o.frequency.value = f; return o; });
       const pan = ctx.createStereoPanner();
-      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.12; const lg = ctx.createGain(); lg.gain.value = 0.95;
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.15; const lg = ctx.createGain(); lg.gain.value = 0.92;
       lfo.connect(lg).connect(pan.pan);
-      const g = ctx.createGain(); g.gain.value = 0.55; o1.connect(g); o2.connect(g); g.connect(pan).connect(master);
-      o1.start(); o2.start(); lfo.start(); cleanup.push(() => { o1.stop(); o2.stop(); lfo.stop(); });
+      const g = ctx.createGain(); g.gain.value = 0.3; oscs.forEach((o) => o.connect(g)); g.connect(pan).connect(master);
+      oscs.forEach((o) => o.start()); lfo.start(); cleanup.push(() => { oscs.forEach((o) => { try { o.stop(); } catch {} }); lfo.stop(); });
     } else {
       const n = noise(); const f = ctx.createBiquadFilter(); f.type = "lowpass";
       f.frequency.value = id === "cafe" ? 480 : id === "forest" ? 2400 : 5000;
@@ -968,7 +1002,8 @@ function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boole
   return (
     <div data-k="snd" style={{ opacity: seen["snd"] ? 1 : 0, transform: seen["snd"] ? "translateY(0)" : "translateY(32px)", transition: `all 0.8s ${C.ease}`, willChange: "transform,opacity" }}>
       <div style={{ background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,rgba(34,211,238,0.4),rgba(123,92,255,0.25)) border-box`, border: "1px solid transparent", borderRadius: 24, padding: 36, backdropFilter: "blur(20px)" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 5, height: 70, marginBottom: 28 }}>{Array.from({ length: 34 }).map((_, i) => <div key={i} style={{ width: 4, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.indigo})`, height: playing ? `${20 + Math.abs(Math.sin(i * 0.9)) * 50}px` : "8px", animation: playing ? `eq 0.${6 + (i % 5)}s ease-in-out infinite alternate` : "none", animationDelay: `${i * 0.04}s`, transition: "height 0.4s ease", willChange: "transform", transformOrigin: "bottom" }} />)}</div>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, height: 22 }}>{playing && <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 12px", borderRadius: 999, background: `${C.green}14`, border: `1px solid ${C.green}44`, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.green }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, boxShadow: `0 0 8px ${C.green}`, animation: "breathe 1.2s ease-in-out infinite" }} />LIVE AUDIO</span>}</div>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 5, height: 70, marginBottom: 28 }}>{Array.from({ length: 34 }).map((_, i) => <div key={i} style={{ width: 4, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.indigo})`, height: playing ? `${20 + Math.abs(Math.sin(i * 0.9)) * 50}px` : "8px", animation: playing ? `eq 0.${6 + (i % 5)}s ease-in-out ${i * 0.04}s infinite alternate` : "none", transition: "height 0.4s ease", willChange: "transform", transformOrigin: "bottom" }} />)}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>{SOUNDS.map((s) => { const on = s.id === active; return <button key={s.id} onClick={() => setActive(s.id)} style={{ padding: "10px 18px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.cyan}22,${C.indigo}22)` : "transparent", border: `1px solid ${on ? "rgba(34,211,238,0.5)" : C.border}`, color: on ? C.fg : C.muted, fontSize: 13, transition: `all 0.25s ${C.ease}` }}>{s.name}</button>; })}</div>
         <p style={{ textAlign: "center", fontSize: 13, color: C.faint, marginBottom: 24 }}>{SOUNDS.find((s) => s.id === active)?.note}</p>
         <div style={{ display: "flex", justifyContent: "center" }}><button onClick={toggle} style={{ width: 64, height: 64, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${C.indigo}55` }}><Icon name={playing ? "pause" : "play"} size={22} color="#fff" /></button></div>
@@ -1313,7 +1348,7 @@ export default function Home() {
   const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} }, []);
   const signedIn = !!userName;
   const buy = useCallback(() => { window.location.href = CHECKOUT_URL; }, []);
-  const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(40px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(6px)", transition: `opacity 0.9s ${C.ease} ${d}ms, transform 0.9s ${C.ease} ${d}ms, filter 0.9s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
+  const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(34px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(5px)", transition: `opacity 0.65s ${C.ease} ${d}ms, transform 0.7s ${C.ease} ${d}ms, filter 0.65s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
   const HD = (e: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", ...e });
   const sec = (extra: React.CSSProperties = {}): React.CSSProperties => ({ position: "relative", zIndex: 2, padding: "92px 48px", ...extra });
 
@@ -1359,8 +1394,8 @@ export default function Home() {
 
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
-      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} />}
-      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { if (email) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("mentor"); }} />}
+      {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} onLogout={logout} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { if (email) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("dashboard"); }} />}
 
       {/* NAV */}
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>
