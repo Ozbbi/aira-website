@@ -55,11 +55,12 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { messages, mode, name, image } = (body ?? {}) as {
+  const { messages, mode, name, image, persona } = (body ?? {}) as {
     messages?: Array<{ role?: string; content?: unknown }>;
     mode?: unknown;
     name?: unknown;
     image?: { mime?: unknown; data?: unknown };
+    persona?: unknown;
   };
 
   const apiKey = process.env.GEMINI_API_KEY;
@@ -89,8 +90,16 @@ export async function POST(req: Request) {
     const mime = typeof image.mime === "string" && image.mime.startsWith("image/") ? image.mime : "image/jpeg";
     contents[contents.length - 1].parts.push({ inline_data: { mime_type: mime, data: image.data } });
   }
+  const PERSONAS: Record<string, string> = {
+    balanced: "",
+    strict: "\n\nPersona: STRICT MENTOR. Direct, high standards, no coddling. Call out excuses, demand the work, keep them accountable — but always respectful and constructive.",
+    teacher: "\n\nPersona: PATIENT TEACHER. Warm and thorough. Break everything into small steps with concrete examples and analogies. Lots of encouragement; assume no prior knowledge.",
+    goggins: "\n\nPersona: RELENTLESS COACH (David-Goggins-style tough love). Intense, no-excuses, short punchy lines. Challenge them to do the hard thing now. Motivating, never abusive; keep language clean.",
+    chill: "\n\nPersona: CHILL FRIEND. Casual, relaxed, low-pressure. Plain language, keep it light and human — but still genuinely useful.",
+  };
+  const personaPrompt = typeof persona === "string" && PERSONAS[persona] ? PERSONAS[persona] : "";
   const learner = typeof name === "string" && name.trim() ? `\n\nThe learner's name is ${name.trim()}. Address them by name naturally and personalize your guidance to them.` : "";
-  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${learner}`;
+  const system = `${SYSTEM_BASE}\n\n${MODE_PROMPTS[selectedMode]}${personaPrompt}${learner}`;
 
   try {
     const res = await fetch(

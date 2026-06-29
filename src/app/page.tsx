@@ -290,6 +290,16 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
   const [profile, setProfile] = useState<Record<string, string> | null>(null);
   useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); } catch {} }, []);
   const goal = profile?.goal;
+  const coachMsg = (() => {
+    const g = goal || "your goal";
+    switch (profile?.weakness) {
+      case "Procrastination": return `Procrastination's the enemy today. Don't plan — start. One 25-minute block on ${g} before anything else; momentum beats motivation.`;
+      case "Staying focused": return `Focus is your edge today. Phone in another room, one tab, 25 minutes on ${g}. Protect the block and the rest follows.`;
+      case "The hard concepts": return `Growth hides in the hard parts. Take the one ${g} idea you've been avoiding, break it into three small questions, then answer them.`;
+      case "Staying consistent": return `Consistency is the whole game. Even 15 minutes on ${g} today keeps the streak alive — just show up, that's the win.`;
+      default: return `Today's move: one focused block on ${g}. Small, steady reps compound faster than you'd think.`;
+    }
+  })();
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
       <div style={{ fontSize: 12.5, color: C.faint, marginBottom: 5, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>{today}</div>
@@ -322,6 +332,12 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 24 }}>
         {cards.map((s, i) => <div key={s.l} style={{ padding: 18, borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent", animation: `tabIn 0.5s ease ${i * 80}ms both` }}><div style={{ marginBottom: 10, color: s.c }}><Icon name={s.ic} size={20} color={s.c} /></div><div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: s.c, marginBottom: 2 }}>{s.v}</div><div style={{ fontSize: 12.5, color: C.muted }}>{s.l}</div></div>)}
       </div>
+      {goal && (
+        <div style={{ display: "flex", gap: 14, padding: 20, borderRadius: 18, background: `linear-gradient(135deg,${C.violet}14,${C.cyan}0d)`, border: `1px solid ${C.border}`, marginBottom: 24 }}>
+          <span style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="brain" size={20} color="#fff" /></span>
+          <div><div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.violet, marginBottom: 4 }}>AI Coach</div><p style={{ fontSize: 14, color: C.fg, lineHeight: 1.6 }}>{coachMsg}</p></div>
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16 }} className="dash-grid">
         <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
           <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>This week's focus</h4>
@@ -472,6 +488,13 @@ function MarkdownLite({ text }: { text: string }) {
 type MMsg = { role: "ai" | "user"; text: string; local?: boolean; image?: string };
 type MMode = "chat" | "summary" | "test" | "program";
 const FREE_MENTOR = 3;
+const PERSONAS: { id: string; label: string; ic: string }[] = [
+  { id: "balanced", label: "Balanced", ic: "bot" },
+  { id: "strict", label: "Strict", ic: "bolt" },
+  { id: "teacher", label: "Teacher", ic: "book" },
+  { id: "goggins", label: "Relentless", ic: "flame" },
+  { id: "chill", label: "Chill", ic: "wave" },
+];
 const MODE_CHIPS: { mode: MMode; ic: string; label: string; guide: string }[] = [
   { mode: "summary", ic: "pencil", label: "Summarize notes", guide: "**Summary mode.** Paste your lecture notes or reading below and I'll turn them into a clean, structured summary." },
   { mode: "test", ic: "cards", label: "Make me a test", guide: "**Test mode.** Paste your material below and I'll generate a practice quiz with a full answer key." },
@@ -490,6 +513,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
   const [input, setInput] = useState("");
   const [notes, setNotes] = useState("");
   const [mode, setMode] = useState<MMode>("chat");
+  const [persona, setPersona] = useState("balanced");
   const [loading, setLoading] = useState(false);
   const [used, setUsed] = useState(0);
   const [imgData, setImgData] = useState<string | null>(null);
@@ -522,7 +546,7 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
     if (!lifetime) { const u = used + 1; setUsed(u); try { window.localStorage.setItem("aira_free_day", JSON.stringify({ date: new Date().toDateString(), count: u })); } catch {} }
     const apiMessages = convo.filter((m) => !m.local).map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
     try {
-      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg }) });
+      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: apiMessages, mode, name: userName, image: sentImg, persona }) });
       const d = await r.json();
       if (r.ok && d.text) setMsgs((m) => [...m, { role: "ai", text: d.text }]);
       else setMsgs((m) => [...m, { role: "ai", text: offlineReply(mode, userText, userName) }]); // graceful fallback (e.g. key not set)
@@ -553,6 +577,10 @@ function MentorTab({ lifetime, onUpgrade, userName }: { lifetime: boolean; onUpg
         </div>
       ) : (
         <>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>
+            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.faint, marginRight: 2 }}>Mentor</span>
+            {PERSONAS.map((p) => { const on = persona === p.id; return <button key={p.id} onClick={() => setPersona(p.id)} title={`${p.label} mentor style`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.cyan}26,${C.violet}26)` : "transparent", border: `1px solid ${on ? "rgba(34,211,238,0.5)" : C.border}`, color: on ? C.fg : C.muted, fontSize: 12, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}` }}><Icon name={p.ic} size={12} color={on ? C.cyan : C.muted} />{p.label}</button>; })}
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>{["Review my notes & score them 1–10", "Research a topic and explain it", "Build me a gym / sport training plan", "Plan my study week"].map((s) => <button key={s} onClick={() => send(s)} disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, cursor: loading ? "default" : "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 12.5, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><Icon name="spark" size={12} color={C.cyan} />{s}</button>)}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>{MODE_CHIPS.map((c) => { const on = mode === c.mode; return <button key={c.mode} onClick={() => pickMode(c.mode)} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.blue},${C.violet})` : C.surface, border: `1px solid ${on ? "transparent" : C.border}`, color: on ? "#fff" : C.muted, fontSize: 13, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}` }}><Icon name={c.ic} size={14} color={on ? "#fff" : C.muted} />{c.label}</button>; })}</div>
           {usesNotes ? (
