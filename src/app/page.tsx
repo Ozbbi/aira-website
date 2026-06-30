@@ -240,12 +240,6 @@ const TECHNIQUES = [
   { id: "timeboxing", ic: "box", name: "Timeboxing", tag: "Fixed", work: 40, brk: 10, color: C.green, desc: "Assign each task a fixed time slot. Work shrinks to fit the box you give it.", best: "Busy days, small tasks" },
   { id: "ultradian", ic: "moon", name: "Ultradian", tag: "Rhythm", work: 75, brk: 25, color: C.amber, desc: "75-minute waves of work mirroring your body's natural energy cycles, with full recovery.", best: "All-day deep study" },
 ];
-const APP_SUBJECTS = [
-  { n: "AI & Prompt Engineering", p: 78, c: C.cyan }, { n: "Coding & Programming", p: 64, c: C.violet },
-  { n: "Mathematics", p: 45, c: C.blue }, { n: "Data Science", p: 52, c: C.green },
-  { n: "Psychology", p: 30, c: C.pink }, { n: "Physics", p: 18, c: C.amber },
-];
-
 /* ════════════ SESSION HISTORY (real, localStorage) ════════════ */
 type SessionLog = { id: string; tech: string; color: string; mins: number; ts: number };
 function getSessions(): SessionLog[] { try { return JSON.parse(window.localStorage.getItem("aira_sessions") || "[]") as SessionLog[]; } catch { return []; } }
@@ -257,12 +251,42 @@ function computeStreak(): number { try { const days = new Set<string>(JSON.parse
 function getXp(): number { try { const x = parseInt(window.localStorage.getItem("aira_xp") || "0", 10); return Number.isNaN(x) ? 0 : x; } catch { return 0; } }
 
 /* ════════════ APP WORKSPACE ════════════ */
+/* ░░ MASTERMIND POPUP — Spotify-style "exclusive" upsell ░░ */
+const MIND_PERKS = [
+  { t: "Unlimited AI mentoring", d: "No daily cap — ask, plan, and learn as much as you want." },
+  { t: "Unlimited AI Research", d: "Live web research on any move, concept, or skill — with real video links." },
+  { t: "Photo reading", d: "Snap a photo of your notes and AIRA reads, explains, and tests you on them." },
+  { t: "1-hour focus audio", d: "Full binaural, 8D & ambient sessions tuned to deep concentration." },
+  { t: "Every mentor persona", d: "Strict, Relentless, Patient Teacher, Chill — switch your coach anytime." },
+  { t: "Personalized plans", d: "Day-by-day study & training programs built around your exact goal." },
+];
+function MastermindModal({ onClose, onBuy }: { onClose: () => void; onBuy: () => void }) {
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.92)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.amber},${C.violet},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 40, maxWidth: 460, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: `0 0 120px ${C.violet}40`, animation: `popIn 0.45s ${C.spring}` }}>
+        <button onClick={onClose} style={{ position: "absolute", top: 18, right: 20, background: "none", border: "none", color: C.faint, fontSize: 26, cursor: "pointer", lineHeight: 1 }}>×</button>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 13px", borderRadius: 999, background: `linear-gradient(135deg,${C.amber},${C.violet})`, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#fff", marginBottom: 16 }}><Icon name="spark" size={12} color="#fff" /> EXCLUSIVE ON MASTERMIND</div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>Unlock everything</h2>
+        <p style={{ fontSize: 14, color: C.muted, marginBottom: 24, lineHeight: 1.6 }}>You&apos;re on the free plan. Mastermind opens the full AIRA — here&apos;s what you get the moment you join:</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 26 }}>
+          {MIND_PERKS.map((p) => <div key={p.t} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}><span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", background: `${C.green}1c`, border: `1px solid ${C.green}55`, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}><Icon name="check" size={12} color={C.green} stroke={2.5} /></span><div><div style={{ fontSize: 14.5, fontWeight: 600, color: C.fg }}>{p.t}</div><div style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>{p.d}</div></div></div>)}
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 16 }}><span style={{ fontFamily: "var(--font-display)", fontSize: 32, fontWeight: 700 }}>$9.99</span><span style={{ fontSize: 14, color: C.muted }}>/ month · cancel anytime</span></div>
+        <button onClick={onBuy} style={{ width: "100%", padding: "15px", borderRadius: 14, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 15.5, fontWeight: 700, boxShadow: `0 10px 40px ${C.indigo}55`, display: "flex", alignItems: "center", justifyContent: "center", gap: 9 }}><Icon name="spark" size={17} color="#fff" /> Become a Mastermind</button>
+        <p style={{ textAlign: "center", fontSize: 12, color: C.faint, marginTop: 14 }}>Instant access · secure checkout via Lemon Squeezy</p>
+      </div>
+    </div>
+  );
+}
+
 function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName, onLogout }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void; onLogout: () => void }) {
   const [tab, setTab] = useState(initial);
   const [sideOpen, setSideOpen] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [showMind, setShowMind] = useState(false);
+  const openMind = () => setShowMind(true);
   useEffect(() => { recordActivity(); setStreak(computeStreak()); }, []);
-  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }, { id: "profile", ic: "user", label: "Profile" }];
+  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "research", ic: "spark", label: "AI Research" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }, { id: "profile", ic: "user", label: "Profile" }];
   const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
@@ -292,17 +316,18 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
       <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
         <div style={{ position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px", borderBottom: `1px solid ${C.border}`, background: "rgba(3,3,10,0.8)", backdropFilter: "blur(20px)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button className="app-burger" onClick={() => setSideOpen(true)} aria-label="Open menu" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.fg, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "none", alignItems: "center", justifyContent: "center" }}><Icon name="menu" size={18} color={C.fg} /></button><button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow" size={16} color={C.muted} /></button><h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, textTransform: "capitalize" }}>{NAV.find((n) => n.id === tab)?.label || tab}</h2></div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button onClick={onAuth} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Become a Mastermind</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button onClick={openMind} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Become a Mastermind</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
           {tab === "dashboard" && <DashTab onGo={setTab} userName={userName} />}
-          {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={onAuth} userName={userName} />}
-          {tab === "subjects" && <SubjectsTab />}
+          {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={openMind} userName={userName} />}
+          {tab === "research" && <ResearchTab />}
           {tab === "history" && <HistoryTab />}
           {tab === "progress" && <ProgressTab />}
-          {tab === "profile" && <ProfileTab userName={userName} lifetime={lifetime} streak={streak} onUpgrade={onAuth} onLogout={onLogout} />}
+          {tab === "profile" && <ProfileTab userName={userName} lifetime={lifetime} streak={streak} onUpgrade={openMind} onLogout={onLogout} />}
         </div>
       </main>
+      {showMind && <MastermindModal onClose={() => setShowMind(false)} onBuy={onAuth} />}
     </div>
   );
 }
@@ -383,7 +408,7 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
     <div style={{ animation: "tabIn 0.4s ease" }}>
       <div style={{ fontSize: 12.5, color: C.faint, marginBottom: 5, letterSpacing: "0.05em", textTransform: "uppercase", fontWeight: 600 }}>{today}</div>
       <h3 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4 }}>{greet}{userName ? `, ${userName}` : ""}.{goal ? ` Let's move the needle on ${goal}.` : " Ready to focus?"}</h3>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 20 }}>{goal ? `Your next move toward ${goal} is ready — one tap and AIRA walks you through it.` : "You have 2 reviews due and 1 session planned for today."}</p>
+      <p style={{ fontSize: 14, color: C.muted, marginBottom: 20 }}>{goal ? `Your next move toward ${goal} is ready — one tap and AIRA walks you through it.` : "Tell AIRA your goal and it builds your plan — start with a message or research anything."}</p>
       {goal && (
         <button onClick={() => onGo("mentor")} style={{ width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, padding: "18px 22px", borderRadius: 18, marginBottom: 24, background: `linear-gradient(135deg,${C.cyan}1f,${C.violet}1a)`, border: `1px solid ${C.border}`, transition: `transform 0.25s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
         <span style={{ flexShrink: 0, width: 46, height: 46, borderRadius: 13, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bolt" size={22} color="#fff" /></span>
@@ -401,11 +426,11 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600 }}>Open mentor <Icon name="arrow" size={16} color="#fff" /></span>
           </div>
         </button>
-        <button onClick={() => onGo("subjects")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, marginBottom: 18 }}><Icon name="book" size={24} color="#fff" /></div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>Your subjects</div>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Track mastery across everything you&apos;re learning — tap one to dive in.</p>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Open subjects <Icon name="arrow" size={16} color={C.cyan} /></span>
+        <button onClick={() => onGo("research")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, marginBottom: 18 }}><Icon name="spark" size={24} color="#fff" /></div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>AI Research</div>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Stuck on a move or a concept? AIRA researches it live and links real videos.</p>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Open research <Icon name="arrow" size={16} color={C.cyan} /></span>
         </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 24 }}>
@@ -758,16 +783,84 @@ function offlineReply(mode: MMode, raw: string, name: string): string {
   return `I'm with you, ${who}. To mentor you well I work Socratically — I'll ask, you reason, then I confirm and we lock it in with a quick recall check. Tell me the exact topic or paste your notes, and pick a mode: **Summarize**, **Make a test**, or **Study program**. Where do you want to start?`;
 }
 
-/* ░░ SUBJECTS TAB ░░ */
-function SubjectsTab() {
+/* ░░ AI RESEARCH TAB — live, grounded, links to real videos ░░ */
+const RESEARCH_EXAMPLES = [
+  { q: "How do I do a 'step down' exercise?", tag: "Fitness" },
+  { q: "Explain spaced repetition simply", tag: "Studying" },
+  { q: "How to fix a slice in golf", tag: "Sport" },
+  { q: "What is compound interest?", tag: "Finance" },
+  { q: "How does a guitar barre chord work?", tag: "Music" },
+];
+function ytSearch(text: string) { return `https://www.youtube.com/results?search_query=${encodeURIComponent(text.replace(/[?]/g, "") + " how to")}`; }
+function hostOf(uri: string) { try { return new URL(uri).hostname.replace(/^www\./, ""); } catch { return "source"; } }
+function ResearchTab() {
+  const [q, setQ] = useState("");
+  const [asked, setAsked] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ text: string; sources: { uri: string; title: string }[] } | null>(null);
+  const [err, setErr] = useState("");
+  const run = async (text: string) => {
+    const t = text.trim(); if (!t || loading) return;
+    setLoading(true); setErr(""); setResult(null); setAsked(t); setQ(t);
+    try {
+      const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: t }], mode: "research" }) });
+      const d = await r.json();
+      if (r.ok && d.text) { setResult({ text: d.text, sources: Array.isArray(d.sources) ? d.sources : [] }); try { logSession({ tech: `Researched: ${t.length > 46 ? t.slice(0, 46) + "…" : t}`, color: C.cyan, mins: 0 }); recordActivity(); } catch {} }
+      else if (r.status === 503) setErr("not_connected");
+      else setErr(d.message || "Couldn't research that right now — try again in a moment.");
+    } catch { setErr("Network hiccup — check your connection and try again."); }
+    finally { setLoading(false); }
+  };
   return (
-    <div style={{ animation: "tabIn 0.4s ease" }}>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Your subjects</h3>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>Track mastery across everything you're learning. Tap one to start a session.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14 }}>
-        {APP_SUBJECTS.map((s, i) => <div key={s.n} style={{ padding: 20, borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}33,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent", cursor: "pointer", animation: `tabIn 0.5s ease ${i * 70}ms both`, transition: `all 0.25s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}><Icon name="book" size={24} color={s.c} /><span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: s.c }}>{s.p}%</span></div><div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>{s.n}</div><div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", width: `${s.p}%`, borderRadius: 999, background: `linear-gradient(90deg,${s.c},${C.violet})`, animation: `growW 1s ease ${i * 70}ms both` }} /></div></div>)}
+    <div style={{ animation: "tabIn 0.4s ease", maxWidth: 760 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 999, background: `${C.cyan}12`, border: `1px solid ${C.cyan}33`, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", color: C.cyan, marginBottom: 12 }}><Icon name="spark" size={12} color={C.cyan} /> AI RESEARCH</div>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6, letterSpacing: "-0.02em" }}>Research anything, instantly</h3>
+      <p style={{ fontSize: 14.5, color: C.muted, marginBottom: 22, lineHeight: 1.6, maxWidth: 560 }}>Name a move, a concept, a skill — AIRA researches it live, explains it step by step, and points you to real videos that show it.</p>
+
+      <div style={{ display: "flex", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 16 }}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && run(q)} placeholder="e.g. How do I do a step down? What is the Krebs cycle?" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.fg, fontSize: 15, padding: "10px 12px" }} />
+        <button onClick={() => run(q)} disabled={loading || !q.trim()} style={{ padding: "0 22px", height: 44, borderRadius: 12, border: "none", cursor: loading || !q.trim() ? "default" : "pointer", opacity: loading || !q.trim() ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14.5, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}><Icon name="spark" size={16} color="#fff" /> Research</button>
       </div>
-      <button style={{ marginTop: 20, padding: "13px 24px", borderRadius: 12, border: `1px dashed ${C.border}`, background: "transparent", color: C.muted, fontSize: 14, cursor: "pointer", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Icon name="plus" size={16} color={C.muted} /> Add a custom subject — AIRA adapts to anything</button>
+
+      {!result && !loading && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 8 }}>
+          {RESEARCH_EXAMPLES.map((ex) => <button key={ex.q} onClick={() => run(ex.q)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 999, cursor: "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", color: C.cyan }}>{ex.tag}</span>{ex.q}</button>)}
+        </div>
+      )}
+
+      {loading && (
+        <div style={{ padding: "28px 22px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 8, height: 8, borderRadius: 9, background: C.cyan, animation: `eq 0.6s ease-in-out ${d * 0.15}s infinite alternate` }} />)}</div>
+          <span style={{ fontSize: 14, color: C.muted }}>Researching <span style={{ color: C.fg, fontWeight: 600 }}>{asked}</span> across the web…</span>
+        </div>
+      )}
+
+      {err === "not_connected" && (
+        <div style={{ padding: 22, borderRadius: 16, background: `linear-gradient(135deg,${C.amber}14,${C.violet}0c)`, border: `1px solid ${C.amber}44` }}>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Live research isn&apos;t connected yet</div>
+          <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.6 }}>AIRA&apos;s research runs on a live AI with web search. Add your Gemini API key (free) to switch it on — until then you can still watch real videos for any topic below.</p>
+          <a href={ytSearch(asked)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, padding: "10px 18px", borderRadius: 999, background: "#FF0000", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none" }}><Icon name="play" size={14} color="#fff" /> Watch &quot;{asked}&quot; on YouTube</a>
+        </div>
+      )}
+      {err && err !== "not_connected" && <div style={{ padding: 18, borderRadius: 14, background: C.elev, border: `1px solid ${C.border}`, fontSize: 13.5, color: C.muted }}>{err}</div>}
+
+      {result && (
+        <div style={{ animation: "tabIn 0.4s ease" }}>
+          <div style={{ padding: "22px 24px", borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, fontSize: 14.5, lineHeight: 1.65, marginBottom: 16 }}><MarkdownLite text={result.text} /></div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
+            <a href={ytSearch(asked)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 12, background: "#FF0000", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none" }}><Icon name="play" size={15} color="#fff" /> Watch how it&apos;s done</a>
+            <button onClick={() => { setResult(null); setAsked(""); setQ(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 12, background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}><Icon name="spark" size={14} color={C.cyan} /> Research something else</button>
+          </div>
+          {result.sources.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.faint, marginBottom: 10 }}>Sources AIRA checked</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 10 }}>
+                {result.sources.map((s, i) => <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" style={{ display: "flex", flexDirection: "column", gap: 4, padding: "13px 15px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, textDecoration: "none", transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(34,211,238,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; }}><span style={{ fontSize: 13, fontWeight: 600, color: C.fg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.title || hostOf(s.uri)}</span><span style={{ fontSize: 11.5, color: C.cyan }}>{hostOf(s.uri)}</span></a>)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -835,7 +928,7 @@ function HistoryTab() {
         <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700 }}>Session history</h3>
         {sessions.length > 0 && <button onClick={clear} style={{ fontSize: 12.5, color: C.faint, background: "transparent", border: `1px solid ${C.border}`, borderRadius: 999, padding: "6px 14px", cursor: "pointer" }}>Clear history</button>}
       </div>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>Every focus session you complete is logged here automatically.</p>
+      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>Every focus session and research you run is logged here automatically.</p>
       {sessions.length === 0 ? (
         <div style={{ padding: 48, borderRadius: 18, background: C.elev, border: `1px dashed ${C.border}`, textAlign: "center" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, color: C.faint }}><Icon name="clock" size={40} color={C.faint} /></div>
@@ -848,7 +941,7 @@ function HistoryTab() {
             {[{ l: "Total sessions", v: String(sessions.length), c: C.violet }, { l: "Focus logged", v: hrs > 0 ? `${hrs}h ${mm}m` : `${mm}m`, c: C.cyan }, { l: "This week", v: String(sessions.filter((s) => Date.now() - s.ts < 7 * 864e5).length), c: C.green }].map((s) => <div key={s.l} style={{ padding: 18, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, textAlign: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: s.c, marginBottom: 2 }}>{s.v}</div><div style={{ fontSize: 12.5, color: C.muted }}>{s.l}</div></div>)}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {sessions.map((s, i) => <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 14, background: C.elev, border: `1px solid ${C.border}`, animation: `tabIn 0.4s ease ${Math.min(i, 8) * 50}ms both` }}><span style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${s.color}33,${s.color}11)`, border: `1px solid ${s.color}33`, color: s.color }}><Icon name="target" size={18} color={s.color} /></span><div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 600, color: C.fg }}>{s.tech}</div><div style={{ fontSize: 12.5, color: C.faint }}>{relTime(s.ts)}</div></div><div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: s.color }}>{s.mins}m</div></div>)}
+            {sessions.map((s, i) => <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 14, background: C.elev, border: `1px solid ${C.border}`, animation: `tabIn 0.4s ease ${Math.min(i, 8) * 50}ms both` }}><span style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg,${s.color}33,${s.color}11)`, border: `1px solid ${s.color}33`, color: s.color }}><Icon name="target" size={18} color={s.color} /></span><div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 600, color: C.fg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.tech}</div><div style={{ fontSize: 12.5, color: C.faint }}>{relTime(s.ts)}</div></div><div style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: s.color }}>{s.mins > 0 ? `${s.mins}m` : <Icon name="check" size={16} color={s.color} stroke={2.5} />}</div></div>)}
           </div>
         </>
       )}
@@ -1472,7 +1565,7 @@ export default function Home() {
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} onLogout={logout} />}
-      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { const wasSignup = auth === "up"; if (email && !wasSignup) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("dashboard"); }} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={() => { setAuth(null); setWorkspace("dashboard"); }} />}
 
       {/* NAV */}
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>

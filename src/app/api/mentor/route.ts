@@ -5,7 +5,7 @@
  * exposed to the client. The browser POSTs { messages, mode }; we add the
  * right system prompt, call Gemini, and return the assistant text.
  *
- * mode ∈ "chat" | "summary" | "test" | "program"
+ * mode ∈ "chat" | "summary" | "test" | "program" | "research"
  */
 
 export const runtime = "nodejs";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
-type Mode = "chat" | "summary" | "test" | "program";
+type Mode = "chat" | "summary" | "test" | "program" | "research";
 
 const SYSTEM_BASE = `You are AIRA, a premium AI mentor — for studying, but also fitness & sports training, languages, skills, and any goal someone wants a real plan for.
 
@@ -41,10 +41,16 @@ const MODE_PROMPTS: Record<Mode, string> = {
     "language learning, a skill, anything. Output day-by-day or week-by-week (## Day 1 / ## Week 1 ...). Each block: " +
     "a focus, 2-4 concrete actions, and a progress checkpoint. For study, build in active-recall + spaced repetition; " +
     "for sport/fitness, build in progressive overload + recovery. If current info helps (real programs, techniques), look it up. End with '## How to use this plan'.",
+  research:
+    "Mode: RESEARCH. The user names a thing they want to understand or learn how to do — an exercise or move, " +
+    "a concept, a technique, a tool, anything. ALWAYS use web search to ground the answer in real, current information. Output:\n" +
+    "## What it is (2-3 plain sentences)\n## How to do it (numbered, concrete steps — for a physical move, include setup, the movement, and common mistakes)\n" +
+    "## Watch for (1-2 key cues or safety notes)\n## Keep learning (one line on what to try next). " +
+    "Be specific and accurate — never invent. If you are unsure, say what to search for.",
 };
 
 function isMode(v: unknown): v is Mode {
-  return v === "chat" || v === "summary" || v === "test" || v === "program";
+  return v === "chat" || v === "summary" || v === "test" || v === "program" || v === "research";
 }
 
 export async function POST(req: Request) {
@@ -134,7 +140,10 @@ export async function POST(req: Request) {
     }
 
     const data = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+        groundingMetadata?: { groundingChunks?: Array<{ web?: { uri?: string; title?: string } }> };
+      }>;
     };
 
     const text = (data.candidates?.[0]?.content?.parts ?? [])
@@ -143,7 +152,15 @@ export async function POST(req: Request) {
       .trim();
 
     if (!text) return Response.json({ error: "Empty response." }, { status: 502 });
-    return Response.json({ text });
+
+    // Real web sources Gemini used to ground the answer (used by AI Research).
+    const seen = new Set<string>();
+    const sources = (data.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [])
+      .map((c) => ({ uri: c?.web?.uri || "", title: (c?.web?.title || "").trim() }))
+      .filter((s) => s.uri && !seen.has(s.uri) && seen.add(s.uri))
+      .slice(0, 6);
+
+    return Response.json({ text, sources });
   } catch (err) {
     console.error("Mentor route failure", err);
     return Response.json({ error: "Something went wrong reaching the mentor." }, { status: 500 });
