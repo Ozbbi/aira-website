@@ -262,7 +262,7 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
   const [sideOpen, setSideOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   useEffect(() => { recordActivity(); setStreak(computeStreak()); }, []);
-  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }];
+  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "subjects", ic: "book", label: "Subjects" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }, { id: "profile", ic: "user", label: "Profile" }];
   const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
@@ -300,8 +300,51 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
           {tab === "subjects" && <SubjectsTab />}
           {tab === "history" && <HistoryTab />}
           {tab === "progress" && <ProgressTab />}
+          {tab === "profile" && <ProfileTab userName={userName} lifetime={lifetime} streak={streak} onUpgrade={onAuth} onLogout={onLogout} />}
         </div>
       </main>
+    </div>
+  );
+}
+
+/* ░░ PROFILE TAB ░░ */
+function ProfileTab({ userName, lifetime, streak, onUpgrade, onLogout }: { userName: string; lifetime: boolean; streak: number; onUpgrade: () => void; onLogout: () => void }) {
+  const [profile, setProfile] = useState<Record<string, string> | null>(null);
+  const [xp, setXp] = useState(0);
+  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); setXp(getXp()); } catch {} }, []);
+  const conf = profile?.confidence ? parseInt(String(profile.confidence)) : 0;
+  const level = Math.floor(xp / 500) + 1;
+  const rows: [string, string][] = [
+    ["Goal", profile?.goal || "—"], ["Level", profile?.level || "—"], ["Deadline", profile?.deadline || "—"],
+    ["Weekly time", profile?.hours || "—"], ["Focus window", profile?.when || "—"], ["Watch out for", profile?.weakness || "—"],
+  ];
+  const retake = () => { try { window.localStorage.removeItem("aira_profile"); } catch {} window.location.reload(); };
+  return (
+    <div style={{ animation: "tabIn 0.4s ease", maxWidth: 720 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+        <span style={{ width: 64, height: 64, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, color: "#fff", textTransform: "uppercase", fontFamily: "var(--font-display)" }}>{userName ? userName.trim()[0] : "?"}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700 }}>{userName || "Guest"}</h3>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 4, padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: lifetime ? C.green : C.muted, background: lifetime ? `${C.green}14` : C.surface, border: `1px solid ${lifetime ? C.green + "44" : C.border}` }}>{lifetime ? "Mastermind · lifetime" : "Free plan"}</div>
+        </div>
+        {!lifetime && <button onClick={onUpgrade} style={{ padding: "11px 20px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13.5, fontWeight: 600, whiteSpace: "nowrap" }}>Become a Mastermind</button>}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }} className="dash-grid">
+        {[{ l: "Level", v: String(level), c: C.violet }, { l: "Total XP", v: String(xp), c: C.cyan }, { l: "Day streak", v: String(streak), c: C.amber }].map((s) => <div key={s.l} style={{ padding: 18, borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: s.c }}>{s.v}</div><div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{s.l}</div></div>)}
+      </div>
+      {profile ? (
+        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Learning Profile</h4>
+            {conf > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: C.cyan }}>{conf}% confidence</span>}
+          </div>
+          {rows.map(([l, v]) => <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${C.border}` }}><span style={{ fontSize: 12.5, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em" }}>{l}</span><span style={{ fontSize: 14, fontWeight: 600, color: C.fg, textAlign: "right", maxWidth: "60%" }}>{v}</span></div>)}
+          <button onClick={retake} style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 13, fontWeight: 600, cursor: "pointer" }}><Icon name="reset" size={15} color={C.muted} /> Retake onboarding</button>
+        </div>
+      ) : (
+        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 20, textAlign: "center", color: C.muted, fontSize: 14 }}>No learning profile yet. <button onClick={retake} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 14, fontWeight: 600 }}>Build one now →</button></div>
+      )}
+      <button onClick={onLogout} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "11px 20px", borderRadius: 999, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}><Icon name="arrow" size={16} color={C.muted} /> Sign out</button>
     </div>
   );
 }
@@ -823,14 +866,32 @@ const ONB_Q: Array<{ key: string; ai: string; type: "text" | "chips"; ph?: strin
   { key: "when", ai: "When do you focus best?", type: "chips", opts: ["Morning", "Afternoon", "Evening", "Late night"] },
   { key: "weakness", ai: "Last one — what gets in your way the most?", type: "chips", opts: ["Procrastination", "Staying focused", "The hard concepts", "Staying consistent"] },
 ];
+function looksFake(s: string) {
+  const t = s.trim().toLowerCase();
+  if (t.length < 2) return true;
+  if (!/[aeiouıöüäé]/i.test(t)) return true;                 // no vowel at all → mash
+  if (/(.)\1\1/.test(t)) return true;                        // 3+ repeated chars (aaaa)
+  if (/^(asd|qwe|zxc|wer|sdf|dfg|fgh|ghj|hjk|jkl|qaz|wsx)/i.test(t)) return true; // keyboard rows
+  const letters = t.replace(/[^a-zçğıöşü]/gi, "");
+  if (letters.length >= 4 && new Set(letters).size <= 2) return true; // only 1-2 distinct letters
+  return false;
+}
 function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => void }) {
   const [step, setStep] = useState(0);
   const [ans, setAns] = useState<Record<string, string>>({});
   const [text, setText] = useState("");
   const [done, setDone] = useState(false);
+  const [err, setErr] = useState("");
   const cur = ONB_Q[step];
   const answer = (val: string) => {
     const v = val.trim(); if (!v) return;
+    if ((cur.key === "goal" || cur.key === "name") && looksFake(v)) {
+      setErr(cur.key === "goal"
+        ? "Hmm — that's not a real thing. Tell me an actual skill or goal (React, calculus, guitar, marathon training…)."
+        : "Come on — give me your real name so I can mentor you properly.");
+      return;
+    }
+    setErr("");
     const next = { ...ans, [cur.key]: v }; setAns(next); setText("");
     if (step < ONB_Q.length - 1) setStep(step + 1);
     else {
@@ -858,10 +919,11 @@ function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => vo
               <p key={step} style={{ fontSize: 16.5, lineHeight: 1.5, color: C.fg, paddingTop: 4, animation: "tabIn 0.4s ease" }}>{cur.ai}</p>
             </div>
             {cur.type === "text" ? (
-              <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && answer(text)} autoFocus placeholder={cur.ph} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 16, marginBottom: 16, outline: "none" }} />
+              <input value={text} onChange={(e) => { setText(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && answer(text)} autoFocus placeholder={cur.ph} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 16, marginBottom: err ? 8 : 16, outline: "none" }} />
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>{cur.opts!.map((o) => <button key={o} onClick={() => answer(o)} style={{ padding: "13px 14px", borderRadius: 12, cursor: "pointer", background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 14, fontWeight: 500, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(123,92,255,0.6)"; e.currentTarget.style.background = `${C.indigo}1a`; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>{o}</button>)}</div>
             )}
+            {err && <p style={{ fontSize: 13, color: "#FB7185", marginBottom: 14, lineHeight: 1.5, animation: "tabIn 0.3s ease" }}>{err}</p>}
             {cur.type === "text" && <GBtn full onClick={() => answer(text)}>Continue <Icon name="arrow" size={18} color="#fff" /></GBtn>}
             {step > 0 && <button onClick={() => setStep(step - 1)} style={{ background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer", marginTop: 14, display: "block" }}>← Back</button>}
           </>
@@ -906,8 +968,8 @@ function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{isUp ? "Create your account" : "Welcome back"}</h2>
         <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>{isUp ? "Start free — 3 AI mentor sessions a day, no card." : "Sign in to continue your flow."}</p>
-        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 12 }}>Continue with Google</button>
-        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#000", color: "#fff", border: `1px solid ${C.border}`, fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>Continue with Apple</button>
+        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 12 }}><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92a8.78 8.78 0 002.68-6.62z" /><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 009 18z" /><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 010-3.44V4.96H.96a9 9 0 000 8.08l3.01-2.32z" /><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.96L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" /></svg>{isUp ? "Sign up with Google" : "Log in with Google"}</button>
+        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#000", color: "#fff", border: `1px solid ${C.border}`, fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}><svg width="16" height="18" viewBox="0 0 16 18" fill="#fff" aria-hidden><path d="M13.05 9.55c-.02-2.02 1.65-2.99 1.72-3.04-.94-1.37-2.4-1.56-2.92-1.58-1.24-.13-2.42.73-3.05.73-.63 0-1.6-.71-2.63-.69-1.35.02-2.6.79-3.3 2-1.4 2.44-.36 6.05 1.01 8.03.67.97 1.47 2.06 2.51 2.02 1.01-.04 1.39-.65 2.61-.65 1.22 0 1.56.65 2.63.63 1.09-.02 1.78-.99 2.44-1.96.77-1.12 1.09-2.21 1.11-2.27-.02-.01-2.13-.82-2.15-3.25zM11.0 3.86c.56-.68.94-1.62.83-2.56-.81.03-1.79.54-2.37 1.21-.52.6-.97 1.56-.85 2.48.9.07 1.83-.46 2.39-1.13z" /></svg>{isUp ? "Sign up with Apple" : "Log in with Apple"}</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}><div style={{ flex: 1, height: 1, background: C.border }} /><span style={{ fontSize: 12, color: C.faint }}>or</span><div style={{ flex: 1, height: 1, background: C.border }} /></div>
         <input value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 15, marginBottom: 12, outline: "none" }} />
         <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} type="password" placeholder="Password" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 15, marginBottom: err ? 8 : 20, outline: "none" }} />
@@ -947,11 +1009,17 @@ function GiftCode({ onUnlock }: { onUnlock: () => void }) {
 }
 
 /* ════════════ SOUND PLAYER ════════════ */
-const SOUNDS = [{ id: "8d", name: "8D Ambient", note: "Spatial audio that moves around you" }, { id: "binaural", name: "Binaural Beats", note: "40Hz gamma tones for deep concentration" }, { id: "rain", name: "Rainfall", note: "Steady rain to mask distractions" }, { id: "forest", name: "Forest", note: "Birdsong and wind for calm focus" }, { id: "cafe", name: "Cafe Hum", note: "Gentle background chatter" }, { id: "silence", name: "Pure Silence", note: "No audio, just you and the work" }];
+const SOUNDS = [
+  { id: "8d", name: "8D Ambient", note: "A warm pad that swirls around your head", hz: "220 · 277 · 330 Hz" },
+  { id: "binaural", name: "Binaural Beats", note: "40 Hz gamma beat for deep concentration", hz: "240 / 280 Hz · 40 Hz beat" },
+  { id: "rain", name: "Rainfall", note: "Steady rain to mask distractions", hz: "Pink noise · 5 kHz" },
+  { id: "forest", name: "Forest", note: "Wind and birdsong for calm focus", hz: "Filtered noise · 660 Hz" },
+  { id: "cafe", name: "Cafe Hum", note: "Gentle low background chatter", hz: "Low-pass · 480 Hz" },
+  { id: "silence", name: "Pure Silence", note: "No audio, just you and the work", hz: "—" },
+];
 function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boolean }; lifetime: boolean; onUpgrade: () => void }) {
   const [active, setActive] = useState("8d");
   const [playing, setPlaying] = useState(false);
-  const [previewEnded, setPreviewEnded] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const nodesRef = useRef<{ stop: () => void } | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -994,9 +1062,10 @@ function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boole
       if (id === "forest") { const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = 660; const og = ctx.createGain(); og.gain.value = 0.03; o.connect(og).connect(master); o.start(); cleanup.push(() => o.stop()); }
     }
     nodesRef.current = { stop: () => { try { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25); } catch {} setTimeout(() => cleanup.forEach((c) => { try { c(); } catch {} }), 280); } };
-    if (!lifetime) { timerRef.current = window.setTimeout(() => { teardown(); setPlaying(false); setPreviewEnded(true); }, 18000); }
+    // Mastermind plays a full hour-long session; gating happens in toggle() so free users never start it.
+    timerRef.current = window.setTimeout(() => { teardown(); setPlaying(false); }, 60 * 60 * 1000);
   };
-  const toggle = () => { if (playing) { teardown(); setPlaying(false); } else { setPreviewEnded(false); start(active); setPlaying(true); } };
+  const toggle = () => { if (!lifetime) { onUpgrade(); return; } if (playing) { teardown(); setPlaying(false); } else { start(active); setPlaying(true); } };
   useEffect(() => { if (playing) start(active); /* restart on sound change */ }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { teardown(); try { ctxRef.current?.close(); } catch {} }, []);
   return (
@@ -1005,12 +1074,16 @@ function SoundPlayer({ seen, lifetime, onUpgrade }: { seen: { [k: string]: boole
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, height: 22 }}>{playing && <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 12px", borderRadius: 999, background: `${C.green}14`, border: `1px solid ${C.green}44`, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: C.green }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, boxShadow: `0 0 8px ${C.green}`, animation: "breathe 1.2s ease-in-out infinite" }} />LIVE AUDIO</span>}</div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 5, height: 70, marginBottom: 28 }}>{Array.from({ length: 34 }).map((_, i) => <div key={i} style={{ width: 4, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.indigo})`, height: playing ? `${20 + Math.abs(Math.sin(i * 0.9)) * 50}px` : "8px", animation: playing ? `eq 0.${6 + (i % 5)}s ease-in-out ${i * 0.04}s infinite alternate` : "none", transition: "height 0.4s ease", willChange: "transform", transformOrigin: "bottom" }} />)}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 24 }}>{SOUNDS.map((s) => { const on = s.id === active; return <button key={s.id} onClick={() => setActive(s.id)} style={{ padding: "10px 18px", borderRadius: 999, cursor: "pointer", background: on ? `linear-gradient(135deg,${C.cyan}22,${C.indigo}22)` : "transparent", border: `1px solid ${on ? "rgba(34,211,238,0.5)" : C.border}`, color: on ? C.fg : C.muted, fontSize: 13, transition: `all 0.25s ${C.ease}` }}>{s.name}</button>; })}</div>
-        <p style={{ textAlign: "center", fontSize: 13, color: C.faint, marginBottom: 24 }}>{SOUNDS.find((s) => s.id === active)?.note}</p>
-        <div style={{ display: "flex", justifyContent: "center" }}><button onClick={toggle} style={{ width: 64, height: 64, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${C.indigo}55` }}><Icon name={playing ? "pause" : "play"} size={22} color="#fff" /></button></div>
-        {previewEnded && !lifetime ? (
-          <p style={{ textAlign: "center", fontSize: 12.5, color: C.amber, marginTop: 16 }}>Preview ended. <button onClick={onUpgrade} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>Become a Mastermind for unlimited focus audio →</button></p>
+        <p style={{ textAlign: "center", fontSize: 13, color: C.faint, marginBottom: 10 }}>{SOUNDS.find((s) => s.id === active)?.note}</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 999, background: `${C.cyan}10`, border: `1px solid ${C.cyan}33`, fontSize: 11.5, fontWeight: 600, color: C.cyan, fontVariantNumeric: "tabular-nums" }}><Icon name="wave" size={12} color={C.cyan} /> {SOUNDS.find((s) => s.id === active)?.hz}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 999, background: C.surface, border: `1px solid ${C.border}`, fontSize: 11.5, fontWeight: 600, color: C.muted }}><Icon name="bell" size={12} color={C.muted} /> Use headphones for the full effect</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}><button onClick={toggle} title={lifetime ? "" : "Mastermind only"} style={{ position: "relative", width: 64, height: 64, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 40px ${C.indigo}55` }}><Icon name={playing ? "pause" : "play"} size={22} color="#fff" />{!lifetime && <span style={{ position: "absolute", top: -6, right: -6, fontSize: 8, fontWeight: 700, letterSpacing: "0.04em", background: `linear-gradient(135deg,${C.amber},${C.violet})`, color: "#fff", borderRadius: 999, padding: "2px 6px" }}>MIND</span>}</button></div>
+        {!lifetime ? (
+          <p style={{ textAlign: "center", fontSize: 12.5, color: C.amber, marginTop: 16 }}>Focus audio is Mastermind-only. <button onClick={onUpgrade} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>Unlock 1-hour sessions →</button></p>
         ) : (
-          <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16 }}>{lifetime ? "Real generated focus audio · Mastermind · unlimited" : "Live focus audio · 18-second free preview · unlimited for Masterminds"}</p>
+          <p style={{ textAlign: "center", fontSize: 11, color: C.faint, marginTop: 16 }}>Real generated focus audio · 1-hour sessions · Mastermind</p>
         )}
       </div>
     </div>
@@ -1347,6 +1420,8 @@ export default function Home() {
   const saveName = useCallback((n: string, remember: boolean) => { const name = n.trim(); if (!name) return; setUserName(name); if (remember) { try { window.localStorage.setItem("aira_name", name); } catch {} } }, []);
   const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} }, []);
   const signedIn = !!userName;
+  // Landing entry points: require a quick sign-up first if they're not in yet, then the app runs onboarding.
+  const enterApp = useCallback((tab: string) => { try { if (window.localStorage.getItem("aira_name") || window.localStorage.getItem("aira_profile")) { setWorkspace(tab); return; } } catch {} setAuth("up"); }, []);
   const buy = useCallback(() => { window.location.href = CHECKOUT_URL; }, []);
   const reveal = (k: string, d = 0) => ({ "data-k": k, style: { opacity: seen[k] ? 1 : 0, transform: seen[k] ? "translateY(0) scale(1)" : "translateY(34px) scale(0.97)", filter: seen[k] ? "blur(0)" : "blur(5px)", transition: `opacity 0.65s ${C.ease} ${d}ms, transform 0.7s ${C.ease} ${d}ms, filter 0.65s ${C.ease} ${d}ms`, willChange: "transform,opacity,filter" } as React.CSSProperties });
   const HD = (e: React.CSSProperties = {}): React.CSSProperties => ({ fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.025em", ...e });
@@ -1395,7 +1470,7 @@ export default function Home() {
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} onLogout={logout} />}
-      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { if (email) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("dashboard"); }} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { const wasSignup = auth === "up"; if (email && !wasSignup) { const nm = email.split("@")[0].replace(/[^a-zA-Z]/g, " ").trim() || "there"; saveName(nm.charAt(0).toUpperCase() + nm.slice(1), true); } setAuth(null); setWorkspace("dashboard"); }} />}
 
       {/* NAV */}
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>
@@ -1410,14 +1485,14 @@ export default function Home() {
           ) : (
             <>
               <button className="nav-auth-extra" onClick={() => setAuth("in")} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign in</button>
-              <GBtn onClick={() => setWorkspace("mentor")}>Get started free <Icon name="arrow" size={16} color="#fff" /></GBtn>
+              <GBtn onClick={() => setAuth("up")}>Get started free <Icon name="arrow" size={16} color="#fff" /></GBtn>
             </>
           )}
         </div>
       </nav>
 
       {/* HERO */}
-      <HeroSection onOpen={(t) => setWorkspace(t)} />
+      <HeroSection onOpen={enterApp} />
 
       {/* MARQUEE */}
       <div style={{ position: "relative", zIndex: 2, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: "18px 0", overflow: "hidden", background: "rgba(0,0,4,0.4)" }}><div style={{ display: "flex", gap: 48, whiteSpace: "nowrap", animation: "marquee 26s linear infinite", width: "max-content" }}>{[...Array(2)].map((_, r) => <div key={r} style={{ display: "flex", gap: 48 }}>{["Neural Phase Locking", "Spaced Repetition", "Active Recall", "Socratic Method", "Timeboxing", "Ultradian Rhythm", "15 Subjects", "Focus Audio"].map((t) => <span key={t + r} style={{ fontSize: 14, color: C.muted, letterSpacing: "0.04em" }}>{t}</span>)}</div>)}</div></div>
@@ -1553,7 +1628,7 @@ export default function Home() {
         <div style={{ position: "relative", zIndex: 1 }}>
           <h2 {...reveal("cta-h")} style={{ ...reveal("cta-h").style, ...HD({ fontSize: "clamp(40px,7vw,68px)", marginBottom: 26, lineHeight: 1.04 }) }}>Your mind is capable<br /><Grad>of more.</Grad></h2>
           <p style={{ fontSize: 18, color: C.muted, maxWidth: 490, margin: "0 auto 42px", lineHeight: 1.7 }}>Stop fighting for focus. Start building it. AIRA turns every study session into a structured path to mastery.</p>
-          <GBtn big onClick={() => setWorkspace("mentor")}>Try the AI mentor <Icon name="arrow" size={18} color="#fff" /></GBtn>
+          <GBtn big onClick={() => enterApp("mentor")}>Try the AI mentor <Icon name="arrow" size={18} color="#fff" /></GBtn>
           <p style={{ marginTop: 16, fontSize: 13, color: C.faint }}>3 free messages/day · No card · Mastermind unlocks unlimited</p>
         </div>
       </section>
