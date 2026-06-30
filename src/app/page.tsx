@@ -955,10 +955,14 @@ function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => vo
 function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; onClose: () => void; onSwitch: (m: "in" | "up") => void; onSuccess: (email?: string) => void }) {
   const isUp = mode === "up";
   const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
+  const emailRef = useRef<HTMLInputElement>(null);
   const submit = () => {
     if (!email.trim() || !email.includes("@")) { setErr("Enter a valid email address."); return; }
+    onSuccess(email.trim());
+  };
+  const handleGoogle = () => {
+    if (!email.trim() || !email.includes("@")) { setErr("Enter your email to continue with Google."); emailRef.current?.focus(); return; }
     onSuccess(email.trim());
   };
   return (
@@ -968,9 +972,9 @@ function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{isUp ? "Create your account" : "Welcome back"}</h2>
         <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>{isUp ? "Start free — 3 AI mentor sessions a day, no card." : "Sign in to continue your flow."}</p>
-        <button onClick={() => onSuccess()} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92a8.78 8.78 0 002.68-6.62z" /><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 009 18z" /><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 010-3.44V4.96H.96a9 9 0 000 8.08l3.01-2.32z" /><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.96L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" /></svg>{isUp ? "Sign up with Google" : "Log in with Google"}</button>
+        <button onClick={handleGoogle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92a8.78 8.78 0 002.68-6.62z" /><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 009 18z" /><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 010-3.44V4.96H.96a9 9 0 000 8.08l3.01-2.32z" /><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.96L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" /></svg>{isUp ? "Sign up with Google" : "Log in with Google"}</button>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}><div style={{ flex: 1, height: 1, background: C.border }} /><span style={{ fontSize: 12, color: C.faint }}>or email</span><div style={{ flex: 1, height: 1, background: C.border }} /></div>
-        <input value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 15, marginBottom: err ? 8 : 20, outline: "none" }} />
+        <input ref={emailRef} value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 15, marginBottom: err ? 8 : 20, outline: "none" }} />
         {err && <p style={{ fontSize: 12.5, color: "#FB7185", marginBottom: 14 }}>{err}</p>}
         <GBtn full onClick={submit}>{isUp ? "Continue with email" : "Sign in with email"}</GBtn>
         <p style={{ textAlign: "center", fontSize: 13, color: C.muted, marginTop: 20 }}>{isUp ? "Already have an account? " : "New to AIRA? "}<button onClick={() => onSwitch(isUp ? "in" : "up")} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>{isUp ? "Sign in" : "Sign up"}</button></p>
