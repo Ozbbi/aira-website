@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValueEvent, MotionValue } from "framer-motion";
+import { useUser, useClerk } from "@clerk/nextjs";
+
+// Real Google login lights up the moment a Clerk publishable key exists (env /
+// Vercel). Without it, CLERK_ON is false and nothing Clerk-related renders.
+const CLERK_ON = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 /* ════════════════════════════════════════════════════════════════════════
    AIRA MENTOR — V9 FINAL · clean, no emojis, minimal line icons
@@ -1045,6 +1050,29 @@ function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => vo
 }
 
 /* ════════════ AUTH MODAL ════════════ */
+/* Real Google login via Clerk. Only ever rendered when CLERK_ON, so the hooks
+   always run inside ClerkProvider. Clicking opens Clerk's hosted sign-in (Google
+   works out of the box on a Clerk dev instance — no Google Cloud setup needed). */
+const GOOGLE_SVG = (
+  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92a8.78 8.78 0 002.68-6.62z" /><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 009 18z" /><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 010-3.44V4.96H.96a9 9 0 000 8.08l3.01-2.32z" /><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.96L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" /></svg>
+);
+function ClerkGoogleButton({ isUp, onSignedIn }: { isUp: boolean; onSignedIn: (email?: string) => void }) {
+  const { isSignedIn, user } = useUser();
+  const { openSignIn } = useClerk();
+  const fired = useRef(false);
+  useEffect(() => {
+    if (isSignedIn && user && !fired.current) {
+      fired.current = true;
+      const first = user.firstName || (user.fullName || "").split(" ")[0] || "";
+      if (first) { try { window.localStorage.setItem("aira_name", first); } catch {} }
+      onSignedIn(user.primaryEmailAddress?.emailAddress || undefined);
+    }
+  }, [isSignedIn, user, onSignedIn]);
+  return (
+    <button onClick={() => openSignIn({})} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>{GOOGLE_SVG}{isUp ? "Sign up with Google" : "Log in with Google"}</button>
+  );
+}
+
 function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; onClose: () => void; onSwitch: (m: "in" | "up") => void; onSuccess: (email?: string) => void }) {
   const isUp = mode === "up";
   const [email, setEmail] = useState("");
@@ -1065,7 +1093,7 @@ function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20 }}>AIRA</span></div>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{isUp ? "Create your account" : "Welcome back"}</h2>
         <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>{isUp ? "Start free — 3 AI mentor sessions a day, no card." : "Sign in to continue your flow."}</p>
-        <button onClick={handleGoogle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.92a8.78 8.78 0 002.68-6.62z" /><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.32A9 9 0 009 18z" /><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 010-3.44V4.96H.96a9 9 0 000 8.08l3.01-2.32z" /><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58A9 9 0 00.96 4.96L3.97 7.28C4.68 5.16 6.66 3.58 9 3.58z" /></svg>{isUp ? "Sign up with Google" : "Log in with Google"}</button>
+        {CLERK_ON ? <ClerkGoogleButton isUp={isUp} onSignedIn={onSuccess} /> : <button onClick={handleGoogle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>{GOOGLE_SVG}{isUp ? "Sign up with Google" : "Log in with Google"}</button>}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}><div style={{ flex: 1, height: 1, background: C.border }} /><span style={{ fontSize: 12, color: C.faint }}>or email</span><div style={{ flex: 1, height: 1, background: C.border }} /></div>
         <input ref={emailRef} value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} type="email" placeholder="you@email.com" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 15, marginBottom: err ? 8 : 20, outline: "none" }} />
         {err && <p style={{ fontSize: 12.5, color: "#FB7185", marginBottom: 14 }}>{err}</p>}
@@ -1513,7 +1541,7 @@ export default function Home() {
   const [userName, setUserName] = useState("");
   useEffect(() => { const params = new URLSearchParams(window.location.search); if (params.get("success") === "true" || params.get("checkout") === "success") setShowWelcome(true); try { if (window.localStorage.getItem("aira_lifetime") === "true") setLifetime(true); const n = window.localStorage.getItem("aira_name"); if (n) setUserName(n); } catch {} }, []);
   const saveName = useCallback((n: string, remember: boolean) => { const name = n.trim(); if (!name) return; setUserName(name); if (remember) { try { window.localStorage.setItem("aira_name", name); } catch {} } }, []);
-  const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} }, []);
+  const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} if (CLERK_ON) { try { (window as unknown as { Clerk?: { signOut?: () => void } }).Clerk?.signOut?.(); } catch {} } }, []);
   const signedIn = !!userName;
   // Landing entry points: require a quick sign-up first if they're not in yet, then the app runs onboarding.
   const enterApp = useCallback((tab: string) => { try { if (window.localStorage.getItem("aira_name") || window.localStorage.getItem("aira_profile")) { setWorkspace(tab); return; } } catch {} setAuth("up"); }, []);
