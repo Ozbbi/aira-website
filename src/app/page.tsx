@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValueEvent, MotionValue } from "framer-motion";
+import Aurora from "@/components/Aurora";
+import DotGrid from "@/components/DotGrid";
 import { useUser, useClerk } from "@clerk/nextjs";
 
 // Mirrors layout.tsx's CLERK_ON exactly (both read the same build-time
@@ -139,6 +141,23 @@ function LivingBackground({ p }: { p: number }) {
       <canvas ref={ref} style={{ position: "absolute", inset: 0, opacity: 0.55 }} />
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "45vh", background: `linear-gradient(transparent, ${C.void})`, zIndex: 1 }} />
       <div style={{ position: "fixed", top: 0, left: 0, height: 2, width: `${p * 100}%`, background: `linear-gradient(90deg,${tint.a},${tint.b})`, zIndex: 300, transition: "width 0.1s linear", boxShadow: `0 0 10px ${tint.a}` }} />
+    </div>
+  );
+}
+function useIsLowEndDevice() {
+  const [lowEnd, setLowEnd] = useState(true);
+  useEffect(() => {
+    setLowEnd((navigator.hardwareConcurrency || 8) <= 4 || ((navigator as any).deviceMemory || 8) <= 4 || window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+  return lowEnd;
+}
+/* Interactive dot field behind a section — mounts only on capable devices. */
+function SectionDotGrid({ opacity = 0.35 }: { opacity?: number }) {
+  const lowEnd = useIsLowEndDevice();
+  if (lowEnd) return null;
+  return (
+    <div style={{ position: "absolute", inset: 0, opacity, pointerEvents: "none", zIndex: 0 }} aria-hidden>
+      <DotGrid dotSize={3} gap={28} baseColor="#161628" activeColor={C.cyan} proximity={120} shockRadius={200} shockStrength={3} />
     </div>
   );
 }
@@ -1458,11 +1477,24 @@ function StoryScroll({ onOpen }: { onOpen: (t: string) => void }) {
   );
 }
 
+/* Real WebGL Aurora, scoped to just the hero section (not a page-wide fixed
+   layer) — clipped by the hero's own overflow:hidden, so it never renders or
+   costs anything once scrolled past. Skips low-end / reduced-motion devices. */
+function HeroAurora() {
+  const lowEnd = useIsLowEndDevice();
+  if (lowEnd) return null;
+  return (
+    <div style={{ position: "absolute", top: "-25%", left: "-15%", width: "130vw", height: "85vh", opacity: 0.75, mixBlendMode: "screen", pointerEvents: "none" }}>
+      <Aurora colorStops={[C.cyan, C.indigo, C.violet]} amplitude={1.3} blend={0.65} speed={0.7} />
+    </div>
+  );
+}
 /* ════════════ HERO SECTION ════════════ */
 function HeroSection({ onOpen }: { onOpen: (t: string) => void }) {
   return (
     <section style={{ position: "relative", zIndex: 2, minHeight: "100vh", display: "flex", alignItems: "center", padding: "120px 48px 80px", overflow: "hidden" }} className="hero-sec">
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <HeroAurora />
         <div style={{ position: "absolute", top: "5%", left: "50%", transform: "translateX(-50%)", width: "90vw", height: "55vh", background: `radial-gradient(ellipse at center, ${C.indigo}1e 0%, transparent 65%)`, filter: "blur(50px)" }} />
         <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "50vw", height: "50vw", background: `radial-gradient(ellipse at center, ${C.cyan}0e, transparent 60%)`, filter: "blur(70px)" }} />
       </div>
@@ -1736,8 +1768,9 @@ export default function Home() {
       </section>
 
       {/* ════ PRICING — AT THE BOTTOM (after all advantages) ════ */}
-      <section id="pricing" className="sec" style={sec({ paddingTop: 80 })}>
-        <div style={{ maxWidth: 920, margin: "0 auto" }}>
+      <section id="pricing" className="sec" style={{ ...sec({ paddingTop: 80 }), position: "relative", overflow: "hidden" }}>
+        <SectionDotGrid />
+        <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div {...reveal("p-h")} style={{ ...reveal("p-h").style, textAlign: "center", marginBottom: 20 }}><Label>Pricing</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,56px)" })}>You've seen everything. <Grad>Here's the price.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 17, maxWidth: 480, margin: "18px auto 0", lineHeight: 1.6 }}>One simple plan. Everything unlocked. Less than a single hour with a private tutor.</p></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 22, marginTop: 60 }}>
             <Tilt k="pf" seen={seen} style={{ padding: 40 }}><h3 style={HD({ fontSize: 22, marginBottom: 8 })}>Free</h3><div style={{ fontSize: 44, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 4 }}>$0</div><p style={{ fontSize: 13, color: C.muted, marginBottom: 26 }}>3 free messages/day, forever</p>{["3 AI mentor messages/day", "All 6 focus techniques", "Study space + dashboard", "Basic progress tracking", "No credit card required"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.muted, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GhostBtn full onClick={() => setWorkspace("dashboard")}>Try the dashboard</GhostBtn></div></Tilt>
