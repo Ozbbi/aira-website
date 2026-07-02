@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useMotionValueEvent, MotionValue } from "framer-motion";
 import Aurora from "@/components/Aurora";
 import DotGrid from "@/components/DotGrid";
+import ShinyText from "@/components/ShinyText";
 import { useUser, useClerk } from "@clerk/nextjs";
 
 // Mirrors layout.tsx's CLERK_ON exactly (both read the same build-time
@@ -285,6 +286,57 @@ const MIND_PERKS = [
   { t: "Every mentor persona", d: "Strict, Relentless, Patient Teacher, Chill — switch your coach anytime." },
   { t: "Personalized plans", d: "Day-by-day study & training programs built around your exact goal." },
 ];
+/* ░░ PLAN LOADER — circular progress that fills, then "Your plan is ready" ░░ */
+function PlanLoader({ onDone }: { onDone: () => void }) {
+  const [pct, setPct] = useState(0);
+  const [done, setDone] = useState(false);
+  const steps = ["Reading your goals", "Mapping your path", "Scheduling your sessions", "Personalizing everything"];
+  const stepIdx = Math.min(steps.length - 1, Math.floor((pct / 100) * steps.length));
+  useEffect(() => {
+    const start = performance.now();
+    const DUR = 2600;
+    let raf = 0;
+    const tick = (t: number) => {
+      const e = Math.min(1, (t - start) / DUR);
+      const eased = 1 - Math.pow(1 - e, 2.2);
+      setPct(Math.round(eased * 100));
+      if (e < 1) raf = requestAnimationFrame(tick);
+      else setDone(true);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const R = 66, CIRC = 2 * Math.PI * R;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1700, background: "radial-gradient(ellipse at 50% 35%, #0b0b1a, #030308 70%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}>
+      <div style={{ position: "relative", width: 172, height: 172, marginBottom: 34 }}>
+        <div style={{ position: "absolute", inset: -18, borderRadius: "50%", background: `conic-gradient(from 0deg, ${C.cyan}, ${C.indigo}, ${C.violet}, ${C.cyan})`, filter: "blur(26px)", opacity: 0.5, animation: "spinCirc 3.5s linear infinite" }} />
+        <svg width="172" height="172" viewBox="0 0 172 172" style={{ position: "relative", transform: "rotate(-90deg)" }}>
+          <defs>
+            <linearGradient id="planGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={C.cyan} /><stop offset="55%" stopColor={C.indigo} /><stop offset="100%" stopColor={C.violet} /></linearGradient>
+          </defs>
+          <circle cx="86" cy="86" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+          <circle cx="86" cy="86" r={R} fill="none" stroke="url(#planGrad)" strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct / 100)} style={{ transition: "stroke-dashoffset 0.1s linear", filter: `drop-shadow(0 0 8px ${C.indigo}88)` }} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {done ? <Icon name="check" size={52} color={C.green} stroke={2.5} /> : <span style={{ fontFamily: "var(--font-display)", fontSize: 40, fontWeight: 700, color: "#fff", fontVariantNumeric: "tabular-nums" }}>{pct}<span style={{ fontSize: 20, color: C.muted }}>%</span></span>}
+        </div>
+      </div>
+      {done ? (
+        <div style={{ textAlign: "center", animation: "fadeUp 0.5s ease" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", marginBottom: 8 }}>Your plan is ready</h2>
+          <p style={{ fontSize: 15, color: C.muted, marginBottom: 26 }}>Built and personalized just for you.</p>
+          <button onClick={onDone} style={{ padding: "14px 34px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 15.5, fontWeight: 700, boxShadow: `0 10px 40px ${C.indigo}55`, display: "inline-flex", alignItems: "center", gap: 9 }}>Enter AIRA <Icon name="arrow" size={17} color="#fff" /></button>
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", height: 54 }}>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 19, fontWeight: 700, marginBottom: 4 }} key={stepIdx}><span style={{ animation: "fadeUp 0.4s ease" }}>{steps[stepIdx]}…</span></div>
+          <p style={{ fontSize: 13, color: C.faint }}>AIRA is building your personalized schedule</p>
+        </div>
+      )}
+    </div>
+  );
+}
 function MastermindModal({ onClose, onBuy }: { onClose: () => void; onBuy: () => void }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.92)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
@@ -310,12 +362,16 @@ function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName
   const [streak, setStreak] = useState(0);
   const [showMind, setShowMind] = useState(false);
   const openMind = () => setShowMind(true);
+  const [showPlan, setShowPlan] = useState(false);
   useEffect(() => { recordActivity(); setStreak(computeStreak()); }, []);
+  // Play the "your plan is ready" reveal once, right after onboarding builds a profile.
+  useEffect(() => { try { if (userName && window.localStorage.getItem("aira_profile") && !window.localStorage.getItem("aira_plan_shown")) setShowPlan(true); } catch {} }, [userName]);
   const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "research", ic: "spark", label: "AI Research" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }, { id: "profile", ic: "user", label: "Profile" }];
   const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
       {!userName && <NameModal onSave={onSaveName} />}
+      {showPlan && <PlanLoader onDone={() => { try { window.localStorage.setItem("aira_plan_shown", "1"); } catch {} setShowPlan(false); }} />}
       {sideOpen && <div className="app-scrim" onClick={() => setSideOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19, background: "rgba(0,0,4,0.6)", backdropFilter: "blur(4px)" }} />}
       <aside className={`app-side${sideOpen ? " open" : ""}`} style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px 18px" }}>
@@ -1093,6 +1149,19 @@ function ClerkGoogleButton({ isUp, onSignedIn }: { isUp: boolean; onSignedIn: (e
     <button onClick={() => openSignIn({})} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "13px", borderRadius: 12, background: "#fff", color: "#1a1a1a", border: "none", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 20 }}>{GOOGLE_SVG}{isUp ? "Sign up with Google" : "Log in with Google"}</button>
   );
 }
+/* Bridges an existing Clerk session into the app's own userName state on load,
+   so a returning Google user lands already signed-in (nav shows their profile,
+   not "Get started free"). Only mounted when CLERK_ON. */
+function ClerkUserSync({ onName }: { onName: (name: string) => void }) {
+  const { isSignedIn, user } = useUser();
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const first = user.firstName || (user.fullName || "").split(" ")[0] || (user.primaryEmailAddress?.emailAddress || "").split("@")[0] || "";
+      if (first) { try { window.localStorage.setItem("aira_name", first); } catch {} onName(first); }
+    }
+  }, [isSignedIn, user, onName]);
+  return null;
+}
 
 function AuthModal({ mode, onClose, onSwitch, onSuccess }: { mode: "in" | "up"; onClose: () => void; onSwitch: (m: "in" | "up") => void; onSuccess: (email?: string) => void }) {
   const isUp = mode === "up";
@@ -1617,6 +1686,9 @@ export default function Home() {
         @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes auroraSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
         @keyframes shine{0%{transform:translateX(-130%)}60%,100%{transform:translateX(130%)}}
+        @keyframes shinyMove{0%{background-position:220% 0}100%{background-position:-120% 0}}
+        @keyframes spinCirc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         @keyframes blurIn{0%{opacity:0;transform:translateY(42px);filter:blur(16px)}55%{opacity:1}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
         @keyframes blink{50%{opacity:0}}
         @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -1627,7 +1699,8 @@ export default function Home() {
       <LivingBackground p={p} />
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} onEnter={() => { setShowWelcome(false); setWorkspace("dashboard"); }} />}
       {workspace && <AppWorkspace initial={workspace} onClose={() => setWorkspace(null)} onAuth={buy} lifetime={lifetime} userName={userName} onSaveName={saveName} onLogout={logout} />}
-      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={() => { setAuth(null); setWorkspace("dashboard"); }} />}
+      {auth && <AuthModal mode={auth} onClose={() => setAuth(null)} onSwitch={(m) => setAuth(m)} onSuccess={(email) => { try { const n = window.localStorage.getItem("aira_name"); if (n) setUserName(n); else if (email) { const guess = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).trim(); if (guess) { setUserName(guess); window.localStorage.setItem("aira_name", guess); } } } catch {} setAuth(null); setWorkspace("dashboard"); }} />}
+      {CLERK_ON && <ClerkUserSync onName={(n) => setUserName((cur) => cur || n)} />}
 
       {/* NAV */}
       <nav className="nav-wrap" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(24px)", background: y > 40 ? "rgba(0,0,4,0.82)" : "rgba(0,0,4,0.3)", borderBottom: `1px solid ${y > 40 ? C.border : "transparent"}`, height: 66, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", transition: "all 0.4s ease" }}>
@@ -1637,7 +1710,8 @@ export default function Home() {
           {signedIn ? (
             <>
               <button className="nav-auth-extra" onClick={logout} style={{ background: "none", border: "none", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Sign out</button>
-              <button onClick={() => setWorkspace("dashboard")} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "7px 8px 7px 16px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.glass, color: C.fg, fontSize: 14, fontWeight: 600, cursor: "pointer", backdropFilter: "blur(10px)" }}>Open app <span style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName.trim()[0]}</span></button>
+              <button onClick={() => setWorkspace("dashboard")} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "9px 20px", borderRadius: 999, border: "none", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Go to dashboard <Icon name="arrow" size={16} color="#fff" /></button>
+              <button onClick={() => setWorkspace("profile")} title={`${userName} · profile`} style={{ width: 38, height: 38, borderRadius: "50%", border: `1px solid ${C.border}`, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#fff", textTransform: "uppercase", cursor: "pointer", flexShrink: 0 }}>{userName.trim()[0]}</button>
             </>
           ) : (
             <>
@@ -1771,7 +1845,12 @@ export default function Home() {
       <section id="pricing" className="sec" style={{ ...sec({ paddingTop: 80 }), position: "relative", overflow: "hidden" }}>
         <SectionDotGrid />
         <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          <div {...reveal("p-h")} style={{ ...reveal("p-h").style, textAlign: "center", marginBottom: 20 }}><Label>Pricing</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,56px)" })}>You've seen everything. <Grad>Here's the price.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 17, maxWidth: 480, margin: "18px auto 0", lineHeight: 1.6 }}>One simple plan. Everything unlocked. Less than a single hour with a private tutor.</p></div>
+          <div {...reveal("p-h")} style={{ ...reveal("p-h").style, textAlign: "center", marginBottom: 20 }}><Label>Pricing</Label><h2 style={HD({ fontSize: "clamp(34px,5vw,56px)" })}>You've seen everything. <Grad>Here's the price.</Grad></h2><p style={{ color: C.muted, marginTop: 18, fontSize: 17, maxWidth: 480, margin: "18px auto 0", lineHeight: 1.6 }}>One simple plan. Everything unlocked. Less than a single hour with a private tutor.</p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginTop: 22, padding: "8px 18px", borderRadius: 999, background: `${C.amber}12`, border: `1px solid ${C.amber}33` }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: C.amber, boxShadow: `0 0 8px ${C.amber}`, animation: "breathe 1.4s ease-in-out infinite" }} />
+              <ShinyText text="Founding price — locked in for early members only" speed={5} base={C.amber} shine="#fff" style={{ fontSize: 13.5, fontWeight: 600 }} />
+            </div>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 22, marginTop: 60 }}>
             <Tilt k="pf" seen={seen} style={{ padding: 40 }}><h3 style={HD({ fontSize: 22, marginBottom: 8 })}>Free</h3><div style={{ fontSize: 44, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 4 }}>$0</div><p style={{ fontSize: 13, color: C.muted, marginBottom: 26 }}>3 free messages/day, forever</p>{["3 AI mentor messages/day", "All 6 focus techniques", "Study space + dashboard", "Basic progress tracking", "No credit card required"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.muted, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GhostBtn full onClick={() => setWorkspace("dashboard")}>Try the dashboard</GhostBtn></div></Tilt>
             <Tilt k="pp" seen={seen} delay={100} style={{ padding: 40, animation: "pulseGlow 4s ease-in-out infinite" }}><div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg,${C.blue},${C.violet})`, padding: "6px 22px", borderRadius: "0 0 12px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", zIndex: 2 }}>MOST POPULAR</div><h3 style={HD({ fontSize: 22, marginBottom: 8, marginTop: 10 })}>AIRA Mastermind</h3><div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}><span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-display)" }}>$9.99</span><span style={{ color: C.muted }}>/month</span></div><p style={{ fontSize: 13, color: C.cyan, marginBottom: 26 }}>Billed monthly · Cancel anytime</p>{["Unlimited AI mentor sessions", "All 6 focus techniques", "All 15 subject categories", "Full dashboard + analytics", "6 royalty-free soundscapes", "Spaced repetition + flashcards", "Streaks + certificates", "Export + offline mode", "Cancel anytime"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.fg, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GBtn full onClick={buy}>Become a Mastermind</GBtn></div></Tilt>
@@ -1797,6 +1876,20 @@ export default function Home() {
           <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 40, marginBottom: 48 }}>
             <div style={{ maxWidth: 280 }}><div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}><BrainLogo size={26} /><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 23, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</div></div><p style={{ fontSize: 14, color: C.faint, lineHeight: 1.7 }}>Your AI study mentor. Get into flow. Stay there.</p></div>
             {[{ t: "Product", l: [["Features", "#features"], ["Science", "#science"], ["Mastermind", "#premium"], ["Pricing", "#pricing"]] }, { t: "Study", l: [["Study Guide", "#guide"], ["Techniques", "#features"], ["Focus Audio", "#premium"], ["Compare", "#features"]] }, { t: "Company", l: [["How it works", "#features"], ["Get a gift code", "#pricing"], ["Privacy", "/privacy"], ["Terms", "/terms"]] }].map((col) => <div key={col.t}><h4 style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, marginBottom: 16 }}>{col.t}</h4><div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{col.l.map(([l, href]) => <a key={l} href={href} style={{ fontSize: 14, color: C.faint, textDecoration: "none", transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = C.muted)} onMouseLeave={(e) => (e.currentTarget.style.color = C.faint)}>{l}</a>)}</div></div>)}
+          </div>
+          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, marginBottom: 22 }}>
+            <h4 style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.faint, marginBottom: 14 }}>Built with open source</h4>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {[
+                { n: "React Bits — Aurora", u: "https://github.com/DavidHDev/react-bits" },
+                { n: "React Bits — DotGrid", u: "https://github.com/DavidHDev/react-bits" },
+                { n: "React Bits — ShinyText", u: "https://github.com/DavidHDev/react-bits" },
+                { n: "ogl", u: "https://github.com/oframe/ogl" },
+                { n: "GSAP", u: "https://github.com/greensock/GSAP" },
+                { n: "Framer Motion", u: "https://github.com/framer/motion" },
+                { n: "Next.js", u: "https://github.com/vercel/next.js" },
+              ].map((c) => <a key={c.n} href={c.u} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: C.muted, textDecoration: "none", padding: "5px 12px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.surface, transition: "all 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(34,211,238,0.4)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}>{c.n}</a>)}
+            </div>
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}><p style={{ fontSize: 13, color: C.faint }}>© 2026 AIRA Mentor. airamentor.com</p><p style={{ fontSize: 13, color: C.faint }}>Made in Turkey</p></div>
         </div>
