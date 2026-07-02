@@ -257,23 +257,11 @@ function Tilt({ children, k, seen, delay = 0, style = {}, span = 1 }: { children
   </div>;
 }
 
-/* ════════════ DATA ════════════ */
-const TECHNIQUES = [
-  { id: "pomodoro", ic: "clock", name: "Pomodoro", tag: "25 / 5", work: 25, brk: 5, color: C.blue, desc: "25-minute focus sprints with 5-minute breaks. Lowers the barrier to starting.", best: "Reading, problem sets, writing" },
-  { id: "flowtime", ic: "wave", name: "Flowtime", tag: "Free-form", work: 50, brk: 10, color: C.cyan, desc: "No fixed timer. Work until your focus dips, then break as needed. AIRA learns your attention span.", best: "Coding, deep creative work" },
-  { id: "5217", ic: "repeat", name: "52 / 17", tag: "52 / 17", work: 52, brk: 17, color: C.violet, desc: "52 minutes on, 17 off. The research-backed ratio that maximizes a full day's output.", best: "Long study days, exam prep" },
-  { id: "deepwork", ic: "brain", name: "Deep Work", tag: "90 min", work: 90, brk: 20, color: C.pink, desc: "90-minute distraction-free blocks matched to your ultradian rhythm. Maximum depth.", best: "Thesis, hard concepts" },
-  { id: "timeboxing", ic: "box", name: "Timeboxing", tag: "Fixed", work: 40, brk: 10, color: C.green, desc: "Assign each task a fixed time slot. Work shrinks to fit the box you give it.", best: "Busy days, small tasks" },
-  { id: "ultradian", ic: "moon", name: "Ultradian", tag: "Rhythm", work: 75, brk: 25, color: C.amber, desc: "75-minute waves of work mirroring your body's natural energy cycles, with full recovery.", best: "All-day deep study" },
-];
 /* ════════════ SESSION HISTORY (real, localStorage) ════════════ */
 type SessionLog = { id: string; tech: string; color: string; mins: number; ts: number };
 function getSessions(): SessionLog[] { try { return JSON.parse(window.localStorage.getItem("aira_sessions") || "[]") as SessionLog[]; } catch { return []; } }
 function logSession(s: Omit<SessionLog, "id" | "ts">) { try { const list = getSessions(); list.unshift({ ...s, id: Math.random().toString(36).slice(2), ts: Date.now() }); window.localStorage.setItem("aira_sessions", JSON.stringify(list.slice(0, 60))); } catch {} }
 function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d / 60000); if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); return days === 1 ? "yesterday" : `${days}d ago`; }
-/* ── real streak: a day counts when the learner shows up (opens the app / reflects) ── */
-function recordActivity() { try { const today = new Date().toDateString(); const days: string[] = JSON.parse(window.localStorage.getItem("aira_activity") || "[]"); if (!days.includes(today)) { days.push(today); window.localStorage.setItem("aira_activity", JSON.stringify(days.slice(-180))); } } catch {} }
-function computeStreak(): number { try { const days = new Set<string>(JSON.parse(window.localStorage.getItem("aira_activity") || "[]")); const d = new Date(); if (!days.has(d.toDateString())) { d.setDate(d.getDate() - 1); if (!days.has(d.toDateString())) return 0; } let streak = 0; while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); } return streak; } catch { return 0; } }
 function getXp(): number { try { const x = parseInt(window.localStorage.getItem("aira_xp") || "0", 10); return Number.isNaN(x) ? 0 : x; } catch { return 0; } }
 
 /* ════════════ APP WORKSPACE ════════════ */
@@ -356,113 +344,189 @@ function MastermindModal({ onClose, onBuy }: { onClose: () => void; onBuy: () =>
   );
 }
 
+/* ░░ WORKSPACE TOUR — game-style spotlight walkthrough, plays once after
+   onboarding instead of a survey. Highlights each real element by data-tour
+   attribute and calls out what's free vs. what Mastermind unlocks there. ░░ */
+const TOUR_STEPS = [
+  { sel: '[data-tour="nav-mentor"]', title: "Your AI Mentor", body: "Summarize notes, build tests, and get a real plan — just tell it your goal. Mastermind: unlimited messages + photo reading.", side: "right" as const },
+  { sel: '[data-tour="nav-explain"]', title: "AIRA Explains", body: "Stuck on a term or a move? Type it in and AIRA researches it live, explains it, and finds the exact video. Mastermind: unlimited lookups.", side: "right" as const },
+  { sel: '[data-tour="nav-history"]', title: "History", body: "Every mentor chat and lookup is logged here automatically — your progress, always one click away.", side: "right" as const },
+  { sel: '[data-tour="mastermind-btn"]', title: "Go Mastermind", body: "One plan, everything unlocked: unlimited mentoring, unlimited research, photo reading, and 1-hour focus audio.", side: "bottom" as const },
+  { sel: '[data-tour="profile-widget"]', title: "That's you", body: "Your plan, level and XP live here — tap it anytime to check progress or sign out.", side: "top" as const },
+];
+function WorkspaceTour({ onDone }: { onDone: () => void }) {
+  const [i, setI] = useState(0);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const step = TOUR_STEPS[i];
+  useEffect(() => {
+    const measure = () => {
+      const el = document.querySelector(step.sel);
+      const r = el ? el.getBoundingClientRect() : null;
+      // Treat an off-canvas target (e.g. sidebar not yet open on mobile) as "not
+      // found" so the tooltip falls back to a centered card instead of
+      // spotlighting something invisible.
+      const onScreen = r && r.width > 0 && r.right > 0 && r.left < window.innerWidth;
+      setRect(onScreen ? r : null);
+    };
+    measure();
+    const t = window.setTimeout(measure, 260); // re-measure after the sidebar's open transition settles
+    window.addEventListener("resize", measure);
+    return () => { window.removeEventListener("resize", measure); window.clearTimeout(t); };
+  }, [step.sel]);
+  const next = () => { if (i < TOUR_STEPS.length - 1) setI(i + 1); else onDone(); };
+  const pad = 8;
+  const box = rect ? { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 } : null;
+  const tipStyle: React.CSSProperties = { position: "fixed", zIndex: 1802, maxWidth: 300, padding: "18px 20px", borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan},${C.violet}) border-box`, border: "1px solid transparent", boxShadow: `0 20px 50px rgba(0,0,0,0.5)` };
+  if (box) {
+    if (step.side === "right") { tipStyle.left = box.left + box.width + 16; tipStyle.top = Math.max(16, box.top - 6); }
+    else if (step.side === "bottom") { tipStyle.top = box.top + box.height + 16; tipStyle.left = Math.max(16, box.left); }
+    else { tipStyle.bottom = window.innerHeight - box.top + 16; tipStyle.right = Math.max(16, window.innerWidth - (box.left + box.width)); }
+  } else { tipStyle.top = "50%"; tipStyle.left = "50%"; tipStyle.transform = "translate(-50%,-50%)"; }
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1800 }}>
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,4,0.06)" }} onClick={next} />
+      {box && <div style={{ position: "fixed", top: box.top, left: box.left, width: box.width, height: box.height, borderRadius: 14, boxShadow: "0 0 0 9999px rgba(0,0,4,0.82)", border: `2px solid ${C.cyan}`, pointerEvents: "none", transition: `all 0.4s ${C.ease}` }} />}
+      {!box && <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,4,0.82)" }} />}
+      <div style={tipStyle} key={i} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <span style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icon name="spark" size={11} color="#fff" /></span>
+          <h4 style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700 }}>{step.title}</h4>
+        </div>
+        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.55, marginBottom: 16 }}>{step.body}</p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 4 }}>{TOUR_STEPS.map((_, d) => <span key={d} style={{ width: d === i ? 16 : 5, height: 5, borderRadius: 999, background: d === i ? C.cyan : C.border, transition: `all 0.3s ${C.ease}` }} />)}</div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onDone} style={{ background: "none", border: "none", color: C.faint, fontSize: 12.5, cursor: "pointer" }}>Skip</button>
+            <button onClick={next} style={{ padding: "7px 16px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 12.5, fontWeight: 600 }}>{i < TOUR_STEPS.length - 1 ? "Next" : "Got it"}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 function AppWorkspace({ initial, onClose, onAuth, lifetime, userName, onSaveName, onLogout }: { initial: string; onClose: () => void; onAuth: () => void; lifetime: boolean; userName: string; onSaveName: (n: string, remember: boolean) => void; onLogout: () => void }) {
-  const [tab, setTab] = useState(initial);
+  const [tab, setTab] = useState(["dashboard", "mentor", "research", "history"].includes(initial) ? initial : "dashboard");
   const [sideOpen, setSideOpen] = useState(false);
-  const [streak, setStreak] = useState(0);
   const [showMind, setShowMind] = useState(false);
   const openMind = () => setShowMind(true);
   const [showPlan, setShowPlan] = useState(false);
-  useEffect(() => { recordActivity(); setStreak(computeStreak()); }, []);
-  // Play the "your plan is ready" reveal once, right after onboarding builds a profile.
-  useEffect(() => { try { if (userName && window.localStorage.getItem("aira_profile") && !window.localStorage.getItem("aira_plan_shown")) setShowPlan(true); } catch {} }, [userName]);
-  const NAV = [{ id: "dashboard", ic: "chart", label: "Dashboard" }, { id: "mentor", ic: "bot", label: "AI Mentor" }, { id: "research", ic: "spark", label: "AI Research" }, { id: "history", ic: "clock", label: "History" }, { id: "progress", ic: "layers", label: "Progress" }, { id: "profile", ic: "user", label: "Profile" }];
+  const [showTour, setShowTour] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  // Onboarding needs a GOAL, not just a name — email/Google sign-in already sets
+  // userName, so gate the quick-start modal on the profile (goal) existing instead.
+  const [hasProfile, setHasProfile] = useState(() => { try { return !!window.localStorage.getItem("aira_profile"); } catch { return false; } });
+  useEffect(() => { try { if (hasProfile && !window.localStorage.getItem("aira_plan_shown")) setShowPlan(true); } catch {} }, [hasProfile]);
+  const NAV = [{ id: "mentor", ic: "bot", label: "AI Mentor", tour: "nav-mentor" }, { id: "research", ic: "spark", label: "AIRA Explains", tour: "nav-explain" }, { id: "history", ic: "clock", label: "History", tour: "nav-history" }];
   const go = (id: string) => { setTab(id); setSideOpen(false); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: C.void, display: "flex", animation: `appIn 0.5s ${C.ease}` }}>
-      {!userName && <NameModal onSave={onSaveName} />}
-      {showPlan && <PlanLoader onDone={() => { try { window.localStorage.setItem("aira_plan_shown", "1"); } catch {} setShowPlan(false); }} />}
+      {!hasProfile && <NameModal existingName={userName || undefined} onSave={(n, remember) => { onSaveName(n, remember); setHasProfile(true); }} />}
+      {showPlan && <PlanLoader onDone={() => { try { window.localStorage.setItem("aira_plan_shown", "1"); } catch {} setShowPlan(false); try { if (!window.localStorage.getItem("aira_tour_shown")) { setSideOpen(true); setShowTour(true); } } catch {} }} />}
+      {showTour && <WorkspaceTour onDone={() => { try { window.localStorage.setItem("aira_tour_shown", "1"); } catch {} setShowTour(false); setSideOpen(false); }} />}
       {sideOpen && <div className="app-scrim" onClick={() => setSideOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19, background: "rgba(0,0,4,0.6)", backdropFilter: "blur(4px)" }} />}
       <aside className={`app-side${sideOpen ? " open" : ""}`} style={{ width: 256, borderRight: `1px solid ${C.border}`, background: C.deep, display: "flex", flexDirection: "column", padding: 16, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px 18px" }}>
+        <button onClick={() => go("dashboard")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px 18px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
           <BrainLogo size={26} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18, background: `linear-gradient(120deg,${C.cyan},${C.indigo},${C.violet})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AIRA</span>
           {lifetime && <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, color: C.green, background: `${C.green}18`, border: `1px solid ${C.green}44`, borderRadius: 999, padding: "3px 8px", letterSpacing: "0.06em" }}>MASTERMIND</span>}
-        </div>
+        </button>
         <button onClick={() => go("mentor")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", padding: "11px 14px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 18 }}><Icon name="plus" size={17} color="#fff" /> New chat</button>
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: C.faint, textTransform: "uppercase", padding: "0 8px 8px" }}>Workspace</div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          {NAV.map((n) => { const on = tab === n.id; return <button key={n.id} onClick={() => go(n.id)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: on ? `linear-gradient(135deg,${C.indigo}2e,${C.cyan}11)` : "transparent", color: on ? C.fg : C.muted, fontSize: 14, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}`, position: "relative" }}>{on && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.violet})` }} />}<Icon name={n.ic} size={18} color={on ? C.fg : C.muted} />{n.label}</button>; })}
+          {NAV.map((n) => { const on = tab === n.id; return <button key={n.id} data-tour={n.tour} onClick={() => go(n.id)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: on ? `linear-gradient(135deg,${C.indigo}2e,${C.cyan}11)` : "transparent", color: on ? C.fg : C.muted, fontSize: 14, fontWeight: on ? 600 : 400, transition: `all 0.2s ${C.ease}`, position: "relative" }}>{on && <span style={{ position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", width: 3, height: 18, borderRadius: 999, background: `linear-gradient(${C.cyan},${C.violet})` }} />}<Icon name={n.ic} size={18} color={on ? C.fg : C.muted} />{n.label}</button>; })}
         </nav>
-        <div style={{ margin: "18px 0", padding: 16, borderRadius: 14, background: `linear-gradient(135deg,${C.amber}1a,${C.amber}0d)`, border: `1px solid ${C.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, color: C.muted, marginBottom: 6 }}><Icon name="flame" size={14} color={C.amber} /> Current streak</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 700, color: C.amber }}>{streak} day{streak === 1 ? "" : "s"}</div>
-          <div style={{ height: 5, borderRadius: 999, background: "rgba(255,255,255,0.06)", marginTop: 10, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.min(100, (streak % 7) / 7 * 100 || (streak > 0 ? 100 : 8))}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.amber},#FB923C)`, transition: "width 0.6s ease" }} /></div>
-          <div style={{ fontSize: 10.5, color: C.faint, marginTop: 7 }}>{streak === 0 ? "Show up today to start it" : streak < 7 ? `${7 - (streak % 7)} days to a full week` : "On fire — keep it alive"}</div>
-        </div>
-        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 3 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 11, border: `1px solid ${C.border}`, textAlign: "left", background: C.surface, color: C.fg, fontSize: 14, fontWeight: 600, marginBottom: 3 }}><span style={{ width: 30, height: 30, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff", textTransform: "uppercase" }}>{userName ? userName.trim()[0] : <Icon name="user" size={14} color="#fff" />}</span><div style={{ minWidth: 0, flex: 1 }}><div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName || "Guest"}</div><div style={{ fontSize: 11, fontWeight: 500, color: lifetime ? C.green : C.faint }}>{lifetime ? "Mastermind" : "Free plan"}</div></div></div>
+        <div style={{ marginTop: "auto" }}>
           <button onClick={onLogout} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", padding: "11px 14px", borderRadius: 11, border: "none", cursor: "pointer", textAlign: "left", background: "transparent", color: C.muted, fontSize: 14, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.background = C.surface; e.currentTarget.style.color = C.fg; }} onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.muted; }}><Icon name="arrow" size={18} color={C.muted} /> Sign out</button>
         </div>
       </aside>
       <main style={{ flex: 1, overflowY: "auto", position: "relative" }}>
         <div style={{ position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px", borderBottom: `1px solid ${C.border}`, background: "rgba(3,3,10,0.8)", backdropFilter: "blur(20px)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button className="app-burger" onClick={() => setSideOpen(true)} aria-label="Open menu" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.fg, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "none", alignItems: "center", justifyContent: "center" }}><Icon name="menu" size={18} color={C.fg} /></button><button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow" size={16} color={C.muted} /></button><h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, textTransform: "capitalize" }}>{NAV.find((n) => n.id === tab)?.label || tab}</h2></div>
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button onClick={openMind} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Become a Mastermind</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}><button className="app-burger" onClick={() => setSideOpen(true)} aria-label="Open menu" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.fg, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "none", alignItems: "center", justifyContent: "center" }}><Icon name="menu" size={18} color={C.fg} /></button><button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, width: 36, height: 36, borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="arrow" size={16} color={C.muted} /></button><h2 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 700, textTransform: "capitalize" }}>{tab === "dashboard" ? "Dashboard" : NAV.find((n) => n.id === tab)?.label || tab}</h2></div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>{!lifetime && <button data-tour="mastermind-btn" onClick={openMind} style={{ padding: "9px 18px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13, fontWeight: 600 }}>Become a Mastermind</button>}<button onClick={onClose} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted, padding: "9px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13 }}>Exit</button></div>
         </div>
         <div style={{ padding: 28, maxWidth: 1000, margin: "0 auto" }}>
           {tab === "dashboard" && <DashTab onGo={setTab} userName={userName} />}
           {tab === "mentor" && <MentorTab lifetime={lifetime} onUpgrade={openMind} userName={userName} />}
-          {tab === "research" && <ResearchTab />}
+          {tab === "research" && <ExplainTab />}
           {tab === "history" && <HistoryTab />}
-          {tab === "progress" && <ProgressTab />}
-          {tab === "profile" && <ProfileTab userName={userName} lifetime={lifetime} streak={streak} onUpgrade={openMind} onLogout={onLogout} />}
         </div>
+        {tab === "dashboard" && <ProfileWidget userName={userName} lifetime={lifetime} onOpen={() => setShowProfile(true)} />}
       </main>
       {showMind && <MastermindModal onClose={() => setShowMind(false)} onBuy={onAuth} />}
+      {showProfile && <ProfileModal userName={userName} lifetime={lifetime} onUpgrade={() => { setShowProfile(false); openMind(); }} onLogout={onLogout} onClose={() => setShowProfile(false)} />}
     </div>
   );
 }
 
-/* ░░ PROFILE TAB ░░ */
-function ProfileTab({ userName, lifetime, streak, onUpgrade, onLogout }: { userName: string; lifetime: boolean; streak: number; onUpgrade: () => void; onLogout: () => void }) {
+/* ░░ PROFILE — a small pinned widget (bottom-right of the dashboard) that
+   expands into a full modal on click. No streak, no survey rows — just what's
+   real: name, plan, level/XP, and the one goal collected at onboarding. ░░ */
+function ProfileWidget({ userName, lifetime, onOpen }: { userName: string; lifetime: boolean; onOpen: () => void }) {
+  const [xp, setXp] = useState(0);
+  useEffect(() => { setXp(getXp()); }, []);
+  const level = Math.floor(xp / 500) + 1;
+  return (
+    <button onClick={onOpen} data-tour="profile-widget" style={{ position: "fixed", right: 28, bottom: 28, zIndex: 40, display: "flex", alignItems: "center", gap: 11, padding: "10px 18px 10px 10px", borderRadius: 999, cursor: "pointer", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo}66,rgba(255,255,255,0.08)) border-box`, border: "1px solid transparent", boxShadow: "0 12px 32px rgba(0,0,0,0.4)", backdropFilter: "blur(16px)" }}>
+      <span style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#fff", textTransform: "uppercase", fontFamily: "var(--font-display)" }}>{userName ? userName.trim()[0] : "?"}</span>
+      <div style={{ textAlign: "left" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: C.fg, lineHeight: 1.2 }}>{userName || "Guest"}</div>
+        <div style={{ fontSize: 11, fontWeight: 500, color: lifetime ? C.green : C.faint, lineHeight: 1.2, marginTop: 1 }}>{lifetime ? "Mastermind" : `Level ${level}`}</div>
+      </div>
+    </button>
+  );
+}
+function ProfileModal({ userName, lifetime, onUpgrade, onLogout, onClose }: { userName: string; lifetime: boolean; onUpgrade: () => void; onLogout: () => void; onClose: () => void }) {
   const [profile, setProfile] = useState<Record<string, string> | null>(null);
   const [xp, setXp] = useState(0);
   useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); setXp(getXp()); } catch {} }, []);
-  const conf = profile?.confidence ? parseInt(String(profile.confidence)) : 0;
   const level = Math.floor(xp / 500) + 1;
-  const rows: [string, string][] = [
-    ["Goal", profile?.goal || "—"], ["Level", profile?.level || "—"], ["Deadline", profile?.deadline || "—"],
-    ["Weekly time", profile?.hours || "—"], ["Focus window", profile?.when || "—"], ["Watch out for", profile?.weakness || "—"],
-  ];
-  const retake = () => { try { window.localStorage.removeItem("aira_profile"); } catch {} window.location.reload(); };
+  const retake = () => { try { window.localStorage.removeItem("aira_profile"); window.localStorage.removeItem("aira_plan_shown"); } catch {} window.location.reload(); };
   return (
-    <div style={{ animation: "tabIn 0.4s ease", maxWidth: 720 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <span style={{ width: 64, height: 64, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 700, color: "#fff", textTransform: "uppercase", fontFamily: "var(--font-display)" }}>{userName ? userName.trim()[0] : "?"}</span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700 }}>{userName || "Guest"}</h3>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 4, padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: lifetime ? C.green : C.muted, background: lifetime ? `${C.green}14` : C.surface, border: `1px solid ${lifetime ? C.green + "44" : C.border}` }}>{lifetime ? "Mastermind · lifetime" : "Free plan"}</div>
-        </div>
-        {!lifetime && <button onClick={onUpgrade} style={{ padding: "11px 20px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13.5, fontWeight: 600, whiteSpace: "nowrap" }}>Become a Mastermind</button>}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }} className="dash-grid">
-        {[{ l: "Level", v: String(level), c: C.violet }, { l: "Total XP", v: String(xp), c: C.cyan }, { l: "Day streak", v: String(streak), c: C.amber }].map((s) => <div key={s.l} style={{ padding: 18, borderRadius: 16, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: s.c }}>{s.v}</div><div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>{s.l}</div></div>)}
-      </div>
-      {profile ? (
-        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Learning Profile</h4>
-            {conf > 0 && <span style={{ fontSize: 13, fontWeight: 700, color: C.cyan }}>{conf}% confidence</span>}
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1500, background: "rgba(0,0,4,0.85)", backdropFilter: "blur(14px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 26, padding: 36, maxWidth: 440, width: "100%", boxShadow: `0 0 90px ${C.indigo}33`, animation: `popIn 0.4s ${C.spring}` }}>
+        <button onClick={onClose} style={{ position: "absolute", top: 18, right: 18, background: "none", border: "none", color: C.faint, fontSize: 24, cursor: "pointer", lineHeight: 1 }}>×</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+          <span style={{ width: 58, height: 58, borderRadius: "50%", flexShrink: 0, background: `linear-gradient(135deg,${C.indigo},${C.cyan})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 23, fontWeight: 700, color: "#fff", textTransform: "uppercase", fontFamily: "var(--font-display)" }}>{userName ? userName.trim()[0] : "?"}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700 }}>{userName || "Guest"}</h3>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 4, padding: "3px 11px", borderRadius: 999, fontSize: 11.5, fontWeight: 700, color: lifetime ? C.green : C.muted, background: lifetime ? `${C.green}14` : C.surface, border: `1px solid ${lifetime ? C.green + "44" : C.border}` }}>{lifetime ? "Mastermind · lifetime" : "Free plan"}</div>
           </div>
-          {rows.map(([l, v]) => <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${C.border}` }}><span style={{ fontSize: 12.5, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em" }}>{l}</span><span style={{ fontSize: 14, fontWeight: 600, color: C.fg, textAlign: "right", maxWidth: "60%" }}>{v}</span></div>)}
-          <button onClick={retake} style={{ marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 13, fontWeight: 600, cursor: "pointer" }}><Icon name="reset" size={15} color={C.muted} /> Retake onboarding</button>
         </div>
-      ) : (
-        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 20, textAlign: "center", color: C.muted, fontSize: 14 }}>No learning profile yet. <button onClick={retake} style={{ background: "none", border: "none", color: C.cyan, cursor: "pointer", fontSize: 14, fontWeight: 600 }}>Build one now →</button></div>
-      )}
-      <button onClick={onLogout} style={{ display: "inline-flex", alignItems: "center", gap: 9, padding: "11px 20px", borderRadius: 999, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 14, fontWeight: 600, cursor: "pointer" }}><Icon name="arrow" size={16} color={C.muted} /> Sign out</button>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+          {[{ l: "Level", v: String(level), c: C.violet }, { l: "Total XP", v: String(xp), c: C.cyan }].map((s) => <div key={s.l} style={{ padding: 16, borderRadius: 14, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 25, fontWeight: 700, color: s.c }}>{s.v}</div><div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{s.l}</div></div>)}
+        </div>
+        {profile?.goal && (
+          <div style={{ padding: "14px 16px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}`, marginBottom: 18 }}>
+            <div style={{ fontSize: 11, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Working toward</div>
+            <div style={{ fontSize: 14.5, fontWeight: 600, color: C.fg }}>{profile.goal}</div>
+          </div>
+        )}
+        {!lifetime && <button onClick={onUpgrade} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Become a Mastermind</button>}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={retake} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 14px", borderRadius: 11, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}><Icon name="reset" size={14} color={C.muted} /> Retake setup</button>
+          <button onClick={onLogout} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 14px", borderRadius: 11, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}><Icon name="arrow" size={14} color={C.muted} /> Sign out</button>
+        </div>
+      </div>
     </div>
   );
 }
 
 /* ░░ DASHBOARD TAB ░░ */
 function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: string }) {
-  const [stats, setStats] = useState({ xp: 0, level: 1, streak: 0, sessions: 0 });
-  useEffect(() => { const xp = getXp(); setStats({ xp, level: Math.floor(xp / 500) + 1, streak: computeStreak(), sessions: getSessions().length }); }, []);
+  const [stats, setStats] = useState({ xp: 0, level: 1, sessions: 0 });
+  const [week, setWeek] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  useEffect(() => {
+    const xp = getXp();
+    const sessions = getSessions();
+    setStats({ xp, level: Math.floor(xp / 500) + 1, sessions: sessions.length });
+    // Real last-7-days activity (Mon…Sun), from actual logged sessions — no fake bars.
+    const days = [0, 0, 0, 0, 0, 0, 0];
+    const now = new Date();
+    sessions.forEach((s) => { const diff = Math.floor((now.getTime() - s.ts) / 864e5); if (diff >= 0 && diff < 7) { const dow = (new Date(s.ts).getDay() + 6) % 7; days[dow] += s.mins; } });
+    setWeek(days);
+  }, []);
   const cards = [
     { l: "Total XP earned", v: String(stats.xp), c: C.cyan, ic: "spark" },
     { l: "Current level", v: String(stats.level), c: C.violet, ic: "layers" },
-    { l: "Day streak", v: String(stats.streak), c: C.amber, ic: "flame" },
     { l: "Sessions logged", v: String(stats.sessions), c: C.green, ic: "target" },
   ];
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -471,19 +535,10 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
   const [profile, setProfile] = useState<Record<string, string> | null>(null);
   useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); } catch {} }, []);
   const goal = profile?.goal;
-  const coachMsg = (() => {
-    const g = goal || "your goal";
-    switch (profile?.weakness) {
-      case "Procrastination": return `Procrastination's the enemy today. Don't plan — start. One 25-minute block on ${g} before anything else; momentum beats motivation.`;
-      case "Staying focused": return `Focus is your edge today. Phone in another room, one tab, 25 minutes on ${g}. Protect the block and the rest follows.`;
-      case "The hard concepts": return `Growth hides in the hard parts. Take the one ${g} idea you've been avoiding, break it into three small questions, then answer them.`;
-      case "Staying consistent": return `Consistency is the whole game. Even 15 minutes on ${g} today keeps the streak alive — just show up, that's the win.`;
-      default: return `Today's move: one focused block on ${g}. Small, steady reps compound faster than you'd think.`;
-    }
-  })();
+  const coachMsg = `Today's move: one focused block on ${goal || "your goal"}. Small, steady reps compound faster than you'd think.`;
   const [reflect, setReflect] = useState<string | null>(null);
   useEffect(() => { try { const r = JSON.parse(window.localStorage.getItem("aira_reflect") || "{}"); if (r && r.date === new Date().toDateString()) setReflect(r.mood); } catch {} }, []);
-  const doReflect = (mood: string) => { setReflect(mood); try { window.localStorage.setItem("aira_reflect", JSON.stringify({ mood, date: new Date().toDateString() })); const x = getXp() + 50; window.localStorage.setItem("aira_xp", String(x)); recordActivity(); setStats((s) => ({ ...s, xp: x, level: Math.floor(x / 500) + 1, streak: computeStreak() })); } catch {} };
+  const doReflect = (mood: string) => { setReflect(mood); try { window.localStorage.setItem("aira_reflect", JSON.stringify({ mood, date: new Date().toDateString() })); const x = getXp() + 50; window.localStorage.setItem("aira_xp", String(x)); setStats((s) => ({ ...s, xp: x, level: Math.floor(x / 500) + 1 })); } catch {} };
   const reflectMsg: Record<string, string> = { Great: "Love it. I'll push today's block a little harder — you're ready for it.", Okay: "Solid. Steady beats perfect — one small win at a time, same plan tomorrow.", Tough: "Thanks for being honest. I'll lighten tomorrow: shorter block, easier entry point. Rest counts too." };
   return (
     <div style={{ animation: "tabIn 0.4s ease" }}>
@@ -509,9 +564,9 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
         </button>
         <button onClick={() => onGo("research")} style={{ textAlign: "left", cursor: "pointer", padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.cyan}66,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", color: C.fg, transition: `transform 0.3s ${C.ease}` }} onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-3px)")} onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
           <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, marginBottom: 18 }}><Icon name="spark" size={24} color="#fff" /></div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>AI Research</div>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Stuck on a move or a concept? AIRA researches it live and links real videos.</p>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Open research <Icon name="arrow" size={16} color={C.cyan} /></span>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, marginBottom: 6 }}>AIRA Explains</div>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.6 }}>Stuck on a term or a move? AIRA researches it live, explains it, and finds the video.</p>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 18, fontSize: 14, fontWeight: 600, color: C.cyan }}>Ask AIRA <Icon name="arrow" size={16} color={C.cyan} /></span>
         </button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 14, marginBottom: 24 }}>
@@ -538,116 +593,13 @@ function DashTab({ onGo, userName }: { onGo: (t: string) => void; userName: stri
           )}
         </div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16 }} className="dash-grid">
-        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
-          <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>This week's focus</h4>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, height: 140 }}>{[60, 85, 45, 95, 70, 100, 55].map((h, i) => <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}><div style={{ width: "100%", height: `${h}%`, borderRadius: "8px 8px 0 0", background: `linear-gradient(${C.cyan},${C.indigo})`, animation: `growBar 0.7s ${C.spring} ${i * 70}ms both`, transformOrigin: "bottom" }} /><span style={{ fontSize: 11, color: C.faint }}>{["M", "T", "W", "T", "F", "S", "S"][i]}</span></div>)}</div>
-        </div>
-        <div style={{ padding: 24, borderRadius: 18, background: `linear-gradient(135deg,${C.indigo}1a,${C.violet}0d)`, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ color: C.violet, marginBottom: 12 }}><Icon name="target" size={28} color={C.violet} /></div>
-          <h4 style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, marginBottom: 6 }}>Today's goal</h4>
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 16 }}>Complete 1 Deep Work session on Mathematics. You're 60% there.</p>
-          <div style={{ height: 7, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", width: "60%", borderRadius: 999, background: `linear-gradient(90deg,${C.cyan},${C.violet})`, animation: "growW 1s ease 0.3s both" }} /></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ░░ STUDY TAB ░░ */
-function StudyTab({ onGo }: { onGo: (t: string) => void }) {
-  const [tech, setTech] = useState(TECHNIQUES[0]);
-  const [secs, setSecs] = useState(TECHNIQUES[0].work * 60);
-  const [running, setRunning] = useState(false); const [onBreak, setOnBreak] = useState(false);
-  const [goal, setGoal] = useState("");
-  const [sound, setSound] = useState("silence");
-  const [focusMode, setFocusMode] = useState(false);
-  const [sessions, setSessions] = useState<SessionLog[]>([]);
-  useEffect(() => { setSessions(getSessions()); }, []);
-  useEffect(() => { if (!running) return; const id = setInterval(() => setSecs((s) => { if (s <= 1) { if (!onBreak) { logSession({ tech: tech.name, color: tech.color, mins: tech.work }); setSessions(getSessions()); } setOnBreak((b) => !b); return (!onBreak ? tech.brk : tech.work) * 60; } return s - 1; }), 1000); return () => clearInterval(id); }, [running, onBreak, tech]);
-  const topTech = (() => { const counts: Record<string, number> = {}; sessions.forEach((s) => { counts[s.tech] = (counts[s.tech] || 0) + 1; }); return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]; })();
-  const todayMins = sessions.filter((s) => new Date(s.ts).toDateString() === new Date().toDateString()).reduce((a, s) => a + s.mins, 0);
-  const weekCount = sessions.filter((s) => Date.now() - s.ts < 7 * 864e5).length;
-  const statCards = [
-    { l: "Focus today", v: todayMins >= 60 ? `${Math.floor(todayMins / 60)}h ${todayMins % 60}m` : `${todayMins}m`, c: C.cyan, ic: "clock" },
-    { l: "Sessions this week", v: String(weekCount), c: C.violet, ic: "target" },
-    { l: "Total sessions", v: String(sessions.length), c: C.green, ic: "layers" },
-  ];
-  const pick = (t: typeof TECHNIQUES[0]) => { setTech(t); setSecs(t.work * 60); setOnBreak(false); setRunning(false); };
-  const total = (onBreak ? tech.brk : tech.work) * 60;
-  const mm = String(Math.floor(secs / 60)).padStart(2, "0"), ss = String(secs % 60).padStart(2, "0");
-  const R = 120, CIRC = 2 * Math.PI * R, pct = 1 - secs / total;
-  return (
-    <div style={{ animation: "tabIn 0.4s ease", display: "grid", gridTemplateColumns: "1fr 340px", gap: 24 }} className="study-grid">
-      <div style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }} className="dash-grid">
-        {statCards.map((s, i) => <div key={s.l} style={{ padding: "16px 18px", borderRadius: 14, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${s.c}44,rgba(255,255,255,0.04)) border-box`, border: "1px solid transparent", display: "flex", alignItems: "center", gap: 12, animation: `tabIn 0.5s ease ${i * 70}ms both` }}><span style={{ width: 38, height: 38, borderRadius: 11, background: `${s.c}1f`, display: "flex", alignItems: "center", justifyContent: "center", color: s.c, flexShrink: 0 }}><Icon name={s.ic} size={18} color={s.c} /></span><div><div style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: s.c, lineHeight: 1 }}>{s.v}</div><div style={{ fontSize: 12, color: C.muted, marginTop: 3 }}>{s.l}</div></div></div>)}
-      </div>
-      {focusMode && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1400, background: "rgba(2,2,8,0.96)", backdropFilter: "blur(8px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 28, animation: "fadeIn 0.3s ease" }}>
-          <div style={{ fontSize: 13, color: onBreak ? C.green : tech.color, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600 }}>{onBreak ? "Break" : "Focus"} · {tech.name}</div>
-          <div style={{ position: "relative", width: 300, height: 300 }}>
-            <div style={{ position: "absolute", inset: -24, borderRadius: "50%", background: `radial-gradient(circle, ${tech.color}33, transparent 70%)`, animation: "breathe 3s ease-in-out infinite" }} />
-            <svg viewBox="0 0 264 264" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}><circle cx="132" cy="132" r={R} fill="none" stroke={C.border} strokeWidth="6" /><circle cx="132" cy="132" r={R} fill="none" stroke={tech.color} strokeWidth="6" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: "stroke-dashoffset 1s linear", filter: `drop-shadow(0 0 14px ${tech.color})` }} /></svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: 66, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{mm}:{ss}</div>
-          </div>
-          {goal.trim() && <div style={{ fontSize: 15, color: C.muted, maxWidth: 420, textAlign: "center" }}>{goal}</div>}
-          <div style={{ display: "flex", gap: 14 }}>
-            <button onClick={() => setRunning(!running)} style={{ width: 60, height: 60, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${tech.color},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 36px ${tech.color}55` }}><Icon name={running ? "pause" : "play"} size={22} color="#fff" /></button>
-            <button onClick={() => setFocusMode(false)} style={{ padding: "0 24px", height: 60, borderRadius: 999, border: `1px solid ${C.border}`, cursor: "pointer", background: C.surface, color: C.muted, fontSize: 14, fontWeight: 600 }}>Exit focus</button>
-          </div>
-        </div>
-      )}
-      <div>
-        <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 12, background: `linear-gradient(135deg,${C.cyan}1a,${C.violet}0d)`, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
-          <Icon name="spark" size={16} color={C.cyan} />
-          <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{sessions.length > 0 ? <>AIRA learned from your last <strong style={{ color: C.fg }}>{sessions.length}</strong> session{sessions.length > 1 ? "s" : ""}{topTech ? <> — your go-to is <strong style={{ color: C.fg }}>{topTech[0]}</strong>. Want to beat your streak?</> : "."}</> : <>Complete a session and AIRA starts adapting to your rhythm and peak hours.</>}</span>
-        </div>
-        <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 14 }}>Pick your technique</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {TECHNIQUES.map((t) => { const on = t.id === tech.id; return <button key={t.id} onClick={() => pick(t)} style={{ textAlign: "left", cursor: "pointer", padding: 18, borderRadius: 16, background: on ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${t.color},${C.violet}) border-box` : C.surface, border: on ? "1.5px solid transparent" : `1px solid ${C.border}`, transform: on ? "translateY(-3px)" : "none", boxShadow: on ? `0 14px 36px ${t.color}33` : "none", transition: `all 0.3s ${C.ease}` }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}><span style={{ color: t.color }}><Icon name={t.ic} size={22} color={t.color} /></span><span style={{ fontSize: 11, fontWeight: 700, color: t.color }}>{t.tag}</span></div><div style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: on ? C.fg : C.muted, marginBottom: 4 }}>{t.name}</div><p style={{ fontSize: 12, color: C.faint, lineHeight: 1.5 }}>{t.best}</p></button>; })}
-        </div>
-        <div style={{ marginTop: 16, padding: 18, borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}><p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.7 }}>{tech.desc}</p></div>
-
-        {/* AI-generated plan */}
-        <div style={{ marginTop: 16, padding: 20, borderRadius: 16, background: `linear-gradient(135deg,${C.indigo}16,${C.violet}0a)`, border: `1px solid ${C.border}`, position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", right: -20, top: -20, width: 120, height: 120, borderRadius: "50%", background: `radial-gradient(circle,${C.violet}33,transparent 70%)`, filter: "blur(20px)", pointerEvents: "none" }} />
-          <div style={{ position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ width: 34, height: 34, borderRadius: 10, background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={18} color="#fff" /></span>
-                <div><div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15 }}>AIRA&apos;s plan for you</div><div style={{ fontSize: 12, color: C.faint }}>Generated from your goals & sessions</div></div>
-              </div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.cyan, background: `${C.cyan}14`, border: `1px solid ${C.cyan}33`, borderRadius: 999, padding: "4px 9px" }}><Icon name="spark" size={11} color={C.cyan} /> AI-generated</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              {[{ d: "Day 1", t: "Deep Work · core concepts", m: "90m", c: C.pink }, { d: "Day 2", t: "Active-recall quiz from your notes", m: "30m", c: C.cyan }, { d: "Day 3", t: "Spaced review of Day 1", m: "20m", c: C.green }].map((r) => (
-                <div key={r.d} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, background: C.elev, border: `1px solid ${C.border}` }}>
-                  <span style={{ fontFamily: "var(--font-display)", fontSize: 12, fontWeight: 700, color: r.c, width: 42, flexShrink: 0 }}>{r.d}</span>
-                  <span style={{ flex: 1, fontSize: 13.5, color: C.fg }}>{r.t}</span>
-                  <span style={{ fontSize: 12.5, color: C.muted, fontVariantNumeric: "tabular-nums" }}>{r.m}</span>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => onGo("mentor")} style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 13.5, fontWeight: 600 }}>Generate my full plan <Icon name="arrow" size={15} color="#fff" /></button>
-          </div>
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "fit-content" }}>
-        <div style={{ padding: 28, borderRadius: 20, background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${tech.color}55,rgba(255,255,255,0.05)) border-box`, border: "1px solid transparent", textAlign: "center" }}>
-          <div style={{ fontSize: 12, color: onBreak ? C.green : tech.color, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, marginBottom: 14 }}>{onBreak ? "Break" : "Focus"}{running && !onBreak && goal.trim() ? "" : ""}</div>
-          <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="What's your goal this session?" style={{ width: "100%", textAlign: "center", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 11, color: C.fg, fontSize: 13.5, padding: "10px 12px", outline: "none", marginBottom: 20 }} />
-          <div style={{ position: "relative", width: 240, height: 240, margin: "0 auto 22px" }}>
-            {running && <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: `radial-gradient(circle, ${tech.color}33, transparent 70%)`, animation: "breathe 3s ease-in-out infinite", pointerEvents: "none" }} />}
-            <svg viewBox="0 0 264 264" style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}><defs><linearGradient id={`ring-${tech.id}`} x1="0" y1="0" x2="264" y2="264"><stop offset="0%" stopColor={tech.color} /><stop offset="100%" stopColor={C.violet} /></linearGradient></defs><circle cx="132" cy="132" r={R} fill="none" stroke={C.border} strokeWidth="8" /><circle cx="132" cy="132" r={R} fill="none" stroke={`url(#ring-${tech.id})`} strokeWidth="8" opacity="0.16" /><circle cx="132" cy="132" r={R} fill="none" stroke={`url(#ring-${tech.id})`} strokeWidth="8" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - pct)} style={{ transition: "stroke-dashoffset 1s linear", filter: `drop-shadow(0 0 10px ${tech.color}aa)` }} /></svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 52, fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{mm}:{ss}</div><div style={{ fontSize: 11, color: C.faint, marginTop: 6 }}>{running ? "in session" : "ready"}</div></div>
-          </div>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}><button onClick={() => setRunning(!running)} style={{ width: 60, height: 60, borderRadius: 999, border: "none", cursor: "pointer", background: `linear-gradient(135deg,${tech.color},${C.violet})`, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 36px ${tech.color}55` }}><Icon name={running ? "pause" : "play"} size={22} color="#fff" /></button><button onClick={() => pick(tech)} style={{ width: 60, height: 60, borderRadius: 999, border: `1px solid ${C.border}`, cursor: "pointer", background: C.surface, color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="reset" size={18} color={C.muted} /></button></div>
-          <button onClick={() => { setFocusMode(true); setRunning(true); }} style={{ marginTop: 18, display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 999, border: `1px solid ${C.border}`, background: C.surface, color: C.muted, fontSize: 13, fontWeight: 600, cursor: "pointer" }}><Icon name="moon" size={15} color={C.cyan} /> Enter focus mode</button>
-        </div>
-        <div style={{ padding: 18, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted }}><Icon name="wave" size={15} color={C.cyan} /> Soundscape</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{SOUNDS.map((s) => { const on = s.id === sound; return <button key={s.id} onClick={() => setSound(s.id)} style={{ padding: "7px 13px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, background: on ? `linear-gradient(135deg,${C.cyan}26,${C.indigo}26)` : "transparent", border: `1px solid ${on ? "rgba(34,211,238,0.5)" : C.border}`, color: on ? C.fg : C.muted, transition: `all 0.2s ${C.ease}` }}>{s.name}</button>; })}</div>
-        </div>
+      <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
+        <h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>This week's activity</h4>
+        {week.every((m) => m === 0) ? (
+          <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.6 }}>No sessions logged yet this week — start a focus block from the mentor and it&apos;ll show up here.</p>
+        ) : (
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, height: 140 }}>{week.map((mins, i) => { const max = Math.max(...week, 1); const h = Math.max(4, (mins / max) * 100); return <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}><div title={`${mins}m`} style={{ width: "100%", height: `${h}%`, borderRadius: "8px 8px 0 0", background: mins > 0 ? `linear-gradient(${C.cyan},${C.indigo})` : "rgba(255,255,255,0.06)", animation: `growBar 0.7s ${C.spring} ${i * 70}ms both`, transformOrigin: "bottom" }} /><span style={{ fontSize: 11, color: C.faint }}>{["M", "T", "W", "T", "F", "S", "S"][i]}</span></div>; })}</div>
+        )}
       </div>
     </div>
   );
@@ -864,17 +816,18 @@ function offlineReply(mode: MMode, raw: string, name: string): string {
   return `I'm with you, ${who}. To mentor you well I work Socratically — I'll ask, you reason, then I confirm and we lock it in with a quick recall check. Tell me the exact topic or paste your notes, and pick a mode: **Summarize**, **Make a test**, or **Study program**. Where do you want to start?`;
 }
 
-/* ░░ AI RESEARCH TAB — live, grounded, links to real videos ░░ */
-const RESEARCH_EXAMPLES = [
+/* ░░ AIRA EXPLAINS — type any term, move, or concept; live grounded answer +
+   the exact video that shows it. This is the "term analysis / how-to" tab. ░░ */
+const EXPLAIN_EXAMPLES = [
   { q: "How do I do a 'step down' exercise?", tag: "Fitness" },
+  { q: "What does 'API' actually mean?", tag: "Tech term" },
   { q: "Explain spaced repetition simply", tag: "Studying" },
   { q: "How to fix a slice in golf", tag: "Sport" },
   { q: "What is compound interest?", tag: "Finance" },
-  { q: "How does a guitar barre chord work?", tag: "Music" },
 ];
 function ytSearch(text: string) { return `https://www.youtube.com/results?search_query=${encodeURIComponent(text.replace(/[?]/g, "") + " how to")}`; }
 function hostOf(uri: string) { try { return new URL(uri).hostname.replace(/^www\./, ""); } catch { return "source"; } }
-function ResearchTab() {
+function ExplainTab() {
   const [q, setQ] = useState("");
   const [asked, setAsked] = useState("");
   const [loading, setLoading] = useState(false);
@@ -886,40 +839,40 @@ function ResearchTab() {
     try {
       const r = await fetch("/api/mentor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: t }], mode: "research" }) });
       const d = await r.json();
-      if (r.ok && d.text) { setResult({ text: d.text, sources: Array.isArray(d.sources) ? d.sources : [] }); try { logSession({ tech: `Researched: ${t.length > 46 ? t.slice(0, 46) + "…" : t}`, color: C.cyan, mins: 0 }); recordActivity(); } catch {} }
+      if (r.ok && d.text) { setResult({ text: d.text, sources: Array.isArray(d.sources) ? d.sources : [] }); try { logSession({ tech: `Explained: ${t.length > 46 ? t.slice(0, 46) + "…" : t}`, color: C.cyan, mins: 0 }); } catch {} }
       else if (r.status === 503) setErr("not_connected");
-      else setErr(d.message || "Couldn't research that right now — try again in a moment.");
+      else setErr(d.message || "Couldn't look that up right now — try again in a moment.");
     } catch { setErr("Network hiccup — check your connection and try again."); }
     finally { setLoading(false); }
   };
   return (
     <div style={{ animation: "tabIn 0.4s ease", maxWidth: 760 }}>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 999, background: `${C.cyan}12`, border: `1px solid ${C.cyan}33`, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", color: C.cyan, marginBottom: 12 }}><Icon name="spark" size={12} color={C.cyan} /> AI RESEARCH</div>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6, letterSpacing: "-0.02em" }}>Research anything, instantly</h3>
-      <p style={{ fontSize: 14.5, color: C.muted, marginBottom: 22, lineHeight: 1.6, maxWidth: 560 }}>Name a move, a concept, a skill — AIRA researches it live, explains it step by step, and points you to real videos that show it.</p>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 999, background: `${C.cyan}12`, border: `1px solid ${C.cyan}33`, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", color: C.cyan, marginBottom: 12 }}><Icon name="spark" size={12} color={C.cyan} /> AIRA EXPLAINS</div>
+      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, marginBottom: 6, letterSpacing: "-0.02em" }}>Any term. Any move. Explained.</h3>
+      <p style={{ fontSize: 14.5, color: C.muted, marginBottom: 22, lineHeight: 1.6, maxWidth: 560 }}>Drop in a word you don&apos;t know, a technique you can&apos;t place, or a concept that never quite clicked. AIRA researches it live, breaks it down in plain language, and hands you the exact video that shows it.</p>
 
       <div style={{ display: "flex", gap: 10, padding: 8, borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, marginBottom: 16 }}>
-        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && run(q)} placeholder="e.g. How do I do a step down? What is the Krebs cycle?" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.fg, fontSize: 15, padding: "10px 12px" }} />
-        <button onClick={() => run(q)} disabled={loading || !q.trim()} style={{ padding: "0 22px", height: 44, borderRadius: 12, border: "none", cursor: loading || !q.trim() ? "default" : "pointer", opacity: loading || !q.trim() ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14.5, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}><Icon name="spark" size={16} color="#fff" /> Research</button>
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && run(q)} placeholder="e.g. What is a 'skip' in a workout? What is the Krebs cycle?" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: C.fg, fontSize: 15, padding: "10px 12px" }} />
+        <button onClick={() => run(q)} disabled={loading || !q.trim()} style={{ padding: "0 22px", height: 44, borderRadius: 12, border: "none", cursor: loading || !q.trim() ? "default" : "pointer", opacity: loading || !q.trim() ? 0.5 : 1, background: `linear-gradient(135deg,${C.blue},${C.violet})`, color: "#fff", fontSize: 14.5, fontWeight: 600, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}><Icon name="spark" size={16} color="#fff" /> Explain</button>
       </div>
 
       {!result && !loading && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 8 }}>
-          {RESEARCH_EXAMPLES.map((ex) => <button key={ex.q} onClick={() => run(ex.q)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 999, cursor: "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", color: C.cyan }}>{ex.tag}</span>{ex.q}</button>)}
+          {EXPLAIN_EXAMPLES.map((ex) => <button key={ex.q} onClick={() => run(ex.q)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 999, cursor: "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.color = C.fg; e.currentTarget.style.borderColor = "rgba(123,92,255,0.5)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}><span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", color: C.cyan }}>{ex.tag}</span>{ex.q}</button>)}
         </div>
       )}
 
       {loading && (
         <div style={{ padding: "28px 22px", borderRadius: 16, background: C.elev, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ display: "flex", gap: 5 }}>{[0, 1, 2].map((d) => <span key={d} style={{ width: 8, height: 8, borderRadius: 9, background: C.cyan, animation: `eq 0.6s ease-in-out ${d * 0.15}s infinite alternate` }} />)}</div>
-          <span style={{ fontSize: 14, color: C.muted }}>Researching <span style={{ color: C.fg, fontWeight: 600 }}>{asked}</span> across the web…</span>
+          <span style={{ fontSize: 14, color: C.muted }}>Looking up <span style={{ color: C.fg, fontWeight: 600 }}>{asked}</span> across the web…</span>
         </div>
       )}
 
       {err === "not_connected" && (
         <div style={{ padding: 22, borderRadius: 16, background: `linear-gradient(135deg,${C.amber}14,${C.violet}0c)`, border: `1px solid ${C.amber}44` }}>
-          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Live research isn&apos;t connected yet</div>
-          <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.6 }}>AIRA&apos;s research runs on a live AI with web search. Add your Gemini API key (free) to switch it on — until then you can still watch real videos for any topic below.</p>
+          <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>Live lookup isn&apos;t connected yet</div>
+          <p style={{ fontSize: 13.5, color: C.muted, lineHeight: 1.6 }}>AIRA Explains runs on a live AI with web search. Add your Gemini API key (free) to switch it on — until then you can still watch real videos for any topic below.</p>
           <a href={ytSearch(asked)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 14, padding: "10px 18px", borderRadius: 999, background: "#FF0000", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none" }}><Icon name="play" size={14} color="#fff" /> Watch &quot;{asked}&quot; on YouTube</a>
         </div>
       )}
@@ -930,7 +883,7 @@ function ResearchTab() {
           <div style={{ padding: "22px 24px", borderRadius: 18, background: C.elev, border: `1px solid ${C.border}`, fontSize: 14.5, lineHeight: 1.65, marginBottom: 16 }}><MarkdownLite text={result.text} /></div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 16 }}>
             <a href={ytSearch(asked)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 12, background: "#FF0000", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none" }}><Icon name="play" size={15} color="#fff" /> Watch how it&apos;s done</a>
-            <button onClick={() => { setResult(null); setAsked(""); setQ(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 12, background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}><Icon name="spark" size={14} color={C.cyan} /> Research something else</button>
+            <button onClick={() => { setResult(null); setAsked(""); setQ(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 12, background: "transparent", border: `1px solid ${C.border}`, color: C.muted, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}><Icon name="spark" size={14} color={C.cyan} /> Ask something else</button>
           </div>
           {result.sources.length > 0 && (
             <div>
@@ -942,56 +895,6 @@ function ResearchTab() {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-/* ░░ PROGRESS TAB — XP · Knowledge Graph · Adaptive Roadmap ░░ */
-function ProgressTab() {
-  const [profile, setProfile] = useState<Record<string, string> | null>(null);
-  const [xp, setXp] = useState(0);
-  useEffect(() => { try { const p = window.localStorage.getItem("aira_profile"); if (p) setProfile(JSON.parse(p)); setXp(getXp()); } catch {} }, []);
-  const goal = profile?.goal || "your goal";
-  const level = Math.floor(xp / 500) + 1;
-  const intoLevel = Math.round(((xp % 500) / 500) * 100);
-  const base = profile?.level === "Advanced" ? 55 : profile?.level === "Intermediate" ? 38 : profile?.level === "Some basics" ? 22 : 10;
-  const areas = [
-    { n: "Fundamentals", p: Math.min(96, base + 34), c: C.cyan },
-    { n: "Core concepts", p: Math.min(92, base + 14), c: C.indigo },
-    { n: "Hands-on practice", p: Math.max(6, base - 2), c: C.violet },
-    { n: "Advanced topics", p: Math.max(4, base - 12), c: C.pink },
-    { n: "Real projects", p: Math.max(3, base - 6), c: C.green },
-  ];
-  const phases = [
-    { t: "Foundations", d: `Lock in the basics of ${goal}.`, st: "done" },
-    { t: "Core skills", d: "Main concepts, patterns and vocabulary.", st: "now" },
-    { t: "Deliberate practice", d: "Active recall and drills on your weak spots.", st: "next" },
-    { t: "Build something real", d: "Apply everything in a project.", st: "next" },
-    { t: "Mastery & review", d: "Spaced review so it actually sticks.", st: "next" },
-  ];
-  const stats = [{ l: "Level", v: String(level), c: C.amber }, { l: "Total XP", v: xp.toLocaleString(), c: C.cyan }, { l: "Day streak", v: "12", c: C.pink }, { l: "Avg retention", v: "94%", c: C.green }];
-  return (
-    <div style={{ animation: "tabIn 0.4s ease" }}>
-      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Your path to {goal}</h3>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 22 }}>AIRA tracks what you know, what&apos;s next, and adapts the plan as you go.</p>
-      <div style={{ display: "flex", alignItems: "center", gap: 18, padding: 22, borderRadius: 18, marginBottom: 18, background: `linear-gradient(135deg,${C.amber}16,${C.violet}10)`, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 220 }}>
-          <span style={{ flexShrink: 0, width: 52, height: 52, borderRadius: 15, background: `linear-gradient(135deg,${C.amber},#FB923C)`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 800, color: "#fff" }}>{level}</span>
-          <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Level {level} · {500 - (xp % 500)} XP to level {level + 1}</div><div style={{ height: 8, borderRadius: 999, background: "rgba(255,255,255,0.07)", overflow: "hidden" }}><div style={{ height: "100%", width: `${intoLevel}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.amber},#FB923C)`, animation: "growW 1s ease both" }} /></div></div>
-        </div>
-        <div style={{ display: "flex", gap: 22 }}>{stats.slice(1).map((s) => <div key={s.l} style={{ textAlign: "center" }}><div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700, color: s.c }}>{s.v}</div><div style={{ fontSize: 11, color: C.muted }}>{s.l}</div></div>)}</div>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="dash-grid">
-        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Icon name="brain" size={18} color={C.cyan} /><h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Knowledge graph</h4></div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>{areas.map((a, i) => <div key={a.n}><div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ fontSize: 13.5, color: C.fg }}>{a.n}</span><span style={{ fontSize: 12.5, fontWeight: 600, color: a.c }}>{a.p}%</span></div><div style={{ height: 7, borderRadius: 999, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}><div style={{ height: "100%", width: `${a.p}%`, borderRadius: 999, background: `linear-gradient(90deg,${a.c},${C.violet})`, animation: `growW 1s ease ${i * 80}ms both` }} /></div></div>)}</div>
-          <p style={{ fontSize: 12, color: C.faint, marginTop: 16, lineHeight: 1.5 }}>AIRA spots your weakest area — <span style={{ color: C.fg }}>{areas.slice().sort((a, b) => a.p - b.p)[0].n}</span> — and aims you there next.</p>
-        </div>
-        <div style={{ padding: 24, borderRadius: 18, background: C.elev, border: `1px solid ${C.border}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Icon name="map" size={18} color={C.violet} /><h4 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700 }}>Adaptive roadmap</h4></div>
-          <div style={{ display: "flex", flexDirection: "column" }}>{phases.map((ph, i) => { const done = ph.st === "done"; const now = ph.st === "now"; const col = done ? C.green : now ? C.cyan : C.faint; return <div key={ph.t} style={{ display: "flex", gap: 13, paddingBottom: i < phases.length - 1 ? 18 : 0 }}><div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><span style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", border: `2px solid ${col}`, background: done ? C.green : now ? `${C.cyan}22` : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{done ? <Icon name="check" size={13} color="#fff" stroke={3} /> : <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{i + 1}</span>}</span>{i < phases.length - 1 && <span style={{ width: 2, flex: 1, minHeight: 18, background: done ? C.green : C.border, marginTop: 2 }} />}</div><div style={{ paddingTop: 2 }}><div style={{ fontSize: 14, fontWeight: 600, color: now ? C.fg : done ? C.muted : C.muted }}>{ph.t}{now && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: C.cyan, background: `${C.cyan}1a`, border: `1px solid ${C.cyan}44`, borderRadius: 999, padding: "2px 7px" }}>NOW</span>}</div><div style={{ fontSize: 12.5, color: C.faint, marginTop: 2, lineHeight: 1.5 }}>{ph.d}</div></div></div>; })}</div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1030,15 +933,11 @@ function HistoryTab() {
   );
 }
 
-/* ════════════ NAME ONBOARDING ════════════ */
+/* ════════════ NAME ONBOARDING — kept short (2 taps), the rest is learned
+   conversationally by the mentor instead of a chip-survey ════════════ */
 const ONB_Q: Array<{ key: string; ai: string; type: "text" | "chips"; ph?: string; opts?: string[] }> = [
-  { key: "name", ai: "Hey — I'm AIRA, your AI mentor. Give me 40 seconds and I'll build a plan made just for you. First: what should I call you?", type: "text", ph: "Your name" },
+  { key: "name", ai: "Hey — I'm AIRA, your AI mentor. What should I call you?", type: "text", ph: "Your name" },
   { key: "goal", ai: "What do you want to learn or get better at?", type: "text", ph: "e.g. React, Calculus, Spanish, the guitar…" },
-  { key: "level", ai: "Where are you starting from?", type: "chips", opts: ["Total beginner", "Some basics", "Intermediate", "Advanced"] },
-  { key: "deadline", ai: "By when do you want to get there?", type: "chips", opts: ["30 days", "60 days", "90 days", "No deadline"] },
-  { key: "hours", ai: "How many hours a week can you realistically commit?", type: "chips", opts: ["1–3h", "4–7h", "8–14h", "15h+"] },
-  { key: "when", ai: "When do you focus best?", type: "chips", opts: ["Morning", "Afternoon", "Evening", "Late night"] },
-  { key: "weakness", ai: "Last one — what gets in your way the most?", type: "chips", opts: ["Procrastination", "Staying focused", "The hard concepts", "Staying consistent"] },
 ];
 function looksFake(s: string) {
   const t = s.trim().toLowerCase();
@@ -1050,13 +949,15 @@ function looksFake(s: string) {
   if (letters.length >= 4 && new Set(letters).size <= 2) return true; // only 1-2 distinct letters
   return false;
 }
-function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => void }) {
+function NameModal({ onSave, existingName }: { onSave: (name: string, remember: boolean) => void; existingName?: string }) {
+  // If we already have a name (email/Google sign-in derives one), skip straight
+  // to the goal question — don't ask twice.
+  const questions = existingName ? ONB_Q.filter((q) => q.key !== "name") : ONB_Q;
   const [step, setStep] = useState(0);
-  const [ans, setAns] = useState<Record<string, string>>({});
+  const [ans, setAns] = useState<Record<string, string>>(existingName ? { name: existingName } : {});
   const [text, setText] = useState("");
-  const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
-  const cur = ONB_Q[step];
+  const cur = questions[step];
   const answer = (val: string) => {
     const v = val.trim(); if (!v) return;
     if ((cur.key === "goal" || cur.key === "name") && looksFake(v)) {
@@ -1067,59 +968,24 @@ function NameModal({ onSave }: { onSave: (name: string, remember: boolean) => vo
     }
     setErr("");
     const next = { ...ans, [cur.key]: v }; setAns(next); setText("");
-    if (step < ONB_Q.length - 1) setStep(step + 1);
-    else {
-      const hoursIdx = ["1–3h", "4–7h", "8–14h", "15h+"].indexOf(next.hours);
-      const levelIdx = ["Total beginner", "Some basics", "Intermediate", "Advanced"].indexOf(next.level);
-      const confidence = Math.min(95, 72 + (hoursIdx >= 0 ? hoursIdx * 4 : 6) + (levelIdx >= 0 ? levelIdx * 3 : 0));
-      const profile = { ...next, confidence, created: Date.now() };
-      try { window.localStorage.setItem("aira_profile", JSON.stringify(profile)); } catch {}
-      setAns({ ...next, confidence: String(confidence) });
-      setDone(true);
-    }
+    if (step < questions.length - 1) { setStep(step + 1); return; }
+    const profile = { ...next, created: Date.now() };
+    try { window.localStorage.setItem("aira_profile", JSON.stringify(profile)); } catch {}
+    onSave(next.name || "there", true);
   };
-  const Row = ({ label, value }: { label: string; value: string }) => (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${C.border}` }}><span style={{ fontSize: 12.5, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span><span style={{ fontSize: 14, fontWeight: 600, color: C.fg, textAlign: "right", maxWidth: "60%" }}>{value}</span></div>
-  );
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1700, background: "rgba(0,0,4,0.92)", backdropFilter: "blur(18px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.3s ease" }}>
       <div className="auth-card" style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 40, maxWidth: 460, width: "100%", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.45s ${C.spring}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 19 }}>AIRA</span>{!done && <span style={{ marginLeft: "auto", fontSize: 12, color: C.faint }}>{step + 1} / {ONB_Q.length}</span>}</div>
-        {!done ? (
-          <>
-            <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.07)", marginBottom: 24, overflow: "hidden" }}><div style={{ height: "100%", width: `${((step + 1) / ONB_Q.length) * 100}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.cyan},${C.violet})`, transition: `width 0.4s ${C.ease}` }} /></div>
-            <div style={{ display: "flex", gap: 12, marginBottom: 26 }}>
-              <span style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={18} color="#fff" /></span>
-              <p key={step} style={{ fontSize: 16.5, lineHeight: 1.5, color: C.fg, paddingTop: 4, animation: "tabIn 0.4s ease" }}>{cur.ai}</p>
-            </div>
-            {cur.type === "text" ? (
-              <input value={text} onChange={(e) => { setText(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && answer(text)} autoFocus placeholder={cur.ph} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 16, marginBottom: err ? 8 : 16, outline: "none" }} />
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>{cur.opts!.map((o) => <button key={o} onClick={() => answer(o)} style={{ padding: "13px 14px", borderRadius: 12, cursor: "pointer", background: C.surface, border: `1px solid ${C.border}`, color: C.fg, fontSize: 14, fontWeight: 500, transition: `all 0.2s ${C.ease}` }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(123,92,255,0.6)"; e.currentTarget.style.background = `${C.indigo}1a`; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface; }}>{o}</button>)}</div>
-            )}
-            {err && <p style={{ fontSize: 13, color: "#FB7185", marginBottom: 14, lineHeight: 1.5, animation: "tabIn 0.3s ease" }}>{err}</p>}
-            {cur.type === "text" && <GBtn full onClick={() => answer(text)}>Continue <Icon name="arrow" size={18} color="#fff" /></GBtn>}
-            {step > 0 && <button onClick={() => setStep(step - 1)} style={{ background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer", marginTop: 14, display: "block" }}>← Back</button>}
-          </>
-        ) : (
-          <div style={{ animation: "tabIn 0.4s ease" }}>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 23, fontWeight: 700, marginBottom: 4, letterSpacing: "-0.02em" }}>Your Learning Profile</h2>
-            <p style={{ fontSize: 13.5, color: C.muted, marginBottom: 20 }}>Got it, {ans.name}. Here&apos;s the plan I&apos;ll mentor you on.</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: 18, borderRadius: 16, background: `linear-gradient(135deg,${C.indigo}1f,${C.cyan}11)`, border: `1px solid ${C.border}`, marginBottom: 18 }}>
-              <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}><svg viewBox="0 0 36 36" style={{ width: 64, height: 64, transform: "rotate(-90deg)" }}><circle cx="18" cy="18" r="15.5" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" /><circle cx="18" cy="18" r="15.5" fill="none" stroke={C.cyan} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(parseInt(String(ans.confidence ?? 80)) / 100) * 97.4} 97.4`} /></svg><span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: C.fg }}>{ans.confidence ?? 80}%</span></div>
-              <div><div style={{ fontSize: 12, color: C.faint, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Confidence</div><div style={{ fontSize: 14, color: C.muted, lineHeight: 1.5 }}>You&apos;re set up to hit <strong style={{ color: C.fg }}>{ans.goal}</strong>. Let&apos;s start.</div></div>
-            </div>
-            <div style={{ marginBottom: 22 }}>
-              <Row label="Goal" value={ans.goal || "—"} />
-              <Row label="Level" value={ans.level || "—"} />
-              <Row label="Deadline" value={ans.deadline || "—"} />
-              <Row label="Weekly time" value={ans.hours || "—"} />
-              <Row label="Focus window" value={ans.when || "—"} />
-              <Row label="Watch out for" value={ans.weakness || "—"} />
-            </div>
-            <GBtn full onClick={() => onSave(ans.name || "there", true)}>Start with AIRA <Icon name="arrow" size={18} color="#fff" /></GBtn>
-          </div>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}><BrainLogo size={28} /><span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 19 }}>AIRA</span><span style={{ marginLeft: "auto", fontSize: 12, color: C.faint }}>{step + 1} / {questions.length}</span></div>
+        <div style={{ height: 4, borderRadius: 999, background: "rgba(255,255,255,0.07)", marginBottom: 24, overflow: "hidden" }}><div style={{ height: "100%", width: `${((step + 1) / questions.length) * 100}%`, borderRadius: 999, background: `linear-gradient(90deg,${C.cyan},${C.violet})`, transition: `width 0.4s ${C.ease}` }} /></div>
+        <div style={{ display: "flex", gap: 12, marginBottom: 26 }}>
+          <span style={{ flexShrink: 0, width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg,${C.cyan},${C.violet})`, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="bot" size={18} color="#fff" /></span>
+          <p key={step} style={{ fontSize: 16.5, lineHeight: 1.5, color: C.fg, paddingTop: 4, animation: "tabIn 0.4s ease" }}>{existingName && cur.key === "goal" ? `Good to see you, ${existingName}. What do you want to learn or get better at?` : cur.ai}</p>
+        </div>
+        <input value={text} onChange={(e) => { setText(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && answer(text)} autoFocus placeholder={cur.ph} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${err ? "#FB7185" : C.border}`, color: C.fg, fontSize: 16, marginBottom: err ? 8 : 16, outline: "none" }} />
+        {err && <p style={{ fontSize: 13, color: "#FB7185", marginBottom: 14, lineHeight: 1.5, animation: "tabIn 0.3s ease" }}>{err}</p>}
+        <GBtn full onClick={() => answer(text)}>{step < questions.length - 1 ? "Continue" : "Start with AIRA"} <Icon name="arrow" size={18} color="#fff" /></GBtn>
+        {step > 0 && <button onClick={() => setStep(step - 1)} style={{ background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer", marginTop: 14, display: "block" }}>← Back</button>}
       </div>
     </div>
   );
@@ -1313,7 +1179,7 @@ const SCIENCE = [
 const BENTO = [
   { ic: "target", t: "Six Focus Techniques", b: "Pomodoro, Flowtime, 52/17, Deep Work, Timeboxing, Ultradian — each explained, each structured by AIRA.", c: C.blue, span: 2 },
   { ic: "bot", t: "Socratic AI Mentor", b: "Guides you to answers instead of handing them over.", c: C.violet, span: 1 },
-  { ic: "chart", t: "Live Dashboard", b: "Focus time, streaks, mastery, peak hours — all tracked.", c: C.cyan, span: 1 },
+  { ic: "chart", t: "Live Dashboard", b: "XP, sessions, and weekly activity — all tracked automatically.", c: C.cyan, span: 1 },
   { ic: "repeat", t: "Auto Spaced Review", b: "Never forget what you learn. Reviews scheduled at the perfect moment.", c: C.green, span: 2 },
 ];
 const FLOW_STEPS = [
@@ -1327,7 +1193,7 @@ const PREMIUM = [
   { ic: "layers", t: "Adaptive Difficulty Engine", b: "AIRA measures your accuracy and speed, then calibrates every question to the exact edge of your ability." },
   { ic: "wave", t: "Royalty-Free Focus Audio", b: "8D spatial ambient, binaural beats tuned to 40Hz gamma, rain, forest, cafe. Engineered to deepen focus." },
   { ic: "chart", t: "Deep Progress Analytics", b: "Your retention curve, peak focus hours, strongest and weakest concepts — the data top students use." },
-  { ic: "flame", t: "Streak & Momentum System", b: "Daily streaks, focus milestones, and a momentum score that turns consistent study into a habit." },
+  { ic: "spark", t: "AIRA Explains, Unlimited", b: "Unlimited live look-ups — any term, any move, any concept, plus the exact video that shows it." },
   { ic: "trophy", t: "Verified Certificates", b: "Complete a subject, earn a shareable certificate with a verification link — proof of mastery." },
   { ic: "download", t: "Offline & Export", b: "Download sessions for offline study; export notes, summaries, and flashcards anytime." },
   { ic: "moon", t: "Device-Free Mode", b: "AIRA tells you exactly when to put your phone down and work on paper — the biggest focus upgrade." },
@@ -1365,7 +1231,7 @@ const TESTIMONIALS = [
 const FAQ: [string, string][] = [
   ["How is AIRA different from a chatbot?", "A chatbot answers questions. AIRA teaches. It picks a technique with you, structures focused sessions, uses Socratic questioning, tracks progress on a dashboard, and schedules spaced reviews. A complete study system."],
   ["What study techniques can I use?", "Six proven methods: Pomodoro, Flowtime, 52/17, Deep Work, Timeboxing, and Ultradian. Each comes with a plain explanation so you know exactly what you're choosing and why."],
-  ["What does the dashboard show?", "Your daily focus time, current streak, sessions per week, concepts mastered, retention rate, mastery per subject, and your peak focus hours."],
+  ["What does the dashboard show?", "Your XP, level, sessions logged, and a real weekly activity chart — built from what you actually do, not guesses."],
   ["Do I need my phone for every lesson?", "No. Many AIRA sessions are device-free — it sets the structure, then tells you to put your phone away. Other subjects need a screen. AIRA tells you which is which."],
   ["Is it really free to start?", "Yes. You get 3 AI mentor messages every day, free forever, no credit card. Become a Mastermind ($9.99/mo) for unlimited mentoring, plans, photo reading, and focus audio — cancel anytime."],
   ["What if I want to cancel?", "Cancel any time in account settings. No penalties, no questions."],
@@ -1413,7 +1279,7 @@ function StudyGuide({ seen, open, setOpen }: { seen: { [k: string]: boolean }; o
 }
 function WelcomeModal({ onClose, onEnter }: { onClose: () => void; onEnter: () => void }) {
   const [step, setStep] = useState(0);
-  const steps = [{ ic: "spark", title: "Welcome, Mastermind", body: "You unlocked everything — unlimited AI mentoring, all 15 subjects, all 6 focus techniques, and royalty-free audio.", cta: "Show me around" }, { ic: "target", title: "Your study space", body: "Pick a technique and AIRA starts your timer, blocks distractions, and structures the whole session.", cta: "Next" }, { ic: "chart", title: "Track everything", body: "Your dashboard shows focus time, streaks, mastery per subject, and your peak hours.", cta: "Next" }, { ic: "bolt", title: "Flow state, on demand", body: "Notifications off. Phone away. Distraction-free. Built on neuroscience to get you deep and keep you there.", cta: "Enter AIRA" }];
+  const steps = [{ ic: "spark", title: "Welcome, Mastermind", body: "You unlocked everything — unlimited AI mentoring, live research, all 6 focus techniques, and royalty-free audio.", cta: "Show me around" }, { ic: "bot", title: "Your AI Mentor", body: "Summarize notes, build tests, and get a personalized plan — just tell it what you're working on.", cta: "Next" }, { ic: "spark", title: "AIRA Explains", body: "Stuck on a move or a concept? AIRA researches it live and hands you the exact video that shows how.", cta: "Next" }, { ic: "bolt", title: "Flow state, on demand", body: "Notifications off. Phone away. Distraction-free. Built on neuroscience to get you deep and keep you there.", cta: "Enter AIRA" }];
   const s = steps[step]; const last = step === steps.length - 1;
   return <div style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.88)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}><div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 48, maxWidth: 460, width: "100%", textAlign: "center", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.5s ${C.spring}` }}><div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: C.cyan }}><Icon name={s.ic} size={48} color={C.cyan} /></div><h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 16, letterSpacing: "-0.02em" }}>{s.title}</h2><p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 32 }}>{s.body}</p><div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28 }}>{steps.map((_, i) => <div key={i} style={{ width: i === step ? 28 : 8, height: 8, borderRadius: 999, background: i === step ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : C.border, transition: `all 0.4s ${C.ease}` }} />)}</div><GBtn full onClick={() => (last ? onEnter() : setStep(step + 1))}>{s.cta}</GBtn>{!last && <button onClick={onClose} style={{ marginTop: 16, background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer" }}>Skip intro</button>}</div></div>;
 }
@@ -1853,7 +1719,7 @@ export default function Home() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 22, marginTop: 60 }}>
             <Tilt k="pf" seen={seen} style={{ padding: 40 }}><h3 style={HD({ fontSize: 22, marginBottom: 8 })}>Free</h3><div style={{ fontSize: 44, fontWeight: 700, fontFamily: "var(--font-display)", marginBottom: 4 }}>$0</div><p style={{ fontSize: 13, color: C.muted, marginBottom: 26 }}>3 free messages/day, forever</p>{["3 AI mentor messages/day", "All 6 focus techniques", "Study space + dashboard", "Basic progress tracking", "No credit card required"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.muted, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GhostBtn full onClick={() => setWorkspace("dashboard")}>Try the dashboard</GhostBtn></div></Tilt>
-            <Tilt k="pp" seen={seen} delay={100} style={{ padding: 40, animation: "pulseGlow 4s ease-in-out infinite" }}><div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg,${C.blue},${C.violet})`, padding: "6px 22px", borderRadius: "0 0 12px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", zIndex: 2 }}>MOST POPULAR</div><h3 style={HD({ fontSize: 22, marginBottom: 8, marginTop: 10 })}>AIRA Mastermind</h3><div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}><span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-display)" }}>$9.99</span><span style={{ color: C.muted }}>/month</span></div><p style={{ fontSize: 13, color: C.cyan, marginBottom: 26 }}>Billed monthly · Cancel anytime</p>{["Unlimited AI mentor sessions", "All 6 focus techniques", "All 15 subject categories", "Full dashboard + analytics", "6 royalty-free soundscapes", "Spaced repetition + flashcards", "Streaks + certificates", "Export + offline mode", "Cancel anytime"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.fg, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GBtn full onClick={buy}>Become a Mastermind</GBtn></div></Tilt>
+            <Tilt k="pp" seen={seen} delay={100} style={{ padding: 40, animation: "pulseGlow 4s ease-in-out infinite" }}><div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", background: `linear-gradient(135deg,${C.blue},${C.violet})`, padding: "6px 22px", borderRadius: "0 0 12px 12px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", zIndex: 2 }}>MOST POPULAR</div><h3 style={HD({ fontSize: 22, marginBottom: 8, marginTop: 10 })}>AIRA Mastermind</h3><div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}><span style={{ fontSize: 48, fontWeight: 700, fontFamily: "var(--font-display)" }}>$9.99</span><span style={{ color: C.muted }}>/month</span></div><p style={{ fontSize: 13, color: C.cyan, marginBottom: 26 }}>Billed monthly · Cancel anytime</p>{["Unlimited AI mentor sessions", "Unlimited AIRA Explains", "All 6 focus techniques", "Full dashboard + analytics", "6 royalty-free soundscapes", "Photo reading", "1-hour focus audio", "Cancel anytime"].map((f) => <div key={f} style={{ display: "flex", gap: 10, padding: "9px 0", fontSize: 14, color: C.fg, alignItems: "center" }}><Icon name="check" size={16} color={C.green} />{f}</div>)}<div style={{ marginTop: 26 }}><GBtn full onClick={buy}>Become a Mastermind</GBtn></div></Tilt>
           </div>
           <p style={{ textAlign: "center", marginTop: 26, fontSize: 13, color: C.faint }}>3 free messages/day with no card · Mastermind unlocks unlimited mentoring, plans, photo reading, and audio · $9.99/month, cancel anytime.</p>
         </div>
