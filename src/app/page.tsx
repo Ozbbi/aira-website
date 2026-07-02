@@ -263,6 +263,15 @@ function getSessions(): SessionLog[] { try { return JSON.parse(window.localStora
 function logSession(s: Omit<SessionLog, "id" | "ts">) { try { const list = getSessions(); list.unshift({ ...s, id: Math.random().toString(36).slice(2), ts: Date.now() }); window.localStorage.setItem("aira_sessions", JSON.stringify(list.slice(0, 60))); } catch {} }
 function relTime(ts: number) { const d = Date.now() - ts; const m = Math.floor(d / 60000); if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); return days === 1 ? "yesterday" : `${days}d ago`; }
 function getXp(): number { try { const x = parseInt(window.localStorage.getItem("aira_xp") || "0", 10); return Number.isNaN(x) ? 0 : x; } catch { return 0; } }
+/* There's no backend — everything lives in this browser's localStorage, keyed
+   by nothing per-account. If we don't wipe it on sign-out / account switch,
+   a new sign-up inherits the previous account's profile, XP, and purchase
+   state and looks like "you already have a profile". Always clear fully. */
+function wipeLocalUserData() {
+  try {
+    ["aira_name", "aira_profile", "aira_xp", "aira_sessions", "aira_reflect", "aira_plan_shown", "aira_tour_shown", "aira_free_day", "aira_lifetime", "aira_clerk_uid"].forEach((k) => window.localStorage.removeItem(k));
+  } catch {}
+}
 
 /* ════════════ APP WORKSPACE ════════════ */
 /* ░░ MASTERMIND POPUP — Spotify-style "exclusive" upsell ░░ */
@@ -1022,6 +1031,14 @@ function ClerkUserSync({ onName }: { onName: (name: string) => void }) {
   const { isSignedIn, user } = useUser();
   useEffect(() => {
     if (isSignedIn && user) {
+      // A different Google account than last time signed in on this browser —
+      // wipe the previous account's local profile/XP/purchase state first, so
+      // the new account never inherits "you already have a profile".
+      try {
+        const lastUid = window.localStorage.getItem("aira_clerk_uid");
+        if (lastUid && lastUid !== user.id) wipeLocalUserData();
+        window.localStorage.setItem("aira_clerk_uid", user.id);
+      } catch {}
       const first = user.firstName || (user.fullName || "").split(" ")[0] || (user.primaryEmailAddress?.emailAddress || "").split("@")[0] || "";
       if (first) { try { window.localStorage.setItem("aira_name", first); } catch {} onName(first); }
     }
@@ -1277,11 +1294,41 @@ function FlowStateGraph({ seen }: { seen: { [k: string]: boolean } }) {
 function StudyGuide({ seen, open, setOpen }: { seen: { [k: string]: boolean }; open: number | null; setOpen: (n: number | null) => void }) {
   return <div>{GUIDE.map((g, i) => <div key={g.n} data-k={`g-${i}`} style={{ opacity: seen[`g-${i}`] ? 1 : 0, transform: seen[`g-${i}`] ? "translateY(0)" : "translateY(20px)", transition: `all 0.6s ${C.ease} ${i * 60}ms`, background: open === i ? `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo}55,rgba(255,255,255,0.05)) border-box` : "transparent", border: open === i ? "1px solid transparent" : `1px solid ${C.border}`, borderRadius: 18, marginBottom: 12, overflow: "hidden" }}><button onClick={() => setOpen(open === i ? null : i)} style={{ width: "100%", background: "none", border: "none", padding: "22px 24px", display: "flex", alignItems: "center", gap: 18, cursor: "pointer", textAlign: "left", color: C.fg }}><span style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: open === i ? C.cyan : C.faint, minWidth: 36 }}>{g.n}</span><span style={{ fontSize: 17, fontWeight: 600, flex: 1 }}>{g.t}</span><span style={{ color: C.violet, transform: open === i ? "rotate(45deg)" : "none", transition: `transform 0.3s ${C.ease}`, display: "flex" }}><Icon name="plus" size={20} color={C.violet} /></span></button><div style={{ maxHeight: open === i ? 240 : 0, overflow: "hidden", transition: `max-height 0.45s ${C.ease}` }}><p style={{ fontSize: 14.5, color: C.muted, lineHeight: 1.75, padding: "0 24px 24px 70px" }}>{g.b}</p></div></div>)}</div>;
 }
+const WELCOME_QUOTES = [
+  { q: "Discipline is choosing between what you want now and what you want most.", a: "Abraham Lincoln" },
+  { q: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", a: "Aristotle" },
+  { q: "The successful warrior is the average person with laser-like focus.", a: "Bruce Lee" },
+];
 function WelcomeModal({ onClose, onEnter }: { onClose: () => void; onEnter: () => void }) {
   const [step, setStep] = useState(0);
-  const steps = [{ ic: "spark", title: "Welcome, Mastermind", body: "You unlocked everything — unlimited AI mentoring, live research, all 6 focus techniques, and royalty-free audio.", cta: "Show me around" }, { ic: "bot", title: "Your AI Mentor", body: "Summarize notes, build tests, and get a personalized plan — just tell it what you're working on.", cta: "Next" }, { ic: "spark", title: "AIRA Explains", body: "Stuck on a move or a concept? AIRA researches it live and hands you the exact video that shows how.", cta: "Next" }, { ic: "bolt", title: "Flow state, on demand", body: "Notifications off. Phone away. Distraction-free. Built on neuroscience to get you deep and keep you there.", cta: "Enter AIRA" }];
+  const steps = [
+    { ic: "spark", title: "Welcome, Mastermind", body: "You unlocked everything — unlimited AI mentoring, live research, all 6 focus techniques, and royalty-free audio.", cta: "Show me around" },
+    { ic: "bot", title: "Your AI Mentor", body: "Summarize notes, build tests, and get a personalized plan — just tell it what you're working on.", cta: "Next" },
+    { ic: "spark", title: "AIRA Explains", body: "Stuck on a move or a concept? AIRA researches it live and hands you the exact video that shows how.", cta: "Next" },
+    { ic: "bolt", title: "Flow state, on demand", body: "Notifications off. Phone away. Distraction-free. Built on neuroscience to get you deep and keep you there.", cta: "Next" },
+    { isQuote: true, cta: "Enter AIRA" },
+  ];
   const s = steps[step]; const last = step === steps.length - 1;
-  return <div style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.88)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}><div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 48, maxWidth: 460, width: "100%", textAlign: "center", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.5s ${C.spring}` }}><div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: C.cyan }}><Icon name={s.ic} size={48} color={C.cyan} /></div><h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 16, letterSpacing: "-0.02em" }}>{s.title}</h2><p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 32 }}>{s.body}</p><div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28 }}>{steps.map((_, i) => <div key={i} style={{ width: i === step ? 28 : 8, height: 8, borderRadius: 999, background: i === step ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : C.border, transition: `all 0.4s ${C.ease}` }} />)}</div><GBtn full onClick={() => (last ? onEnter() : setStep(step + 1))}>{s.cta}</GBtn>{!last && <button onClick={onClose} style={{ marginTop: 16, background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer" }}>Skip intro</button>}</div></div>;
+  const quote = useState(() => WELCOME_QUOTES[Math.floor(Math.random() * WELCOME_QUOTES.length)])[0];
+  return <div style={{ position: "fixed", inset: 0, zIndex: 1600, background: "rgba(0,0,4,0.88)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, animation: "fadeIn 0.4s ease" }}><div style={{ position: "relative", background: `linear-gradient(${C.elev},${C.elev}) padding-box, linear-gradient(135deg,${C.indigo},${C.cyan}) border-box`, border: "1px solid transparent", borderRadius: 28, padding: 48, maxWidth: 460, width: "100%", textAlign: "center", boxShadow: `0 0 100px ${C.indigo}44`, animation: `popIn 0.5s ${C.spring}` }}>
+    {s.isQuote ? (
+      <>
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 64, lineHeight: 1, color: C.cyan, opacity: 0.5, marginBottom: 4 }}>&ldquo;</div>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: 21, fontWeight: 700, lineHeight: 1.4, letterSpacing: "-0.01em", marginBottom: 10 }}>{quote.q}</p>
+        <p style={{ fontSize: 13, color: C.faint, marginBottom: 26 }}>— {quote.a}</p>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 999, background: `${C.green}14`, border: `1px solid ${C.green}44`, fontSize: 13, fontWeight: 700, color: C.green, marginBottom: 30 }}><Icon name="check" size={14} color={C.green} stroke={2.5} /> You made the right call.</div>
+      </>
+    ) : (
+      <>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, color: C.cyan }}><Icon name={s.ic!} size={48} color={C.cyan} /></div>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, marginBottom: 16, letterSpacing: "-0.02em" }}>{s.title}</h2>
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 32 }}>{s.body}</p>
+      </>
+    )}
+    <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28 }}>{steps.map((_, i) => <div key={i} style={{ width: i === step ? 28 : 8, height: 8, borderRadius: 999, background: i === step ? `linear-gradient(90deg,${C.cyan},${C.indigo})` : C.border, transition: `all 0.4s ${C.ease}` }} />)}</div>
+    <GBtn full onClick={() => (last ? onEnter() : setStep(step + 1))}>{s.cta}</GBtn>
+    {!last && <button onClick={onClose} style={{ marginTop: 16, background: "none", border: "none", color: C.faint, fontSize: 13, cursor: "pointer" }}>Skip intro</button>}
+  </div></div>;
 }
 
 /* ════════════ FLOATING STORY VISUAL (scroll-linked glass panel) ════════════ */
@@ -1510,7 +1557,7 @@ export default function Home() {
   const [userName, setUserName] = useState("");
   useEffect(() => { const params = new URLSearchParams(window.location.search); if (params.get("success") === "true" || params.get("checkout") === "success") setShowWelcome(true); try { if (window.localStorage.getItem("aira_lifetime") === "true") setLifetime(true); const n = window.localStorage.getItem("aira_name"); if (n) setUserName(n); } catch {} }, []);
   const saveName = useCallback((n: string, remember: boolean) => { const name = n.trim(); if (!name) return; setUserName(name); if (remember) { try { window.localStorage.setItem("aira_name", name); } catch {} } }, []);
-  const logout = useCallback(() => { setUserName(""); setWorkspace(null); try { window.localStorage.removeItem("aira_name"); } catch {} if (CLERK_ON) { try { (window as unknown as { Clerk?: { signOut?: () => void } }).Clerk?.signOut?.(); } catch {} } }, []);
+  const logout = useCallback(() => { setUserName(""); setLifetime(false); setWorkspace(null); wipeLocalUserData(); if (CLERK_ON) { try { (window as unknown as { Clerk?: { signOut?: () => void } }).Clerk?.signOut?.(); } catch {} } }, []);
   const signedIn = !!userName;
   // Landing entry points: require a quick sign-up first if they're not in yet, then the app runs onboarding.
   const enterApp = useCallback((tab: string) => { try { if (window.localStorage.getItem("aira_name") || window.localStorage.getItem("aira_profile")) { setWorkspace(tab); return; } } catch {} setAuth("up"); }, []);
